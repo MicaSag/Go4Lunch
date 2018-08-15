@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#757575</color>
+    <color name="colorPrimaryDark">#424242</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="alpha_black">#E6757575</color> <!-- 99 is for alpha and others pairs zero's are for R G B -->
+    <color name="facebook_button">#3b5998</color>
+    <color name="google_button">#db3236</color>
 </resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="large_margin">15dip</dimen>
+    <dimen name="logo_height">200dip</dimen>
+    <dimen name="logo_width">200dip</dimen>
+    <dimen name="half_margin">10dip</dimen>
+    <dimen name="margin">5dip</dimen>
+    <dimen name="title_size">65sp</dimen>
+    <dimen name="text_size">13sp</dimen>
+    <dimen name="text_size_mini">8sp</dimen>
+</resources>

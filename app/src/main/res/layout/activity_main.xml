@@ -1,18 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_activity_coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="com.android.sagot.go4lunch.Controllers.Activities.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleX="2.2"
+            android:scaleY="1"
+            android:gravity="center"
+            android:background="@drawable/pic_restaurant"/>
+
+        <!-- MAIN CONTAINER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:background="@color/alpha_black"
+            android:orientation="vertical">
+
+            <!-- IMAGE VIEW LOGO GO4LUNCH -->
+            <ImageView
+                android:layout_width="@dimen/logo_width"
+                android:layout_height="@dimen/logo_height"
+                android:background="@drawable/pic_logo_restaurant_400x400"
+                android:layout_marginTop="20dp"/>
+
+            <!-- TITLE FIREBASE OC -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textSize="@dimen/title_size"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"/>
+
+            <!-- DESCRIPTION FIREBASE OC -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size"
+                android:text="@string/main_activity_description"
+                android:textStyle="italic"
+                android:textColor="@android:color/white"/>
+
+            <!-- BUTTONS CONTAINER -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom"
+                android:orientation="vertical"
+                android:layout_margin="@dimen/large_margin">
+
+                <!-- BUTTON FACEBOOK LOGIN -->
+                <Button
+                    android:id="@+id/main_activity_facebook_login_button"
+                    style="@style/FirebaseUI.Button.AccountChooser.FacebookButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/half_margin"
+                    android:background="@drawable/button_facebook_radius_primary_color"
+                    android:drawableLeft="@drawable/ic_facebook"
+                    android:padding="@dimen/large_margin"
+                    android:text="@string/facebook_login"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_size" />
+
+                <!-- BUTTON GOOGLE LOGIN -->
+                <Button
+                    android:id="@+id/main_activity_google_login_button"
+                    style="@style/FirebaseUI.Button.AccountChooser.GoogleButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/half_margin"
+                    android:background="@drawable/button_google_radius_primary_color"
+                    android:drawableLeft="@drawable/ic_google_plus"
+                    android:padding="@dimen/large_margin"
+                    android:text="@string/google_login"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_size" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.design.widget.CoordinatorLayout>
