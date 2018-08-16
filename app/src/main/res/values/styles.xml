@@ -1,18 +1,28 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <!-- STYLE FOR MAIN ACTIVITY -->
-    <style name="AppTheme.NoTitle" parent="AppTheme">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="actionBarTheme">@null</item>
+    <!-- MAIN STYLE -->
+    <style name="AppTheme.Main" parent="AppTheme">
+        <item name="colorPrimaryDark">@color/main_status_bar</item>
+    </style>
+
+    <!-- TOOLBAR THEME -->
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <!-- Color of the title text in the Toolbar -->
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
+
+    <!-- TOOLBAR TITLE THEME -->
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <!-- STYLE SIGN-IN ACTIVITY -->
@@ -32,6 +42,7 @@
         <item name="windowNoTitle">true</item>
         <item name="android:textColorHint">@android:color/white</item>
     </style>
+
 
 
 </resources>

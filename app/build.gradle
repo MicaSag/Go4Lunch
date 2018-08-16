@@ -29,7 +29,7 @@ dependencies {
     // Add appcompat for use ToolBar
     implementation 'com.android.support:appcompat-v7:27.1.1'
 
-    // Add design support library for use Navigation Drawer
+    // Add design support library for use Navigation Drawer & Bottom Navigation View
     implementation 'com.android.support:design:27.1.1'
 
     // Add ButterKnife library for more easily link views to activities/fragments
@@ -43,3 +43,4 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services' // For FireBase Integration
+

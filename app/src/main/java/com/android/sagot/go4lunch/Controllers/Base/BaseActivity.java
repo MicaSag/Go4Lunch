@@ -17,6 +17,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     // Force developer implement those methods
     protected abstract int getActivityLayout(); // Layout of the Child Activity
+    protected abstract int getCoordinatorLayout(); // Layout of the CoordinatorLayout of the Child Activity
 
     // For debugging Mode
     private static final String TAG = BaseActivity.class.getSimpleName();
@@ -31,18 +32,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // Get & serialise all views
         ButterKnife.bind(this);
-    }
-
-    // --------------
-    //    TOOLBAR
-    // --------------
-    protected void configureToolBar(){
-        //Set the toolbar
-        //setSupportActionBar(mToolbar);
-        // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-        // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
     }
 
     // -------------------

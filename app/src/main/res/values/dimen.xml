@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="large_margin">15dip</dimen>
+
+    <!-- MAIN ACTIVITY DIMENS -->
     <dimen name="logo_height">200dip</dimen>
     <dimen name="logo_width">200dip</dimen>
-    <dimen name="half_margin">10dip</dimen>
+    <dimen name="logo_top_margin">25dip</dimen>
+
     <dimen name="margin">5dip</dimen>
-    <dimen name="title_size">65sp</dimen>
-    <dimen name="text_size">13sp</dimen>
+    <dimen name="half_margin">10dip</dimen>
+    <dimen name="large_margin">15dip</dimen>
+    <dimen name="top_margin">10dip</dimen>
+    <dimen name="bottom_margin">10dip</dimen>
+    <dimen name="start_margin">40dip</dimen>
+    <dimen name="end_margin">40dip</dimen>
+
+    <dimen name="title_size">63sp</dimen>
+    <dimen name="text_size_description">11sp</dimen>
+    <dimen name="text_size_button">13sp</dimen>
     <dimen name="text_size_mini">8sp</dimen>
+
+    <!-- Default NavigationView Header height -->
+    <dimen name="nav_header_height">176dp</dimen>
+
 </resources>

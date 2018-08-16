@@ -9,14 +9,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Controllers.Activities.MainActivity"
-            android:theme="@style/AppTheme.NoTitle"> <!-- DISABLE TOOLBAR IN MAIN ACTIVITY-->
+        <activity
+            android:name=".Controllers.Activities.MainActivity"
+            android:theme="@style/AppTheme.Main"> <!-- Change color status Bar -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Controllers.Activities.WelcomeActivity"></activity>
     </application>
 
 </manifest>
