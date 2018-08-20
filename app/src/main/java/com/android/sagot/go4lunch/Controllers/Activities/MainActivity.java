@@ -3,9 +3,7 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 import android.content.Intent;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.R;
@@ -68,29 +66,43 @@ public class MainActivity extends BaseActivity {
     @OnClick(R.id.main_activity_facebook_login_button)
     public void onClickFacebookLoginButton() {
         Log.d(TAG, "onClickFacebookLoginButton: ²");
-        this.startSignInActivity();
+        this.startFaceBookSignInActivity();
     }
 
     @OnClick(R.id.main_activity_google_login_button)
     public void onClickGoogleLoginButton() {
         Log.d(TAG, "onClickGoogleLoginButton: ");
-        this.startSignInActivity();
+        this.startGoogleSignInActivity();
     }
 
     // --------------------
     //   AUTHENTICATION
     // --------------------
 
-    // Launch Sign-In FireBase Activity for Result
-    private void startSignInActivity(){
+    // Launch Google Sign-In
+    private void startGoogleSignInActivity(){
         Log.d(TAG, "startSignInActivity: ");
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setTheme(R.style.LoginTheme)
                         .setAvailableProviders(
-                                Arrays.asList(  new AuthUI.IdpConfig.GoogleBuilder().build()))    //GOOGLE
-                         //                    new AuthUI.IdpConfig.FacebookBuilder().build())) // FACEBOOK
+                                Arrays.asList(  new AuthUI.IdpConfig.GoogleBuilder().build()))
+                        .setIsSmartLockEnabled(false, true) // Email list possible
+                        .setLogo(R.drawable.pic_logo_restaurant_400x400)
+                        .build(),
+                RC_SIGN_IN);
+    }
+
+    // Launch Google Sign-In
+    private void startFaceBookSignInActivity(){
+        Log.d(TAG, "startSignInActivity: ");
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setTheme(R.style.LoginTheme)
+                        .setAvailableProviders(
+                                Arrays.asList( new AuthUI.IdpConfig.FacebookBuilder().build())) // FACEBOOK
                         .setIsSmartLockEnabled(false, true) // Email list possible
                         .setLogo(R.drawable.pic_logo_restaurant_400x400)
                         .build(),

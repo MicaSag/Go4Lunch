@@ -45,9 +45,49 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="C:\Users\sagot\Downloads\ic_restaurant_128x128.png" />
-                                      <entry key="outputName" value="ic_restaurant" />
+                                      <entry key="imageAsset" value="C:\Users\sagot\Desktop\LOCAL_ANDROID_PATH\icon-lunch-15.jpg" />
+                                      <entry key="outputName" value="ic_lunch" />
                                       <entry key="theme" value="HOLO_DARK" />
+                                    </map>
+                                  </option>
+                                </PersistentState>
+                              </value>
+                            </entry>
+                            <entry key="launcher">
+                              <value>
+                                <PersistentState>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="foregroundImage" value="C:\Users\sagot\Desktop\LOCAL_ANDROID_PATH\icon-lunch-15.jpg" />
+                                    </map>
+                                  </option>
+                                </PersistentState>
+                              </value>
+                            </entry>
+                            <entry key="launcherLegacy">
+                              <value>
+                                <PersistentState>
+                                  <option name="children">
+                                    <map>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="paddingPercent" value="10" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="assetType" value="IMAGE" />
+                                      <entry key="backgroundColor" value="bbb2ad" />
+                                      <entry key="imageAsset" value="C:\Users\sagot\Desktop\LOCAL_ANDROID_PATH\icon-lunch-15.jpg" />
+                                      <entry key="outputName" value="ic_launcher_lunch" />
                                     </map>
                                   </option>
                                 </PersistentState>

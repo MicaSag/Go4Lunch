@@ -4,6 +4,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,6 +32,7 @@ public class WelcomeActivity extends BaseActivity
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.activity_welcome_coordinator_layout) CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.activity_welcome_bottom_navigation) BottomNavigationView bottomNavigationView;
     @BindView(R.id.activity_welcome_drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -71,7 +73,6 @@ public class WelcomeActivity extends BaseActivity
         this.configureNavigationView();
     }
 
-
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
     // ---------------------------------------------------------------------------------------------
@@ -89,6 +90,30 @@ public class WelcomeActivity extends BaseActivity
         //Inflate the toolbar  and add it to the Toolbar
         // With one search button
         getMenuInflater().inflate(R.menu.activity_welcome_menu_toolbar, menu);
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //                                     NAVIGATION DRAWER
+    // ---------------------------------------------------------------------------------------------
+    // Configure the BottomNavigationView Listener
+    private void configureBottomView(){
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> updateMainFragment(item.getItemId()));
+    }
+
+    // >> ACTIONS <-------
+    private Boolean updateMainFragment(Integer integer){
+        switch (integer) {
+            case R.id.action_map_view:
+                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_ANDROID);
+                break;
+            case R.id.action_list_view:
+                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_LOGO);
+                break;
+            case R.id.action_workmates:
+                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_LANDSCAPE);
+                break;
+        }
         return true;
     }
 

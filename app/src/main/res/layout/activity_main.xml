@@ -32,7 +32,7 @@
             <ImageView
                 android:layout_width="@dimen/logo_width"
                 android:layout_height="@dimen/logo_height"
-                android:background="@drawable/pic_logo_restaurant_400x400"
+                android:background="@drawable/pic_logo_go4lunch_512x512"
                 android:layout_marginTop="@dimen/logo_top_margin"/>
 
             <!-- TITLE GO4LUNCH -->
