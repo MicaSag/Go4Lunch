@@ -7,6 +7,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -17,6 +20,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
+import com.android.sagot.go4lunch.Controllers.Fragments.ListViewFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.WorkmatesFragment;
 import com.android.sagot.go4lunch.R;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,8 +43,15 @@ public class WelcomeActivity extends BaseActivity
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
-    // Static data
-    private static final int SIGN_OUT_TASK = 10;
+    // -- Bottom Navigation View configuration
+    // Declare three fragment for used with the Bottom Navigation view
+    Fragment mMapViewFragment;
+    Fragment mListViewFragment;
+    Fragment mWorkmatesFragment;
+    // Declare an object fragment which will contain the active fragment
+    Fragment mActiveFragment;
+    // Declare an object fragment Manager
+    FragmentManager mFragmentManager;
 
     // -------------------------
     // DECLARATION BASE METHODS
@@ -71,6 +84,9 @@ public class WelcomeActivity extends BaseActivity
         this.configureToolBar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+
+        // Configure the BottomView
+        this.configureBottomView();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -94,27 +110,66 @@ public class WelcomeActivity extends BaseActivity
     }
 
     // ---------------------------------------------------------------------------------------------
-    //                                     NAVIGATION DRAWER
+    //                                 BOTTOM NAVIGATION VIEW
     // ---------------------------------------------------------------------------------------------
-    // Configure the BottomNavigationView Listener
+    // Configure the BottomNavigationView
     private void configureBottomView(){
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> updateMainFragment(item.getItemId()));
+
+        // Configure the BottomNavigationView Listener
+        bottomNavigationView.setOnNavigationItemSelectedListener(
+                                                    item -> updateMainFragment(item.getItemId()));
+
+        // Add three fragments used by the FragmentManager and activates only the Fragment MapViewFragment
+        addFragmentsInFragmentManager();
     }
 
     // >> ACTIONS <-------
     private Boolean updateMainFragment(Integer integer){
         switch (integer) {
             case R.id.action_map_view:
-                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_ANDROID);
+                // Hide the active fragment and activates the fragment mMapViewFragment
+                mFragmentManager.beginTransaction().hide(mActiveFragment).show(mMapViewFragment).commit();
+                mActiveFragment = mMapViewFragment;
                 break;
             case R.id.action_list_view:
-                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_LOGO);
+                // Hide the active fragment and activates the fragment mListViewFragment
+                mFragmentManager.beginTransaction().hide(mActiveFragment).show(mListViewFragment).commit();
+                mActiveFragment = mListViewFragment;
                 break;
             case R.id.action_workmates:
-                this.mainFragment.updateDesignWhenUserClickedBottomView(MainFragment.REQUEST_LANDSCAPE);
+                // Hide the active fragment and activates the fragment mWorkmatesFragment
+                mFragmentManager.beginTransaction().hide(mActiveFragment).show(mWorkmatesFragment).commit();
+                mActiveFragment = mWorkmatesFragment;
                 break;
         }
         return true;
+    }
+
+    // -----------
+    //  FRAGMENTS
+    // -----------
+    private void addFragmentsInFragmentManager(){
+        Log.d(TAG, "addFragments: ");
+
+        //Instantiate three fragment used by BottomNavigationView
+        mMapViewFragment = new MapViewFragment();
+        mListViewFragment = new ListViewFragment();
+        mWorkmatesFragment = new WorkmatesFragment();
+
+        // Save the active Fragment
+        mActiveFragment = mMapViewFragment;
+
+        // Add the three fragment in fragmentManager and leave active only the fragment MapViewFragment
+        mFragmentManager = getSupportFragmentManager();
+        mFragmentManager.beginTransaction()
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mWorkmatesFragment,"WorkmatesFragment")
+                .hide(mWorkmatesFragment).commit();
+        mFragmentManager.beginTransaction()
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListViewFragment,"ListViewFragment")
+                .hide(mListViewFragment).commit();
+        mFragmentManager.beginTransaction()
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment,"MapViewFragment")
+                .commit();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -181,21 +236,15 @@ public class WelcomeActivity extends BaseActivity
     private void signOutUserFromFirebase(){
         AuthUI.getInstance()
                 .signOut(this)
-                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(SIGN_OUT_TASK));
+                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
     }
 
     // 3 - Create OnCompleteListener called after tasks ended
-    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin){
+    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
         return new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                switch (origin){
-                    case SIGN_OUT_TASK:
-                        finish();
-                        break;
-                    default:
-                        break;
-                }
+                     finish();
             }
         };
     }
