@@ -28,8 +28,6 @@ public class MainActivity extends BaseActivity {
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     // - Get Coordinator Layout
     @BindView(R.id.activity_main_coordinator_layout) CoordinatorLayout mCoordinatorLayout;
-    //@BindView(R.id.main_activity_facebook_login_button) Button mGoogleLoginButton;
-    //@BindView(R.id.main_activity_google_login_button) Button mFaceBookLoginButton;
 
     // For Authentication
     // Identifier for Sign-In Activity
@@ -53,11 +51,6 @@ public class MainActivity extends BaseActivity {
     protected int getCoordinatorLayout() {
         return R.id.activity_main_coordinator_layout;
     }
-
-    // Change Color of the Status Toolbar
-   /* public void changeStatusBarColor(){
-        changeStatusBarColor(this,ContextCompat.getColor(this,R.color.colorPrimaryDark));
-    }*/
 
     // --------------------
     // ACTIONS

@@ -1,6 +1,5 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,10 +8,8 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,10 +25,13 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
+
+/**
+ * Created by Michaël SAGOT on 17/08/2018.
+ */
 
 public class WelcomeActivity extends BaseActivity
-                            implements NavigationView.OnNavigationItemSelectedListener{
+                            implements  NavigationView.OnNavigationItemSelectedListener {
 
     // FOR TRACES
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -151,7 +151,7 @@ public class WelcomeActivity extends BaseActivity
     private void addFragmentsInFragmentManager(){
         Log.d(TAG, "addFragments: ");
 
-        //Instantiate three fragment used by BottomNavigationView
+        //Instantiate fragment used by BottomNavigationView
         mMapViewFragment = new MapViewFragment();
         mListViewFragment = new ListViewFragment();
         mWorkmatesFragment = new WorkmatesFragment();
@@ -159,8 +159,9 @@ public class WelcomeActivity extends BaseActivity
         // Save the active Fragment
         mActiveFragment = mMapViewFragment;
 
-        // Add the three fragment in fragmentManager and leave active only the fragment MapViewFragment
+        // Obtain SupportFragmentManager Object
         mFragmentManager = getSupportFragmentManager();
+        // Add the three fragment in fragmentManager and leave active only the fragment MapViewFragment
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mWorkmatesFragment,"WorkmatesFragment")
                 .hide(mWorkmatesFragment).commit();
@@ -208,7 +209,7 @@ public class WelcomeActivity extends BaseActivity
             case R.id.activity_welcome_drawer_settings:
                 break;
             case R.id.activity_welcome_drawer_logout:
-                this.signOutUserFromFirebase();
+                this.signOutUserFromFireBase();
                 break;
             default:
                 break;
@@ -233,7 +234,7 @@ public class WelcomeActivity extends BaseActivity
     // ----------------------------
     // Create http requests (SignOut)
 
-    private void signOutUserFromFirebase(){
+    private void signOutUserFromFireBase(){
         AuthUI.getInstance()
                 .signOut(this)
                 .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
