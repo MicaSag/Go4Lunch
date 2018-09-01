@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListViewFragment;
@@ -31,7 +32,8 @@ import butterknife.BindView;
  */
 
 public class WelcomeActivity extends BaseActivity
-                            implements  NavigationView.OnNavigationItemSelectedListener {
+                            implements  NavigationView.OnNavigationItemSelectedListener,
+                                        MapViewFragment.ShowSnackBarListener  {
 
     // FOR TRACES
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -68,8 +70,8 @@ public class WelcomeActivity extends BaseActivity
     // Get the coordinator layout
     // CALLED BY BASE METHOD
     @Override
-    protected int getCoordinatorLayout() {
-        return R.id.activity_welcome_coordinator_layout;
+    protected View getCoordinatorLayout() {
+        return mCoordinatorLayout;
     }
 
     // --------------------

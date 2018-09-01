@@ -46,8 +46,12 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:4.1.0'    // For FireBase UI Authentication
     implementation 'com.facebook.android:facebook-android-sdk:4.34.0' // For FaceBook Authentication
 
-    // Add Api Google Map
+    // Add Api Google Play Service : Map
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    // Add Api Google Play Service : Places
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
+    // Add Api Google Play Service : Location
+    implementation "com.google.android.gms:play-services-location:15.0.1"
 }
 
 apply plugin: 'com.google.gms.google-services' // For FireBase Integration

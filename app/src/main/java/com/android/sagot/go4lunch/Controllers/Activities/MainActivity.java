@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
+import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
@@ -48,8 +50,8 @@ public class MainActivity extends BaseActivity {
     // Get the coordinator layout
     // CALLED BY BASE METHOD
     @Override
-    protected int getCoordinatorLayout() {
-        return R.id.activity_main_coordinator_layout;
+    protected View getCoordinatorLayout() {
+        return mCoordinatorLayout;
     }
 
     // --------------------
@@ -119,18 +121,18 @@ public class MainActivity extends BaseActivity {
 
         if (requestCode == RC_SIGN_IN) {   // = 100
             if (resultCode == RESULT_OK) { // SUCCESS = -1
-                showSnackBar(this.mCoordinatorLayout, getString(R.string.connection_succeed));
+                showSnackBar(getString(R.string.connection_succeed));
                 // Call Welcome Activity
                 startWelcomeActivity();
             } else { // ERRORS
                 if (response == null) {
-                    showSnackBar(this.mCoordinatorLayout, getString(R.string.error_authentication_canceled));
+                    showSnackBar(getString(R.string.error_authentication_canceled));
                 } else if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {     // = 1
-                    showSnackBar(this.mCoordinatorLayout, getString(R.string.error_no_internet));
+                    showSnackBar(getString(R.string.error_no_internet));
                 } else if (response.getError().getErrorCode() == ErrorCodes.PROVIDER_ERROR) { // = 4
-                    showSnackBar(this.mCoordinatorLayout, getString(R.string.error_provider));
+                    showSnackBar(getString(R.string.error_provider));
                 } else if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {   // = 0
-                    showSnackBar(this.mCoordinatorLayout, getString(R.string.error_unknown_error));
+                    showSnackBar(getString(R.string.error_unknown_error));
                 }
             }
         }
@@ -142,14 +144,5 @@ public class MainActivity extends BaseActivity {
     private void startWelcomeActivity(){
         Intent intent = new Intent(this, WelcomeActivity.class);
         startActivity(intent);
-    }
-
-    // --------------------
-    // UI
-    // --------------------
-
-    // Show Snack Bar with a message
-    private void showSnackBar(CoordinatorLayout coordinatorLayout, String message){
-        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_SHORT).show();
     }
 }
