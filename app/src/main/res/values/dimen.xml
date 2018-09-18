@@ -22,4 +22,16 @@
     <!-- Default NavigationView Header height -->
     <dimen name="nav_header_height">176dp</dimen>
 
+    <!-- RESTAURANT CARD ACTIVITY DIMENS -->
+    <dimen name="card_align_margin">3dip</dimen>
+    <dimen name="card_top_margin">4dip</dimen>
+    <dimen name="card_start_margin">10dip</dimen>
+
+    <!-- Item recycler view -->
+    <dimen name="recycler_padding">1dip</dimen>
+    <dimen name="recycler_image_width">75dip</dimen>
+    <dimen name="recycler_image_height">75dip</dimen>
+    <dimen name="recycler_image_margin">5dip</dimen>
+    <dimen name="recycler_text_margin">10dp</dimen>
+
 </resources>

@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -134,6 +135,8 @@ public class WelcomeActivity extends BaseActivity
                 mActiveFragment = mMapViewFragment;
                 break;
             case R.id.action_list_view:
+                ListViewFragment fr = (ListViewFragment)mListViewFragment;
+                fr.updateUI();
                 // Hide the active fragment and activates the fragment mListViewFragment
                 mFragmentManager.beginTransaction().hide(mActiveFragment).show(mListViewFragment).commit();
                 mActiveFragment = mListViewFragment;
@@ -207,6 +210,9 @@ public class WelcomeActivity extends BaseActivity
 
         switch (id) {
             case R.id.activity_welcome_drawer_your_lunch:
+                Intent intent = new Intent(this, RestaurantCardActivity.class);
+                startActivity(intent);
+                finish();
                 break;
             case R.id.activity_welcome_drawer_settings:
                 break;

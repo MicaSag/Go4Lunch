@@ -2,12 +2,12 @@ package com.android.sagot.go4lunch.Controllers.Fragments;
 
 
 import android.Manifest;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -15,14 +15,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.PlaceDetails;
 import com.android.sagot.go4lunch.R;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceDetectionClient;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,16 +33,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Michaël SAGOT on 23/08/2018.
  */
 
-public class MapViewFragment extends Fragment implements OnMapReadyCallback,
-        GoogleApiClient.OnConnectionFailedListener,
-        GoogleApiClient.ConnectionCallbacks {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     // For debug
     private static final String TAG = MapViewFragment.class.getSimpleName();
@@ -47,25 +50,29 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
     // For add Google Map in Fragment
     private SupportMapFragment mMapFragment;
 
-    // For use Google map
+    // ==> For use Api Google Play Service : map
     private GoogleMap mMap;
-    private GoogleApiClient mGoogleApiClient;
-
-    // For use Google Places
-    protected GeoDataClient mGeoDataClient;
-    protected PlaceDetectionClient mPlaceDetectionClient;
 
     // ==> For use location permission
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;  // Request Code
     private boolean mLocationPermissionGranted;                     // Boolean status
-    // Default location is not permission granted
+    // _ Default location if not permission granted ( Paris )
     private final LatLng mDefaultLocation = new LatLng(48.844304, 2.374377);
-    private static final float DEFAULT_ZOOM = 15f;
-    // The geographical location where the device is currently located. That is, the last-known
-    // location retrieved by the Fused Location Provider.
+    private static final float DEFAULT_ZOOM = 16f;
+
+    //==> For use Api Google Play Service : Location
+    // _ The geographical location where the device is currently located.
+    // _ That is, the last-known location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
-    // The entry point to the Fused Location Provider.
+    // _ The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
+
+    //==> For use Api Google Play Service : Places
+    // _ The entry points to the Places API
+    protected GeoDataClient mGeoDataClient;
+    protected PlaceDetectionClient mPlaceDetectionClient;
+    //List of restaurants found
+    private List<PlaceDetails> mListRestaurants;
 
     // ==> CallBack
     // Interface for ShowSnakeBar
@@ -89,6 +96,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map_view, container, false);
 
+        // Configure the Maps Service of Google
         configurePlayServiceMaps();
 
         return rootView;
@@ -121,8 +129,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
         Log.d(TAG, "onMapReady: ");
         mMap = googleMap;
 
+        // Disable 3D Building
+        mMap.setBuildingsEnabled(false);
+
         // Prompt the user for permission and Update location map
         getLocationPermission();
+
+        // Configure the Places Service of Google
+        configurePlayServicePlaces();
     }
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
@@ -136,7 +150,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
                     mMap.setMyLocationEnabled(true);
                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
                     // Retrieves the best and most recent device location information
-                    getDeviceLocation();
+                    getLocationCoordinatesDevice();
                 } else {
                     Log.d(TAG, "updateLocationUI: Permission not Granted");
                     mMap.setMyLocationEnabled(false);
@@ -145,46 +159,39 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
                     showDefaultLocation();
                 }
             } catch (SecurityException e) {
-                Log.e("Exception: %s", e.getMessage());
+                Log.e("updateLocationUI %s", e.getMessage());
             }
         }
     }
     /**
-     * Retrieves the best and most recent device location information
+     * Retrieves Coordinates of the best and most recent device location information if Exists
      */
-    private void getDeviceLocation() {
-        Log.d(TAG, "getDeviceLocation: ");
+    private void getLocationCoordinatesDevice() {
+        Log.d(TAG, "getLocationCoordinatesDevice: ");
         // Construct a FusedLocationProviderClient
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         try {
             // Retrieves information if existing
-            if ( mFusedLocationProviderClient.getLastLocation() != null) {
-                Log.d(TAG, "getDeviceLocation: getLastLocation EXIST");
-                Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = task.getResult();
-                            showCurrentLocation();
-                        }
+            Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
+            locationResult.addOnCompleteListener(getActivity(), task -> {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    mLastKnownLocation = task.getResult();
+                    if( mLastKnownLocation != null ) {
+                        Log.d(TAG, "getLocationCoordinatesDevice: getLastLocation EXIST");
+                        Log.d(TAG, "getLocationCoordinatesDevice: mLastKnownLocation.getLatitude()  = " + mLastKnownLocation.getLatitude());
+                        Log.d(TAG, "getLocationCoordinatesDevice: mLastKnownLocation.getLongitude() = " + mLastKnownLocation.getLongitude());
+                        // Position yourself automatically on the current location of the device
+                        showCurrentLocation();
                     }
-                });
-            }
+                    else Log.d(TAG, "getLocationCoordinatesDevice: getLastLocation NO EXIST");
+                }
+            });
         } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+            Log.e("getDeviceLocation %s", e.getMessage());
         }
     }
-    /**
-     * Method that places the map on a current location
-     */
-    private void showCurrentLocation() {
-        Log.d(TAG, "showCurrentLocation: ");
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng( mLastKnownLocation.getLatitude(),
-                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-    }
+
     /**
      * Method that places the map on a default location
      */
@@ -196,6 +203,17 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
         mMap.addMarker(new MarkerOptions()
                 .position(mDefaultLocation)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+         //       .icon(BitmapDescriptorFactory.fromResource(R.drawable.baseline_call_black_24)));
+    }
+
+    /**
+     * Method that places the map on a current location
+     */
+    private void showCurrentLocation() {
+        Log.d(TAG, "showCurrentLocation: ");
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng( mLastKnownLocation.getLatitude(),
+                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
     }
 
     // -------------------------------
@@ -249,20 +267,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
     //  GOOGLE PLAY SERVICE : PLACES
     // -------------------------------
     public void configurePlayServicePlaces() {
-
-        // Configure connection to Places Service
-        mGoogleApiClient = new GoogleApiClient
-                .Builder(getActivity())
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(getActivity(), this)
-                .build();
-
-        // Connect to Places
-        mGoogleApiClient.connect();
-    }
-
-    public void configurePlayServicePlacesBIS() {
+        Log.d(TAG, "configurePlayServicePlaces: ");
 
         // Configure connection to Places Service
         // Construct a GeoDataClient.
@@ -271,25 +276,70 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,
         // Construct a PlaceDetectionClient.
         mPlaceDetectionClient = Places.getPlaceDetectionClient(getContext());
 
-        // Connect to Places
-        mGoogleApiClient.connect();
-    }
+        if (mLocationPermissionGranted) {
+            // Get the likely places - that is, the businesses and other points of interest that
+            // are the best match for the device's current location.
+            @SuppressWarnings("MissingPermission") final
+            Task<PlaceLikelihoodBufferResponse> placeResult =
+                    mPlaceDetectionClient.getCurrentPlace(null);
+            placeResult.addOnCompleteListener
+                    (task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
 
-    /**
-     *  At least one of the API client connect attempts failed
-     *  No client is connected
-     */
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
-    /**
-     *  All clients are connected
-     */
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-    }
-    @Override
-    public void onConnectionSuspended(int i) {
+                            // Creating a list of PlaceDetails Restaurants
+                            mListRestaurants = new ArrayList<>();
+
+                            //Instantiate a PlaceDetails Restaurant Variable
+                            PlaceDetails restaurant;
+
+                            for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                                // Build a list of likely places to show the user.
+
+                                for (Integer placeType : placeLikelihood.getPlace().getPlaceTypes()) {
+                                    if (placeType.equals(Place.TYPE_RESTAURANT)) {
+                                        // Creating a New PlaceDetails Restaurant Variable
+                                        restaurant = new PlaceDetails();
+                                        restaurant.setId(placeLikelihood.getPlace().getId());
+                                        restaurant.setName(placeLikelihood.getPlace().getName().toString());
+                                        restaurant.setAddress(placeLikelihood.getPlace().getAddress().toString());
+                                        if (placeLikelihood.getPlace().getAttributions() != null) restaurant.setOpeningTime(placeLikelihood.getPlace().getAttributions().toString());
+                                        restaurant.setLatLngs(placeLikelihood.getPlace().getLatLng());
+                                        //if (placeLikelihood.getPlace().getWebsiteUri() != null) restaurant.setPhotoUrl(placeLikelihood.getPlace().getWebsiteUri().toString());
+                                        restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
+                                        mListRestaurants.add(restaurant);
+
+                                        break;
+                                    }
+                                }
+                            }
+                            // Release the place likelihood buffer, to avoid memory leaks.
+                            likelyPlaces.release();
+
+
+                            PlaceDetails placeDetails = new PlaceDetails();
+                            placeDetails.setId("001");
+                            placeDetails.setAddress("5 rue des beaux jours");
+                            placeDetails.setName("Resto du coeur");
+                            placeDetails.setType("gratuit");
+                            placeDetails.setOpeningTime("tous les jours de 00h00 à 24h00");
+                            placeDetails.setPhotoUrl("https://cdn.pixabay.com/photo/2018/08/10/21/52/restaurant-3597677_960_720.jpg");
+                            //placeDetails.setLatLngs( );
+                            mListRestaurants.add(placeDetails);
+                            Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+                            model.setListPlaceDetails(mListRestaurants);
+
+                            //for (PlaceDetails placeD : mListRestaurants){
+                            //    Log.d(TAG, "configurePlayServicePlaces : placeDetails Name = "+placeD.getName());
+                            //}
+
+                        } else {
+                            Log.e(TAG, "configurePlayServicePlaces Exception: %s", task.getException());
+                        }
+                    });
+        } else {
+            showDefaultLocation();
+        }
     }
 
     // --------------------
