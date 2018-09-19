@@ -14,28 +14,34 @@ import com.bumptech.glide.RequestManager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ListViewHolder extends RecyclerView.ViewHolder {
+public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
 
     // For debug
-    private static final String TAG = ListViewHolder.class.getSimpleName();
+    private static final String TAG = ListRestaurantViewHolder.class.getSimpleName();
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.fragment_list_view_item_card) CardView mCard;
     @BindView(R.id.fragment_list_view_item_restaurant_name) TextView mName;
     @BindView(R.id.fragment_list_view_item_restaurant_distance) TextView mDistance;
     @BindView(R.id.fragment_list_view_item_restaurant_address) TextView mAddress;
+    @BindView(R.id.fragment_list_view_item_restaurant_participants_smiley) ImageView mParticipantsSmiley;
     @BindView(R.id.fragment_list_view_item_restaurant_participants) TextView mParticipants;
     @BindView(R.id.fragment_list_view_item_restaurant_opening_hours) TextView mOpeningHours;
-    @BindView(R.id.fragment_list_view_item_restaurant_stars) TextView mStars;
+    @BindView(R.id.fragment_list_view_item_restaurant_star_one) ImageView mStarOne;
+    @BindView(R.id.fragment_list_view_item_restaurant_star_two) ImageView mStarTwo;
+    @BindView(R.id.fragment_list_view_item_restaurant_star_three) ImageView mStarThree;
     @BindView(R.id.fragment_list_view_item_restaurant_image) ImageView mImage;
 
 
-    public ListViewHolder(View itemView) {
+    public ListRestaurantViewHolder(View itemView) {
         super(itemView);
         Log.d(TAG, "ListViewHolder: ");
+
+        // Get & serialise all views
         ButterKnife.bind(this, itemView);
     }
 
+    // Method to update the current item
     public void updateWithPlaceDetails(PlaceDetails placeDetails, RequestManager glide){
         Log.d(TAG, "updateWithPlaceDetails: ");
 
@@ -43,8 +49,20 @@ public class ListViewHolder extends RecyclerView.ViewHolder {
         this.mAddress.setText(placeDetails.getAddress());
         this.mOpeningHours.setText(placeDetails.getOpeningTime());
         this.mDistance.setText(placeDetails.getDistance());
-        this.mParticipants.setText(placeDetails.getNbrParticipants());
-        //this.mStars.setText(placeDetails.getNbrStars());
+
+        // Display Number of Participants
+        String participants = "("+placeDetails.getNbrParticipants()+")";
+        this.mParticipants.setText(participants);
+        // do not show participant information if the number of participants is null
+        if (placeDetails.getNbrParticipants() == 0){
+            mParticipantsSmiley.setVisibility(View.INVISIBLE);
+            mParticipants.setVisibility(View.INVISIBLE);
+        }
+
+        // Display Stars
+        if (placeDetails.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
+        if (placeDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
+        if (placeDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
 
         glide.load(placeDetails.getPhotoUrl()).into(this.mImage);
 

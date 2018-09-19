@@ -11,6 +11,13 @@
     <!-- MAIN STYLE -->
     <style name="AppTheme.Main" parent="AppTheme">
         <item name="colorPrimaryDark">@color/main_status_bar</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <!-- MAIN STYLE -->
+    <style name="AppTheme.RestaurantCard" parent="AppTheme">
+        <item name="colorPrimaryDark">@color/restaurant_card_status_bar</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
     <!-- TOOLBAR THEME -->

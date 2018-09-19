@@ -19,7 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
-import com.android.sagot.go4lunch.Controllers.Fragments.ListViewFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.WorkmatesFragment;
 import com.android.sagot.go4lunch.R;
@@ -76,7 +76,7 @@ public class WelcomeActivity extends BaseActivity
     }
 
     // --------------------
-    // ENTRY POINT
+    //     ENTRY POINT
     // --------------------
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -135,7 +135,7 @@ public class WelcomeActivity extends BaseActivity
                 mActiveFragment = mMapViewFragment;
                 break;
             case R.id.action_list_view:
-                ListViewFragment fr = (ListViewFragment)mListViewFragment;
+                ListRestaurantViewFragment fr = (ListRestaurantViewFragment)mListViewFragment;
                 fr.updateUI();
                 // Hide the active fragment and activates the fragment mListViewFragment
                 mFragmentManager.beginTransaction().hide(mActiveFragment).show(mListViewFragment).commit();
@@ -158,7 +158,7 @@ public class WelcomeActivity extends BaseActivity
 
         //Instantiate fragment used by BottomNavigationView
         mMapViewFragment = new MapViewFragment();
-        mListViewFragment = new ListViewFragment();
+        mListViewFragment = new ListRestaurantViewFragment();
         mWorkmatesFragment = new WorkmatesFragment();
 
         // Save the active Fragment
@@ -241,20 +241,14 @@ public class WelcomeActivity extends BaseActivity
     // REST REQUESTS FOR SIGN OUT
     // ----------------------------
     // Create http requests (SignOut)
-
     private void signOutUserFromFireBase(){
         AuthUI.getInstance()
                 .signOut(this)
                 .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
     }
 
-    // 3 - Create OnCompleteListener called after tasks ended
+    // Create OnCompleteListener called after tasks ended
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
-        return new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                     finish();
-            }
-        };
+        return aVoid -> finish();
     }
 }

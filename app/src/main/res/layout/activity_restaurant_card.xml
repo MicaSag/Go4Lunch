@@ -27,7 +27,7 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/pic_restaurant"
                 android:scaleType="centerCrop"
-                android:layout_weight="0.3"/>
+                android:layout_weight="0.2"/>
 
             <!-- Restaurant Details -->
             <LinearLayout
@@ -35,7 +35,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:background="@color/colorPrimary"
-                android:layout_weight="0.7">
+                android:layout_weight="0.6">
 
                 <!-- Restaurant Name + Stars -->
                 <LinearLayout
@@ -51,6 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/card_align_margin"
+                        android:textColor="@android:color/white"
                         android:text="NAME OF THE RESTAURANT"/>
 
                     <!-- Star 1 -->
@@ -60,6 +61,7 @@
                         android:layout_height="wrap_content"
                         android:textAlignment="center"
                         android:layout_marginLeft="@dimen/top_margin"
+                        android:backgroundTint="@color/stars"
                         android:background="@drawable/baseline_star_black_24"/>
 
                     <!-- Star 2 -->
@@ -68,6 +70,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAlignment="center"
+                        android:backgroundTint="@color/stars"
                         android:background="@drawable/baseline_star_black_24"/>
 
                     <!-- Star 3 -->
@@ -76,6 +79,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAlignment="center"
+                        android:backgroundTint="@color/stars"
                         android:background="@drawable/baseline_star_black_24"/>
 
                 </LinearLayout>
@@ -92,6 +96,7 @@
                         android:id="@+id/activity_restaurant_card_address"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="@android:color/white"
                         android:text="Address of the restaurant"/>
 
                 </LinearLayout>
@@ -106,7 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="0.5">
+            android:layout_weight="0.55">
 
             <!-- Options Bar -->
             <LinearLayout
@@ -125,16 +130,19 @@
                     android:orientation="vertical">
 
                         <!-- Restaurant Call -->
-                        <ImageView
+                        <ImageButton
+                            android:id="@+id/activity_restaurant_call_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:backgroundTint="@color/colorPrimary"
                             android:background="@drawable/baseline_call_black_24"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/top_margin"
-                            android:text="CALL"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/top_margin"
+                        android:text="CALL"
+                        android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
 
@@ -146,16 +154,19 @@
                     android:orientation="vertical">
 
                         <!-- Like Restaurant -->
-                        <ImageView
+                        <ImageButton
+                            android:id="@+id/activity_restaurant_like_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:backgroundTint="@color/colorPrimary"
                             android:background="@drawable/baseline_star_black_24"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/top_margin"
-                            android:text="LIKE"/>
+                            android:text="LIKE"
+                            android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
 
@@ -167,16 +178,19 @@
                     android:orientation="vertical">
 
                         <!-- Restaurant Web Site -->
-                        <ImageView
+                        <ImageButton
+                            android:id="@+id/activity_restaurant_web_site_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:backgroundTint="@color/colorPrimary"
                             android:background="@drawable/sharp_public_black_24"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/top_margin"
-                            android:text="WEBSITE"/>
+                            android:text="WEBSITE"
+                            android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
 
@@ -187,7 +201,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_weight="0.9">
+                android:layout_weight="1.05">
 
                 <TextView
                     android:id="@+id/activity_restaurant_card_college_list"

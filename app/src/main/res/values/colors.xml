@@ -4,12 +4,16 @@
     <color name="colorPrimaryDark">#C62828</color>
     <color name="colorAccent">#69F0AE</color>
 
-    <color name="main_status_bar">#616161</color>
-    <color name="alpha_black">#E6757575</color> <!-- 99 is for alpha and others pairs zero's are for R G B -->
+    <color name="main_status_bar">#E6616161</color> <!-- E6 is for alpha and others pairs zero's are for R G B -->
+    <color name="alpha_grey">#E6757575</color> <!-- Alpha Color -->
+    <color name="restaurant_card_status_bar">#000000</color>
     <color name="facebook_button">#3b5998</color>
     <color name="google_button">#db3236</color>
 
     <!-- colors of the Navigation Drawer -->
     <color name="navigationDrawerBackground">#B2B9E1</color>
+
+    <!-- Stars Color -->
+    <color name="stars">#dedc6d</color>
 
 </resources>

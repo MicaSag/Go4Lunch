@@ -1,6 +1,5 @@
 package com.android.sagot.go4lunch.Views;
 
-import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,7 +12,7 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.List;
 
-public class ListViewAdapter extends RecyclerView.Adapter<ListViewHolder> {
+public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaurantViewHolder> {
 
     // FOR DATA
     private List<PlaceDetails> mListPlaceDetails;
@@ -22,24 +21,24 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewHolder> {
     private RequestManager mGlide;
 
     // CONSTRUCTOR
-    public ListViewAdapter(List<PlaceDetails> listPlaceDetails, RequestManager glide) {
+    public ListRestaurantViewAdapter(List<PlaceDetails> listPlaceDetails, RequestManager glide) {
        mListPlaceDetails = listPlaceDetails;
        mGlide = glide;
     }
 
     @Override
-    public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ListRestaurantViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // CREATE VIEW HOLDER AND INFLATING ITS XML LAYOUT
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.fragment_list_view_item, parent, false);
+        View view = inflater.inflate(R.layout.fragment_list_restaurant_view_item, parent, false);
 
-        return new ListViewHolder(view);
+        return new ListRestaurantViewHolder(view);
     }
 
     // UPDATE VIEW HOLDER WITH A DETAILS PLACE
     @Override
-    public void onBindViewHolder(ListViewHolder viewHolder, int position) {
+    public void onBindViewHolder(ListRestaurantViewHolder viewHolder, int position) {
         viewHolder.updateWithPlaceDetails(mListPlaceDetails.get(position), this.mGlide);
     }
 

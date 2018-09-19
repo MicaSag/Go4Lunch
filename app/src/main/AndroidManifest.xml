@@ -32,17 +32,27 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+        <!-- MAIN Activity -->
         <activity
             android:name=".Controllers.Activities.MainActivity"
             android:theme="@style/AppTheme.Main"> <!-- Change color status Bar -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Controllers.Activities.WelcomeActivity" />
-        <activity android:name=".Controllers.Activities.RestaurantCardActivity"></activity>
+
+        <!-- WELCOME Activity -->
+        <activity
+            android:name=".Controllers.Activities.WelcomeActivity">
+        </activity>
+
+        <!-- RESTAURANT CARD Activity -->
+        <activity
+            android:name=".Controllers.Activities.RestaurantCardActivity"
+            android:theme="@style/AppTheme.RestaurantCard"> <!-- Change color status Bar -->
+        </activity>
+
     </application>
 
 </manifest>

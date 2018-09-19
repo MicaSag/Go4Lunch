@@ -8,9 +8,10 @@ public class PlaceDetails {
     private String mAddress;        // Address of the Place
     private String mOpeningTime;    // Opening time of the place
     private String mDistance;       // Distance where the restaurant is from the current position
-    private String mNbrParticipants;// Number of participants
-    private Integer mNbrStars;       // Number of stars that the restaurant got
+    private int mNbrParticipants;   // Number of participants
+    private int mNbrStars;          // Number of stars that the restaurant got
     private String mPhotoUrl;       // URL of the place's photo
+    private String mWebSiteUrl;     // URL of the Web site
     private String mType;           // Type od the place
     private LatLng mLatLngs;        // Latitude and longitude of the place on the Map
 
@@ -78,19 +79,27 @@ public class PlaceDetails {
         mDistance = distance;
     }
 
-    public String getNbrParticipants() {
+    public int getNbrParticipants() {
         return mNbrParticipants;
     }
 
-    public void setNbrParticipants(String nbrParticipants) {
+    public void setNbrParticipants(int nbrParticipants) {
         mNbrParticipants = nbrParticipants;
     }
 
-    public Integer getNbrStars() {
+    public int getNbrStars() {
         return mNbrStars;
     }
 
-    public void setNbrStars(Integer nbrStars) {
+    public void setNbrStars(int nbrStars) {
         mNbrStars = nbrStars;
+    }
+
+    public String getWebSiteUrl() {
+        return mWebSiteUrl;
+    }
+
+    public void setWebSiteUrl(String webSiteUrl) {
+        mWebSiteUrl = webSiteUrl;
     }
 }

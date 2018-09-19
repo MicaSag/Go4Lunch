@@ -305,7 +305,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                                         restaurant.setAddress(placeLikelihood.getPlace().getAddress().toString());
                                         if (placeLikelihood.getPlace().getAttributions() != null) restaurant.setOpeningTime(placeLikelihood.getPlace().getAttributions().toString());
                                         restaurant.setLatLngs(placeLikelihood.getPlace().getLatLng());
-                                        //if (placeLikelihood.getPlace().getWebsiteUri() != null) restaurant.setPhotoUrl(placeLikelihood.getPlace().getWebsiteUri().toString());
+                                        restaurant.setNbrStars(2);
+                                        restaurant.setNbrParticipants(9);
+                                        if (placeLikelihood.getPlace().getWebsiteUri() != null) restaurant.setWebSiteUrl(placeLikelihood.getPlace().getWebsiteUri().toString());
                                         restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
                                         mListRestaurants.add(restaurant);
 
@@ -323,7 +325,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                             placeDetails.setName("Resto du coeur");
                             placeDetails.setType("gratuit");
                             placeDetails.setOpeningTime("tous les jours de 00h00 à 24h00");
+                            placeDetails.setWebSiteUrl("https://www.restosducoeur.org/");
                             placeDetails.setPhotoUrl("https://cdn.pixabay.com/photo/2018/08/10/21/52/restaurant-3597677_960_720.jpg");
+                            placeDetails.setNbrStars(3);
+                            placeDetails.setNbrParticipants(47);
                             //placeDetails.setLatLngs( );
                             mListRestaurants.add(placeDetails);
                             Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);

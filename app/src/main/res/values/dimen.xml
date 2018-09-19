@@ -4,7 +4,7 @@
     <!-- MAIN ACTIVITY DIMENS -->
     <dimen name="logo_height">200dip</dimen>
     <dimen name="logo_width">200dip</dimen>
-    <dimen name="logo_top_margin">25dip</dimen>
+    <dimen name="logo_top_margin">75dip</dimen>
 
     <dimen name="margin">5dip</dimen>
     <dimen name="half_margin">10dip</dimen>
