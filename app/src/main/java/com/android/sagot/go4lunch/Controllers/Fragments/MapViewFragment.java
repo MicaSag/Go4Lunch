@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.PlaceDetails;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
@@ -37,6 +38,9 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 /**
  * Created by Michaël SAGOT on 23/08/2018.
@@ -73,6 +77,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     protected PlaceDetectionClient mPlaceDetectionClient;
     //List of restaurants found
     private List<PlaceDetails> mListRestaurants;
+
+    // Declare Subscription
+    protected Disposable mDisposable;
 
     // ==> CallBack
     // Interface for ShowSnakeBar
@@ -137,6 +144,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         // Configure the Places Service of Google
         configurePlayServicePlaces();
+        //configureGooglePlaceService();
     }
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
@@ -266,6 +274,33 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     // -------------------------------
     //  GOOGLE PLAY SERVICE : PLACES
     // -------------------------------
+    public void configureGooglePlaceService() {
+
+        // Get api_key
+        String api_key = getResources().getString(R.string.google_maps_key);
+
+        // Execute the stream subscribing to Observable defined inside NYTimesStreams
+        /*mDisposable = GooglePlaceStreams.streamFetchPlaceNearBySearch(api_key,  formattingRequest())
+                .subscribeWith(new DisposableObserver<GooglePlaceNearBySearch>() {
+                    @Override
+                    public void onNext(GooglePlaceNearBySearch articleSearch) {
+                        Log.d(TAG, "onNext: ");*/
+                        // Analyze the answer
+                        //responseHttpRequestAnalyze(articleSearch);
+                    }
+
+                    /*@Override
+                    public void onError(Throwable e) {
+                        // Display a toast message
+                        //updateUIWhenErrorHTTPRequest();
+                        Log.d(TAG, "onError: ");
+                    }
+                    @Override
+                    public void onComplete() { Log.d(TAG,"On Complete !!"); }
+                });
+    }*/
+
+
     public void configurePlayServicePlaces() {
         Log.d(TAG, "configurePlayServicePlaces: ");
 
