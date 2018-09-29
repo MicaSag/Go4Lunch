@@ -143,7 +143,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         getLocationPermission();
 
         // Configure the Places Service of Google
-        configurePlayServicePlaces();
+        //configurePlayServicePlaces();
         //configureGooglePlaceService();
     }
     /**

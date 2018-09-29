@@ -1,17 +1,20 @@
-package com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails;
+package com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class PlaceDetails {
+public class PlaceNearBySearch {
 
     @SerializedName("html_attributions")
     @Expose
     private List<Object> htmlAttributions = null;
-    @SerializedName("result")
+    @SerializedName("next_page_token")
     @Expose
-    private PlaceDetailsResult result;
+    private String nextPageToken;
+    @SerializedName("results")
+    @Expose
+    private List<PlaceNearBySearchResult> results = null;
     @SerializedName("status")
     @Expose
     private String status;
@@ -24,12 +27,20 @@ public class PlaceDetails {
         this.htmlAttributions = htmlAttributions;
     }
 
-    public PlaceDetailsResult getResult() {
-        return result;
+    public String getNextPageToken() {
+        return nextPageToken;
     }
 
-    public void setResult(PlaceDetailsResult result) {
-        this.result = result;
+    public void setNextPageToken(String nextPageToken) {
+        this.nextPageToken = nextPageToken;
+    }
+
+    public List<PlaceNearBySearchResult> getResults() {
+        return results;
+    }
+
+    public void setResults(List<PlaceNearBySearchResult> results) {
+        this.results = results;
     }
 
     public String getStatus() {

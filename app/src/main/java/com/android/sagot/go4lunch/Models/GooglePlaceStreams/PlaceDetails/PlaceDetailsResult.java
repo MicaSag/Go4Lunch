@@ -1,10 +1,17 @@
 package com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails;
 
 import java.util.List;
+
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.AddressComponent;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Geometry;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.OpeningHours;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Photo;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.PlusCode;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Review;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Result {
+public class PlaceDetailsResult {
 
     @SerializedName("address_components")
     @Expose

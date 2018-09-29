@@ -1,4 +1,4 @@
-package com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails;
+package com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
