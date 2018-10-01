@@ -1,30 +1,33 @@
 package com.android.sagot.go4lunch.Utils;
 
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.google.gson.GsonBuilder;
 
 import java.util.Map;
 
+import io.reactivex.Observable;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
 public interface GooglePlaceService {
 
     // Place NearBySearch
-    //@GET("nearbysearch/json")
-    //Observable<GooglePlaceNearBySearch> getPlaceNearBySearch(@Query("api-key") String apiKey,
-    //                                                         @QueryMap Map<String, String> filters);
+    @GET("nearbysearch/json")
+    Observable<PlaceNearBySearch> getPlaceNearBySearch(@QueryMap Map<String, String> query);
 
     // Place Details
-    //@GET("details/json")
-    //Observable<GooglePlaceDetails> getPlaceDetails(@Query("api-key") String apiKey,
-    //                                               @QueryMap Map<String, String> filters);
+    @GET("details/json")
+    Observable<PlaceDetails> getPlaceDetails(@Query("key") String key,
+                                             @QueryMap Map<String, String> filters);
     // Place Photo
     //@GET("/photo")
-    //Observable<GooglePlacePhoto> getPlacePhoto(@Query("api-key") String apiKey,
-     //                                          @QueryMap Map<String, String> filters);
+    //Observable<PlacePhoto> getPlacePhoto(@Query("api-key") String apiKey,
+    //                                           @QueryMap Map<String, String> filters);
 
 
     // Use excludeFieldsWithoutExposeAnnotation() for ignore some fields

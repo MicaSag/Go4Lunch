@@ -13,7 +13,8 @@ public class PlaceDetails {
     private String mPhotoUrl;       // URL of the place's photo
     private String mWebSiteUrl;     // URL of the Web site
     private String mType;           // Type od the place
-    private LatLng mLatLngs;        // Latitude and longitude of the place on the Map
+    private String mLat;            // Latitude  of the place on the Map
+    private String mLng;            // Longitude of the place on the Map
 
     public String getId() {
         return mId;
@@ -63,12 +64,20 @@ public class PlaceDetails {
         mOpeningTime = openingTime;
     }
 
-    public LatLng getLatLngs() {
-        return mLatLngs;
+    public String getLat() {
+        return mLat;
     }
 
-    public void setLatLngs(LatLng latLngs) {
-        mLatLngs = latLngs;
+    public void setLat(String lat) {
+        mLat = lat;
+    }
+
+    public String getLng() {
+        return mLng;
+    }
+
+    public void setLng(String lng) {
+        mLng = lng;
     }
 
     public String getDistance() {

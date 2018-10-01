@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
 import com.android.sagot.go4lunch.Models.PlaceDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
@@ -37,7 +39,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
@@ -144,8 +148,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         // Configure the Places Service of Google
         //configurePlayServicePlaces();
-        //configureGooglePlaceService();
+        //if (mLocationPermissionGranted) {
+        //    configureGooglePlaceService();
+        //}
     }
+
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
@@ -189,6 +196,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         Log.d(TAG, "getLocationCoordinatesDevice: getLastLocation EXIST");
                         Log.d(TAG, "getLocationCoordinatesDevice: mLastKnownLocation.getLatitude()  = " + mLastKnownLocation.getLatitude());
                         Log.d(TAG, "getLocationCoordinatesDevice: mLastKnownLocation.getLongitude() = " + mLastKnownLocation.getLongitude());
+                        // Configure the Places Service of Google and Search proximity Restaurant
+                        configureGooglePlaceService();
                         // Position yourself automatically on the current location of the device
                         showCurrentLocation();
                     }
@@ -271,25 +280,48 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         updateLocationUI();
     }
 
+    public static String locationStringFromLocation(final Location location) {
+        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES) + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+    }
+
     // -------------------------------
     //  GOOGLE PLAY SERVICE : PLACES
     // -------------------------------
     public void configureGooglePlaceService() {
+        Log.d(TAG, "configureGooglePlaceService: ");
 
         // Get api_key
-        String api_key = getResources().getString(R.string.google_maps_key);
+        //String key = getResources().getString(R.string.google_maps_key);
+        String key = "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4";
 
-        // Execute the stream subscribing to Observable defined inside NYTimesStreams
-        /*mDisposable = GooglePlaceStreams.streamFetchPlaceNearBySearch(api_key,  formattingRequest())
-                .subscribeWith(new DisposableObserver<GooglePlaceNearBySearch>() {
+        // Criteria of the query
+        Map<String, String> mQuery;
+        // Create filters
+        mQuery = new HashMap<>();
+        // --> Add Criteria <--
+        // -- Location Paris Gare de lyon
+        mQuery.put("key", "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4");
+        /*static String latLng = Location.convert(mLastKnownLocation.getLatitude(),Location.FORMAT_DEGREES)+
+                        ","+
+                        Location.convert(mLastKnownLocation.getLongitude(),Location.FORMAT_DEGREES);
+                        */
+        Log.d(TAG, "configureGooglePlaceService: Location = "+locationStringFromLocation(mLastKnownLocation));
+        mQuery.put("location",locationStringFromLocation(mLastKnownLocation));
+        mQuery.put("radius", "100");
+        mQuery.put("type", "restaurant");
+
+
+        // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
+        mDisposable = GooglePlaceStreams.streamFetchPlaceNearBySearch(mQuery)
+                .subscribeWith(new DisposableObserver<PlaceNearBySearch>() {
                     @Override
-                    public void onNext(GooglePlaceNearBySearch articleSearch) {
-                        Log.d(TAG, "onNext: ");*/
+                    public void onNext(PlaceNearBySearch placeNearBySearch) {
+                        Log.d(TAG, "onNext: ");
                         // Analyze the answer
-                        //responseHttpRequestAnalyze(articleSearch);
+                        responseHttpRequestAnalyze(placeNearBySearch);
                     }
 
-                    /*@Override
+                    @Override
                     public void onError(Throwable e) {
                         // Display a toast message
                         //updateUIWhenErrorHTTPRequest();
@@ -298,87 +330,50 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onComplete() { Log.d(TAG,"On Complete !!"); }
                 });
-    }*/
+    }
 
+    // Analyze the answer of HttpRequestWithRetrofit
+    protected void responseHttpRequestAnalyze(PlaceNearBySearch placeNearBySearch) {
+        Log.d(TAG, "responseHTTPRequestAnalyze: ");
 
-    public void configurePlayServicePlaces() {
-        Log.d(TAG, "configurePlayServicePlaces: ");
+        Log.d(TAG, "responseHttpRequestAnalyze: placeNearBySearch.getResults().size() = "+placeNearBySearch.getResults().size());
+        if (placeNearBySearch.getResults().size() != 0) {
+            // Creating a list of PlaceDetails Restaurants
+            mListRestaurants = new ArrayList<>();
 
-        // Configure connection to Places Service
-        // Construct a GeoDataClient.
-        mGeoDataClient = Places.getGeoDataClient(getContext());
+            //Instantiate a PlaceDetails Restaurant Variable
+            PlaceDetails restaurant;
 
-        // Construct a PlaceDetectionClient.
-        mPlaceDetectionClient = Places.getPlaceDetectionClient(getContext());
+            //Here we recover only the elements of the query that interests us
+            for (PlaceNearBySearchResult results : placeNearBySearch.getResults()) {
 
-        if (mLocationPermissionGranted) {
-            // Get the likely places - that is, the businesses and other points of interest that
-            // are the best match for the device's current location.
-            @SuppressWarnings("MissingPermission") final
-            Task<PlaceLikelihoodBufferResponse> placeResult =
-                    mPlaceDetectionClient.getCurrentPlace(null);
-            placeResult.addOnCompleteListener
-                    (task -> {
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
+                // Creating a New PlaceDetails Restaurant Variable
+                restaurant = new PlaceDetails();
+                restaurant.setId(results.getPlaceId());
+                restaurant.setName(results.getName());
+                restaurant.setAddress(results.getVicinity());
+                //restaurant.setOpeningTime(results.getOpeningHours().getOpenNow().toString());
+                //.setLat(results.getGeometry().getLocation().getLat().toString());
+                //restaurant.setLng(results.getGeometry().getLocation().getLng().toString());
+                restaurant.setNbrStars(2);
+                restaurant.setNbrParticipants(9);
+                restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
+                mListRestaurants.add(restaurant);
 
-                            // Creating a list of PlaceDetails Restaurants
-                            mListRestaurants = new ArrayList<>();
+                Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
+                Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+restaurant.getId());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+restaurant.getName());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+restaurant.getAddress());
+                Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
+            }
 
-                            //Instantiate a PlaceDetails Restaurant Variable
-                            PlaceDetails restaurant;
+            Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+            model.setListPlaceDetails(mListRestaurants);
 
-                            for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                                // Build a list of likely places to show the user.
-
-                                for (Integer placeType : placeLikelihood.getPlace().getPlaceTypes()) {
-                                    if (placeType.equals(Place.TYPE_RESTAURANT)) {
-                                        // Creating a New PlaceDetails Restaurant Variable
-                                        restaurant = new PlaceDetails();
-                                        restaurant.setId(placeLikelihood.getPlace().getId());
-                                        restaurant.setName(placeLikelihood.getPlace().getName().toString());
-                                        restaurant.setAddress(placeLikelihood.getPlace().getAddress().toString());
-                                        if (placeLikelihood.getPlace().getAttributions() != null) restaurant.setOpeningTime(placeLikelihood.getPlace().getAttributions().toString());
-                                        restaurant.setLatLngs(placeLikelihood.getPlace().getLatLng());
-                                        restaurant.setNbrStars(2);
-                                        restaurant.setNbrParticipants(9);
-                                        if (placeLikelihood.getPlace().getWebsiteUri() != null) restaurant.setWebSiteUrl(placeLikelihood.getPlace().getWebsiteUri().toString());
-                                        restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
-                                        mListRestaurants.add(restaurant);
-
-                                        break;
-                                    }
-                                }
-                            }
-                            // Release the place likelihood buffer, to avoid memory leaks.
-                            likelyPlaces.release();
-
-
-                            PlaceDetails placeDetails = new PlaceDetails();
-                            placeDetails.setId("001");
-                            placeDetails.setAddress("5 rue des beaux jours");
-                            placeDetails.setName("Resto du coeur");
-                            placeDetails.setType("gratuit");
-                            placeDetails.setOpeningTime("tous les jours de 00h00 à 24h00");
-                            placeDetails.setWebSiteUrl("https://www.restosducoeur.org/");
-                            placeDetails.setPhotoUrl("https://cdn.pixabay.com/photo/2018/08/10/21/52/restaurant-3597677_960_720.jpg");
-                            placeDetails.setNbrStars(3);
-                            placeDetails.setNbrParticipants(47);
-                            //placeDetails.setLatLngs( );
-                            mListRestaurants.add(placeDetails);
-                            Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-                            model.setListPlaceDetails(mListRestaurants);
-
-                            //for (PlaceDetails placeD : mListRestaurants){
-                            //    Log.d(TAG, "configurePlayServicePlaces : placeDetails Name = "+placeD.getName());
-                            //}
-
-                        } else {
-                            Log.e(TAG, "configurePlayServicePlaces Exception: %s", task.getException());
-                        }
-                    });
         } else {
-            showDefaultLocation();
+            mListener.showSnackBar("No placeNearBySearch found for these criteria of searches");
         }
     }
 
@@ -398,5 +393,20 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             throw new ClassCastException(context.toString()
                     + " must implement showSnackBarListener");
         }
+    }
+    
+    // -----------
+    //  ( OUT )
+    // -----------
+    @Override
+    public void onDestroy() {
+        //Unsubscribe the stream when the fragment is destroyed so as not to create a memory leaks
+        this.disposeWhenDestroy();
+        super.onDestroy();
+    }
+
+    //  Unsubscribe the stream when the fragment is destroyed so as not to create a memory leaks
+    private void disposeWhenDestroy(){
+        if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
     }
 }
