@@ -3,23 +3,20 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
-import android.text.Editable;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantViewFragment;
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.OnTextChanged;
 
 public class RestaurantCardActivity extends BaseActivity {
 
@@ -35,8 +32,8 @@ public class RestaurantCardActivity extends BaseActivity {
     @BindView(R.id.activity_restaurant_card_star_three) ImageView mStarThree;
     @BindView(R.id.activity_restaurant_card_image) ImageView mImage;
 
-    // Declare a PlaceDetails
-    private PlaceDetails mPlaceDetails;
+    // Declare a RestaurantDetails
+    private RestaurantDetails mPlaceDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
@@ -67,7 +64,7 @@ public class RestaurantCardActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Obtain PlaceDetails
+        // Obtain RestaurantDetails
         getPlaceDetails();
 
         // Update UI
@@ -101,8 +98,8 @@ public class RestaurantCardActivity extends BaseActivity {
     private void getPlaceDetails(){
         Log.d(TAG, "getPlaceDetails: ");
 
-        // Instantiate PlaceDetails Object
-        mPlaceDetails = new PlaceDetails();
+        // Instantiate RestaurantDetails Object
+        mPlaceDetails = new RestaurantDetails();
         // Get back Intent send to parameter by the ListViewFragment
         Intent intent = getIntent();
         mPlaceDetails.setName(intent.getStringExtra(ListRestaurantViewFragment.KEY_RESTAURANT_NAME));

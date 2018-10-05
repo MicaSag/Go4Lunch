@@ -16,19 +16,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -80,7 +77,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     protected GeoDataClient mGeoDataClient;
     protected PlaceDetectionClient mPlaceDetectionClient;
     //List of restaurants found
-    private List<PlaceDetails> mListRestaurants;
+    private List<RestaurantDetails> mListRestaurants;
 
     // Declare Subscription
     protected Disposable mDisposable;
@@ -307,18 +304,22 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         */
         Log.d(TAG, "configureGooglePlaceService: Location = "+locationStringFromLocation(mLastKnownLocation));
         mQuery.put("location",locationStringFromLocation(mLastKnownLocation));
-        mQuery.put("radius", "100");
+        mQuery.put("radius", "1000");
         mQuery.put("type", "restaurant");
 
 
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchPlaceNearBySearch(mQuery)
-                .subscribeWith(new DisposableObserver<PlaceNearBySearch>() {
+        mDisposable = GooglePlaceStreams.streamFetchListPlacesNearBySearchId(mQuery)
+                .subscribeWith(new DisposableObserver<List<PlaceDetails>>() {
                     @Override
-                    public void onNext(PlaceNearBySearch placeNearBySearch) {
+                    public void onNext( List<PlaceDetails> placesDetails) {
                         Log.d(TAG, "onNext: ");
                         // Analyze the answer
-                        responseHttpRequestAnalyze(placeNearBySearch);
+                       // Log.d(TAG, "onNext: ids(0) ="+ids.get(0).getResult().getId());
+                       // Log.d(TAG, "onNext: ids(1) ="+
+                        for (PlaceDetails placeDetails : placesDetails){
+                            Log.d(TAG, "onNext: Name = "+placeDetails.getResult().getName());
+                        }
                     }
 
                     @Override
@@ -333,49 +334,57 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     // Analyze the answer of HttpRequestWithRetrofit
-    protected void responseHttpRequestAnalyze(PlaceNearBySearch placeNearBySearch) {
-        Log.d(TAG, "responseHTTPRequestAnalyze: ");
+    protected void first_responseHttpRequestAnalyze(List<String> ids) {
+        Log.d(TAG, "first_responseHttpRequestAnalyze: ");
+        for (String id : ids) {
+            Log.d(TAG, "first_responseHttpRequestAnalyze: id = "+id);
+        }
+    }
 
-        Log.d(TAG, "responseHttpRequestAnalyze: placeNearBySearch.getResults().size() = "+placeNearBySearch.getResults().size());
-        if (placeNearBySearch.getResults().size() != 0) {
-            // Creating a list of PlaceDetails Restaurants
-            mListRestaurants = new ArrayList<>();
+    // Analyze the answer of HttpRequestWithRetrofit
+    //protected void responseHttpRequestAnalyze(PlaceDetails placeDetails) {
+        //Log.d(TAG, "responseHTTPRequestAnalyze: ");
 
-            //Instantiate a PlaceDetails Restaurant Variable
-            PlaceDetails restaurant;
+       // Log.d(TAG, "responseHttpRequestAnalyze: listPlaceDetails = "+listPlaceDetails.size());
+        //if (listPlaceDetails.size() != 0) {
+            // Creating a list of RestaurantDetails Restaurants
+           // mListRestaurants = new ArrayList<>();
+
+            //Instantiate a RestaurantDetails Restaurant Variable
+           // RestaurantDetails restaurant;
 
             //Here we recover only the elements of the query that interests us
-            for (PlaceNearBySearchResult results : placeNearBySearch.getResults()) {
+            //for (PlaceDetails placeDetails : listPlaceDetails) {
 
-                // Creating a New PlaceDetails Restaurant Variable
-                restaurant = new PlaceDetails();
-                restaurant.setId(results.getPlaceId());
-                restaurant.setName(results.getName());
-                restaurant.setAddress(results.getVicinity());
+                // Creating a New RestaurantDetails Restaurant Variable
+                //restaurant = new RestaurantDetails();
+                //restaurant.setId(placeDetails.getResult().getId());
+                //restaurant.setName(placeDetails.getResult().getName());
+               // restaurant.setAddress(placeDetails.getResult().getAdrAddress());
                 //restaurant.setOpeningTime(results.getOpeningHours().getOpenNow().toString());
                 //.setLat(results.getGeometry().getLocation().getLat().toString());
                 //restaurant.setLng(results.getGeometry().getLocation().getLng().toString());
-                restaurant.setNbrStars(2);
-                restaurant.setNbrParticipants(9);
-                restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
-                mListRestaurants.add(restaurant);
+                //restaurant.setNbrStars(2);
+                //restaurant.setNbrParticipants(9);
+                //restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
+                //mListRestaurants.add(restaurant);
 
-                Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
-                Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+restaurant.getId());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+restaurant.getName());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+restaurant.getAddress());
-                Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
-            }
+           /*     Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
+                Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+placeDetails.getResult().getId());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+placeDetails.getResult().getName());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+placeDetails.getResult().getAdrAddress());
+                Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+placeDetails.getResult().getOpeningHours());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+placeDetails.getResult().getGeometry().getLocation().getLng());
+                Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+placeDetails.getResult().getGeometry().getLocation().getLat());
+            }*/
 
-            Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-            model.setListPlaceDetails(mListRestaurants);
+            //Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+            //model.setListPlaceDetails(mListRestaurants);
 
-        } else {
+        /*} else {
             mListener.showSnackBar("No placeNearBySearch found for these criteria of searches");
-        }
-    }
+        }*/
+    //}
 
     // --------------------
     //  CALLBACKS METHODS
@@ -394,7 +403,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     + " must implement showSnackBarListener");
         }
     }
-    
+
     // -----------
     //  ( OUT )
     // -----------

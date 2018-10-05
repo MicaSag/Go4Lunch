@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -15,13 +15,13 @@ import java.util.List;
 public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaurantViewHolder> {
 
     // FOR DATA
-    private List<PlaceDetails> mListPlaceDetails;
+    private List<RestaurantDetails> mListPlaceDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
 
     // CONSTRUCTOR
-    public ListRestaurantViewAdapter(List<PlaceDetails> listPlaceDetails, RequestManager glide) {
+    public ListRestaurantViewAdapter(List<RestaurantDetails> listPlaceDetails, RequestManager glide) {
        mListPlaceDetails = listPlaceDetails;
        mGlide = glide;
     }
@@ -49,7 +49,7 @@ public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaura
     }
 
     // Returns the current position
-    public PlaceDetails getPlaceDetails(int position){
+    public RestaurantDetails getPlaceDetails(int position){
         return this.mListPlaceDetails.get(position);
     }
 }

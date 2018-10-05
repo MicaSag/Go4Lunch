@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -42,7 +42,7 @@ public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithPlaceDetails(PlaceDetails placeDetails, RequestManager glide){
+    public void updateWithPlaceDetails(RestaurantDetails placeDetails, RequestManager glide){
         Log.d(TAG, "updateWithPlaceDetails: ");
 
         this.mName.setText(placeDetails.getName());

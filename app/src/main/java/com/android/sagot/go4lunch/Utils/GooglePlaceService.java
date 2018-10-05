@@ -22,8 +22,7 @@ public interface GooglePlaceService {
 
     // Place Details
     @GET("details/json")
-    Observable<PlaceDetails> getPlaceDetails(@Query("key") String key,
-                                             @QueryMap Map<String, String> filters);
+    Observable<PlaceDetails> getPlaceDetails(@QueryMap Map<String, String> query);
     // Place Photo
     //@GET("/photo")
     //Observable<PlacePhoto> getPlacePhoto(@Query("api-key") String apiKey,

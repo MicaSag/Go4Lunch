@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListRestaurantViewAdapter;
@@ -40,8 +40,8 @@ public class ListRestaurantViewFragment extends Fragment {
     // View of the Fragment
     private View mListView;
 
-    // Declare list of PlaceDetails & Adapter
-    private List<PlaceDetails> mPlacesDetails;
+    // Declare list of RestaurantDetails & Adapter
+    private List<RestaurantDetails> mPlacesDetails;
     private ListRestaurantViewAdapter mAdapter;
 
     // Create the key place details
@@ -84,7 +84,7 @@ public class ListRestaurantViewFragment extends Fragment {
 
         mPlacesDetails = new ArrayList<>();
 
-        // Create adapter passing the list of PlaceDetails
+        // Create adapter passing the list of RestaurantDetails
         this.mAdapter = new ListRestaurantViewAdapter(mPlacesDetails, Glide.with(this));
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);
@@ -108,7 +108,7 @@ public class ListRestaurantViewFragment extends Fragment {
     // --------------------
     //   CALL ACTIVITY
     // -------------------
-    private void startRestaurantCardActivity(PlaceDetails placeDetails){
+    private void startRestaurantCardActivity(RestaurantDetails placeDetails){
         Log.d(TAG, "startRestaurantCardActivity: ");
 
         // Create a intent for call RestaurantCardActivity
@@ -130,12 +130,12 @@ public class ListRestaurantViewFragment extends Fragment {
     public void updateUI() {
         Log.d(TAG, "updateUI: ");
 
-        // Load the ViewModel with the list of PlaceDetails
+        // Load the ViewModel with the list of RestaurantDetails
         Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
         mPlacesDetails.addAll(model.getListPlaceDetails());
 
         // For Debugging : display name of the restaurants
-        for (PlaceDetails placeDetails : mPlacesDetails){
+        for (RestaurantDetails placeDetails : mPlacesDetails){
             Log.d(TAG, "configureRecyclerView: placeDetails Name = "+placeDetails.getName());
         }
 
