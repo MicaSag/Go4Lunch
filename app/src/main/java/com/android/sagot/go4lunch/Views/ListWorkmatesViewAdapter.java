@@ -12,7 +12,7 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.List;
 
-public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaurantViewHolder> {
+public class ListWorkmatesViewAdapter extends RecyclerView.Adapter<ListWorkmatesViewHolder> {
 
     // FOR DATA
     private List<RestaurantDetails> mListPlaceDetails;
@@ -21,25 +21,25 @@ public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaura
     private RequestManager mGlide;
 
     // CONSTRUCTOR
-    public ListRestaurantViewAdapter(List<RestaurantDetails> listPlaceDetails, RequestManager glide) {
-       mListPlaceDetails = listPlaceDetails;
-       mGlide = glide;
+    public ListWorkmatesViewAdapter(List<RestaurantDetails> listPlaceDetails, RequestManager glide) {
+        mListPlaceDetails = listPlaceDetails;
+        mGlide = glide;
     }
 
     @Override
-    public ListRestaurantViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ListWorkmatesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // CREATE VIEW HOLDER AND INFLATING ITS XML LAYOUT
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.fragment_list_restaurant_view_item, parent, false);
+        View view = inflater.inflate(R.layout.fragment_list_workmates_view_item, parent, false);
 
-        return new ListRestaurantViewHolder(view);
+        return new ListWorkmatesViewHolder(view);
     }
 
     // UPDATE VIEW HOLDER WITH A DETAILS PLACE
     @Override
-    public void onBindViewHolder(ListRestaurantViewHolder viewHolder, int position) {
-        viewHolder.updateWithPlaceDetails(mListPlaceDetails.get(position), this.mGlide);
+    public void onBindViewHolder(ListWorkmatesViewHolder viewHolder, int position) {
+        viewHolder.updateWithParticipantDescription(mListPlaceDetails.get(position), this.mGlide);
     }
 
     // RETURN THE TOTAL COUNT OF ITEMS IN THE LIST

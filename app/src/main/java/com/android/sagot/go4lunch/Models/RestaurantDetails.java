@@ -2,7 +2,7 @@ package com.android.sagot.go4lunch.Models;
 
 import com.google.android.gms.maps.model.LatLng;
 
-public class PlaceDetails {
+public class RestaurantDetails {
     private String mId;             // Place Identifier
     private String mName;           // Name of the place
     private String mAddress;        // Address of the Place

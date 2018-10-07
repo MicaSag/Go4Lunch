@@ -21,7 +21,7 @@ import android.view.View;
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
-import com.android.sagot.go4lunch.Controllers.Fragments.WorkmatesFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.R;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -159,7 +159,7 @@ public class WelcomeActivity extends BaseActivity
         //Instantiate fragment used by BottomNavigationView
         mMapViewFragment = new MapViewFragment();
         mListViewFragment = new ListRestaurantViewFragment();
-        mWorkmatesFragment = new WorkmatesFragment();
+        mWorkmatesFragment = new ListWorkmatesViewFragment();
 
         // Save the active Fragment
         mActiveFragment = mMapViewFragment;
@@ -168,7 +168,7 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager = getSupportFragmentManager();
         // Add the three fragment in fragmentManager and leave active only the fragment MapViewFragment
         mFragmentManager.beginTransaction()
-                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mWorkmatesFragment,"WorkmatesFragment")
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mWorkmatesFragment,"ListWorkmatesViewFragment")
                 .hide(mWorkmatesFragment).commit();
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListViewFragment,"ListViewFragment")

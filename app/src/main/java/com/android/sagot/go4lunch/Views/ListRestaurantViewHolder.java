@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -20,17 +20,17 @@ public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
     private static final String TAG = ListRestaurantViewHolder.class.getSimpleName();
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
-    @BindView(R.id.fragment_list_view_item_card) CardView mCard;
-    @BindView(R.id.fragment_list_view_item_restaurant_name) TextView mName;
-    @BindView(R.id.fragment_list_view_item_restaurant_distance) TextView mDistance;
-    @BindView(R.id.fragment_list_view_item_restaurant_address) TextView mAddress;
-    @BindView(R.id.fragment_list_view_item_restaurant_participants_smiley) ImageView mParticipantsSmiley;
-    @BindView(R.id.fragment_list_view_item_restaurant_participants) TextView mParticipants;
-    @BindView(R.id.fragment_list_view_item_restaurant_opening_hours) TextView mOpeningHours;
-    @BindView(R.id.fragment_list_view_item_restaurant_star_one) ImageView mStarOne;
-    @BindView(R.id.fragment_list_view_item_restaurant_star_two) ImageView mStarTwo;
-    @BindView(R.id.fragment_list_view_item_restaurant_star_three) ImageView mStarThree;
-    @BindView(R.id.fragment_list_view_item_restaurant_image) ImageView mImage;
+    @BindView(R.id.fragment_list_restaurant_view_item_card) CardView mCard;
+    @BindView(R.id.fragment_list_restaurant_view_item_name) TextView mName;
+    @BindView(R.id.fragment_list_restaurant_view_item_distance) TextView mDistance;
+    @BindView(R.id.fragment_list_restaurant_view_item_address) TextView mAddress;
+    @BindView(R.id.fragment_list_restaurant_view_item_participants_smiley) ImageView mParticipantsSmiley;
+    @BindView(R.id.fragment_list_restaurant_view_item_participants) TextView mParticipants;
+    @BindView(R.id.fragment_list_restaurant_view_item_opening_hours) TextView mOpeningHours;
+    @BindView(R.id.fragment_list_restaurant_view_item_star_one) ImageView mStarOne;
+    @BindView(R.id.fragment_list_restaurant_view_item_star_two) ImageView mStarTwo;
+    @BindView(R.id.fragment_list_restaurant_view_item_star_three) ImageView mStarThree;
+    @BindView(R.id.fragment_list_restaurant_view_item_image) ImageView mImage;
 
 
     public ListRestaurantViewHolder(View itemView) {
@@ -42,7 +42,7 @@ public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithPlaceDetails(PlaceDetails placeDetails, RequestManager glide){
+    public void updateWithPlaceDetails(RestaurantDetails placeDetails, RequestManager glide){
         Log.d(TAG, "updateWithPlaceDetails: ");
 
         this.mName.setText(placeDetails.getName());

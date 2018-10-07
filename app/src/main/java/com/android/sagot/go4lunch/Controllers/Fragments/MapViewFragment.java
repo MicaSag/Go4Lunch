@@ -16,19 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
-import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
-import com.android.sagot.go4lunch.Models.PlaceDetails;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -45,6 +39,7 @@ import java.util.Map;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
+
 
 /**
  * Created by Michaël SAGOT on 23/08/2018.
@@ -74,13 +69,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Location mLastKnownLocation;
     // _ The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
-
-    //==> For use Api Google Play Service : Places
-    // _ The entry points to the Places API
-    protected GeoDataClient mGeoDataClient;
-    protected PlaceDetectionClient mPlaceDetectionClient;
-    //List of restaurants found
-    private List<PlaceDetails> mListRestaurants;
 
     // Declare Subscription
     protected Disposable mDisposable;
@@ -281,7 +269,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     public static String locationStringFromLocation(final Location location) {
-        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES) + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES)
+                + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
     }
 
     // -------------------------------
@@ -291,8 +280,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "configureGooglePlaceService: ");
 
         // Get api_key
-        //String key = getResources().getString(R.string.google_maps_key);
-        String key = "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4";
+        String key = getResources().getString(R.string.google_maps_key);
 
         // Criteria of the query
         Map<String, String> mQuery;
@@ -300,25 +288,57 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mQuery = new HashMap<>();
         // --> Add Criteria <--
         // -- Location Paris Gare de lyon
-        mQuery.put("key", "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4");
-        /*static String latLng = Location.convert(mLastKnownLocation.getLatitude(),Location.FORMAT_DEGREES)+
-                        ","+
-                        Location.convert(mLastKnownLocation.getLongitude(),Location.FORMAT_DEGREES);
-                        */
+        mQuery.put("key", key);
+        mQuery.put("placeid", "ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
+
+
+        // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
+        mDisposable = GooglePlaceStreams.streamFetchPlaceDetails(mQuery)
+                .subscribeWith(new DisposableObserver<PlaceDetails>() {
+                    @Override
+                    public void onNext(PlaceDetails placeDetails) {
+                        Log.d(TAG, "onNext: ");
+                        // Analyze the answer
+                        responseHttpRequestAnalyze(placeDetails);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        // Display a toast message
+                        //updateUIWhenErrorHTTPRequest();
+                        Log.d(TAG, "onError: ");
+                    }
+                    @Override
+                    public void onComplete() { Log.d(TAG,"On Complete !!"); }
+                });
+    }
+
+    public void configureGooglePlaceService2() {
+        Log.d(TAG, "configureGooglePlaceService: ");
+
+        // Get api_key
+        String key = getResources().getString(R.string.google_maps_key);
+
+        // Criteria of the query
+        Map<String, String> mQuery;
+        // Create filters
+        mQuery = new HashMap<>();
+        // --> Add Criteria <--
+        // -- Location Paris Gare de lyon
+        mQuery.put("key", key);
         Log.d(TAG, "configureGooglePlaceService: Location = "+locationStringFromLocation(mLastKnownLocation));
         mQuery.put("location",locationStringFromLocation(mLastKnownLocation));
         mQuery.put("radius", "100");
         mQuery.put("type", "restaurant");
 
-
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchPlaceNearBySearch(mQuery)
+        mDisposable = GooglePlaceStreams.streamFetchPlacesNearBySearch(mQuery)
                 .subscribeWith(new DisposableObserver<PlaceNearBySearch>() {
                     @Override
-                    public void onNext(PlaceNearBySearch placeNearBySearch) {
+                    public void onNext(PlaceNearBySearch placeDetails) {
                         Log.d(TAG, "onNext: ");
                         // Analyze the answer
-                        responseHttpRequestAnalyze(placeNearBySearch);
+                        //responseHttpRequestAnalyze(placeDetails);
                     }
 
                     @Override
@@ -333,48 +353,55 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     // Analyze the answer of HttpRequestWithRetrofit
-    protected void responseHttpRequestAnalyze(PlaceNearBySearch placeNearBySearch) {
+    protected void responseHttpRequestAnalyze(PlaceDetails placeDetails) {
         Log.d(TAG, "responseHTTPRequestAnalyze: ");
 
-        Log.d(TAG, "responseHttpRequestAnalyze: placeNearBySearch.getResults().size() = "+placeNearBySearch.getResults().size());
-        if (placeNearBySearch.getResults().size() != 0) {
-            // Creating a list of PlaceDetails Restaurants
-            mListRestaurants = new ArrayList<>();
+        //List of restaurants found
+        //List<RestaurantDetails> mListRestaurantsDetails;
+        List<PlaceDetails> mListPlaceDetails;
 
-            //Instantiate a PlaceDetails Restaurant Variable
-            PlaceDetails restaurant;
+        // Creating a list of RestaurantDetails Restaurants
+        mListPlaceDetails = new ArrayList<>();
+        mListPlaceDetails.add(placeDetails);
 
-            //Here we recover only the elements of the query that interests us
-            for (PlaceNearBySearchResult results : placeNearBySearch.getResults()) {
+        //Instantiate a RestaurantDetails Restaurant Variable
+        RestaurantDetails restaurant;
+        List<RestaurantDetails> mListRestaurantsDetails;
+        mListRestaurantsDetails = new ArrayList<>();
 
-                // Creating a New PlaceDetails Restaurant Variable
-                restaurant = new PlaceDetails();
-                restaurant.setId(results.getPlaceId());
-                restaurant.setName(results.getName());
-                restaurant.setAddress(results.getVicinity());
-                //restaurant.setOpeningTime(results.getOpeningHours().getOpenNow().toString());
-                //.setLat(results.getGeometry().getLocation().getLat().toString());
-                //restaurant.setLng(results.getGeometry().getLocation().getLng().toString());
-                restaurant.setNbrStars(2);
-                restaurant.setNbrParticipants(9);
-                restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
-                mListRestaurants.add(restaurant);
+        //Here we recover only the elements of the query that interests us
+        for (PlaceDetails placeD : mListPlaceDetails) {
 
-                Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
-                Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+restaurant.getId());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+restaurant.getName());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+restaurant.getAddress());
-                Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
-                Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
-            }
+            // Creating a New RestaurantDetails Restaurant Variable
+            restaurant = new RestaurantDetails();
+            restaurant.setId(placeD.getResult().getId());
+            restaurant.setName(placeD.getResult().getName());
+            if (placeD.getResult().getOpeningHours().getOpenNow() == true){
+                restaurant.setOpeningTime(placeD.getResult().getOpeningHours().getPeriods().get(0).getOpen().getTime());
+            }else restaurant.setOpeningTime("Closing soon");
+            restaurant.setAddress(placeD.getResult().getFormattedAddress());
+            restaurant.setLat(placeD.getResult().getGeometry().getLocation().getLat().toString());
+            restaurant.setLng(placeD.getResult().getGeometry().getLocation().getLng().toString());
+            restaurant.setNbrStars(2);
+            restaurant.setNbrParticipants(9);
+            restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
 
-            Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-            model.setListPlaceDetails(mListRestaurants);
-
-        } else {
-            mListener.showSnackBar("No placeNearBySearch found for these criteria of searches");
+            mListRestaurantsDetails.add(restaurant);
+            Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
+            Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+restaurant.getId());
+            Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+restaurant.getName());
+            Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+restaurant.getAddress());
+            Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
+            Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
+            Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
         }
+
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        model.setListPlaceDetails(mListRestaurantsDetails);
+
+        //} else {
+        //   mListener.showSnackBar("No placeNearBySearch found for these criteria of searches");
+        //}
     }
 
     // --------------------

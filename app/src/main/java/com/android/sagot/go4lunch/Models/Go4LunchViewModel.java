@@ -11,15 +11,15 @@ import java.util.List;
 public class Go4LunchViewModel extends ViewModel {
 
     // For save PlacesDetails List
-    private List<PlaceDetails> mListPlacesDetails ;
+    private List<RestaurantDetails> mListPlacesDetails ;
 
     // for set PlacesDetails List
-    public void setListPlaceDetails(List<PlaceDetails> listPlaceDetails) {
+    public void setListPlaceDetails(List<RestaurantDetails> listPlaceDetails) {
         mListPlacesDetails = listPlaceDetails;
     }
 
     // For get PlacesDetails List
-    public List<PlaceDetails> getListPlaceDetails() {
+    public List<RestaurantDetails> getListPlaceDetails() {
         return mListPlacesDetails;
     }
 }

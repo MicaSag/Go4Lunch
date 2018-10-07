@@ -29,13 +29,15 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ListRestaurantViewFragment extends Fragment {
+public class ListWorkmatesViewFragment extends Fragment {
+
 
     // FOR TRACES
     private static final String TAG = ListRestaurantViewFragment.class.getSimpleName();
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
-    @BindView(R.id.fragment_list_view_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.fragment_list_view_recycler_view)
+    RecyclerView mRecyclerView;
 
     // View of the Fragment
     private View mListView;
@@ -51,7 +53,7 @@ public class ListRestaurantViewFragment extends Fragment {
     public static final String KEY_RESTAURANT_PHOTO_URL = "RESTAURANT_PHOTO_URL";
     public static final String KEY_RESTAURANT_WEB_SITE_URL = "RESTAURANT_WEB_SITE_URL";
 
-    public ListRestaurantViewFragment() {
+    public ListWorkmatesViewFragment() {
         Log.d(TAG, "ListViewFragment: ");
         // Required empty public constructor
     }
@@ -61,7 +63,7 @@ public class ListRestaurantViewFragment extends Fragment {
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
         // Inflate the layout for this fragment
-        mListView = inflater.inflate(R.layout.fragment_list_restaurant_view, container, false);
+        mListView = inflater.inflate(R.layout.fragment_list_workmates_view, container, false);
 
         // Telling ButterKnife to bind all views in layout
         ButterKnife.bind(this, mListView);
@@ -102,7 +104,7 @@ public class ListRestaurantViewFragment extends Fragment {
 
                     //Launch Restaurant Card Activity with placeDetails
                     startRestaurantCardActivity(mAdapter.getPlaceDetails(position));
-                    });
+                });
     }
 
     // --------------------
@@ -142,4 +144,5 @@ public class ListRestaurantViewFragment extends Fragment {
         // Notify the change to the adapter
         mAdapter.notifyDataSetChanged();
     }
+
 }

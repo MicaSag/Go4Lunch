@@ -11,19 +11,18 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
-import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
 public interface GooglePlaceService {
 
     // Place NearBySearch
     @GET("nearbysearch/json")
-    Observable<PlaceNearBySearch> getPlaceNearBySearch(@QueryMap Map<String, String> query);
+    Observable<PlaceNearBySearch> getPlaceNearBySearch(@QueryMap Map<String,String> query);
 
     // Place Details
     @GET("details/json")
-    Observable<PlaceDetails> getPlaceDetails(@Query("key") String key,
-                                             @QueryMap Map<String, String> filters);
+    Observable<PlaceDetails> getPlaceDetails(@QueryMap Map<String,String> query);
+
     // Place Photo
     //@GET("/photo")
     //Observable<PlacePhoto> getPlacePhoto(@Query("api-key") String apiKey,

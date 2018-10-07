@@ -8,7 +8,7 @@
 
     <android.support.v7.widget.CardView
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/fragment_list_view_item_card"
+        android:id="@+id/fragment_list_restaurant_view_item_card"
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,13 +30,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="@dimen/half_margin"
-                android:layout_weight="1.1"
+                android:layout_weight="1.3"
                 android:gravity="center">
 
                 <!-- First line -->
                 <!-- Restaurant Name -->
                 <TextView
-                    android:id="@+id/fragment_list_view_item_restaurant_name"
+                    android:id="@+id/fragment_list_restaurant_view_item_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -46,7 +46,7 @@
                 <!-- Second line -->
                  <!-- Address of the Restaurant -->
                  <TextView
-                     android:id="@+id/fragment_list_view_item_restaurant_address"
+                     android:id="@+id/fragment_list_restaurant_view_item_address"
                      android:layout_width="match_parent"
                      android:layout_height="wrap_content"
                      android:layout_weight="1"
@@ -57,7 +57,7 @@
                 <!-- Third line -->
                 <!-- Opening hours -->
                 <TextView
-                    android:id="@+id/fragment_list_view_item_restaurant_opening_hours"
+                    android:id="@+id/fragment_list_restaurant_view_item_opening_hours"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -72,7 +72,7 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="2.9"
+                android:layout_weight="2.7"
                 android:gravity="center">
 
                 <!-- First line -->
@@ -82,13 +82,15 @@
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="start">
+                    android:layout_weight="1">
 
                     <TextView
-                        android:id="@+id/fragment_list_view_item_restaurant_distance"
+                        android:id="@+id/fragment_list_restaurant_view_item_distance"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:hint="800m"/>
 
                 </LinearLayout>
@@ -100,22 +102,30 @@
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="right">
-
-                    <!-- Smiley -->
-                    <ImageView
-                        android:id="@+id/fragment_list_view_item_restaurant_participants_smiley"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/baseline_perm_identity_black_24"/>
-
-                    <TextView
-                        android:id="@+id/fragment_list_view_item_restaurant_participants"
+                    android:layout_weight="1">
+                    <LinearLayout
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="(0)"/>
+                        android:layout_height="match_parent"
+                        android:gravity="end">
 
+                            <!-- Smiley -->
+                            <ImageView
+                                android:id="@+id/fragment_list_restaurant_view_item_participants_smiley"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/baseline_perm_identity_black_24"/>
+
+                            <TextView
+                                android:id="@+id/fragment_list_restaurant_view_item_participants"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:hint="(0)"/>
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <!-- Third line -->
@@ -130,7 +140,7 @@
 
                     <!-- Star 3 -->
                     <ImageView
-                        android:id="@+id/fragment_list_view_item_restaurant_star_three"
+                        android:id="@+id/fragment_list_restaurant_view_item_star_three"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/stars"
@@ -138,7 +148,7 @@
 
                     <!-- Star 2 -->
                     <ImageView
-                        android:id="@+id/fragment_list_view_item_restaurant_star_two"
+                        android:id="@+id/fragment_list_restaurant_view_item_star_two"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/stars"
@@ -146,7 +156,7 @@
 
                     <!-- Star 1 -->
                     <ImageView
-                        android:id="@+id/fragment_list_view_item_restaurant_star_one"
+                        android:id="@+id/fragment_list_restaurant_view_item_star_one"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:backgroundTint="@color/stars"
@@ -159,7 +169,7 @@
             <!-- THIRD COLUMN -->
             <!-- Image of the Restaurant -->
             <ImageView
-                android:id="@+id/fragment_list_view_item_restaurant_image"
+                android:id="@+id/fragment_list_restaurant_view_item_image"
                 android:scaleType="centerCrop"
                 android:layout_marginTop="@dimen/margin"
                 android:layout_marginBottom="@dimen/margin"
