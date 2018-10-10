@@ -9,11 +9,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
-import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantViewFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -32,8 +39,16 @@ public class RestaurantCardActivity extends BaseActivity {
     @BindView(R.id.activity_restaurant_card_star_three) ImageView mStarThree;
     @BindView(R.id.activity_restaurant_card_image) ImageView mImage;
 
+    // Create the key details restaurant
+    public static final String KEY_DETAILS_RESTAURANT_CARD = "KEY_DETAILS_RESTAURANT_CARD";
+    // Create the key workmates List
+    public static final String KEY_LIST_WORKMATES_RESTAURANT_CARD = "KEY_LIST_WORKMATES_RESTAURANT_CARD";
+
     // Declare a RestaurantDetails
-    private RestaurantDetails mPlaceDetails;
+    private RestaurantDetails mRestaurantDetails;
+
+    // Declare list of WorkmatesDetails
+    private List<WorkmateDetails> mWorkmatesDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
@@ -65,7 +80,7 @@ public class RestaurantCardActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         // Obtain RestaurantDetails
-        getPlaceDetails();
+        getRestaurantDetails();
 
         // Update UI
         updateUI();
@@ -95,18 +110,26 @@ public class RestaurantCardActivity extends BaseActivity {
     /**
      * Method for recovering data sent by the caller
      */
-    private void getPlaceDetails(){
-        Log.d(TAG, "getPlaceDetails: ");
+    private void getRestaurantDetails(){
+        Log.d(TAG, "getRestaurantDetails: ");
 
-        // Instantiate RestaurantDetails Object
-        mPlaceDetails = new RestaurantDetails();
-        // Get back Intent send to parameter by the ListViewFragment
+        // Recover intent of the Caller
         Intent intent = getIntent();
-        mPlaceDetails.setName(intent.getStringExtra(ListRestaurantViewFragment.KEY_RESTAURANT_NAME));
-        mPlaceDetails.setAddress(intent.getStringExtra(ListRestaurantViewFragment.KEY_RESTAURANT_ADDRESS));
-        mPlaceDetails.setNbrStars(intent.getIntExtra(ListRestaurantViewFragment.KEY_RESTAURANT_NBR_STARS,0));
-        mPlaceDetails.setPhotoUrl(intent.getStringExtra(ListRestaurantViewFragment.KEY_RESTAURANT_PHOTO_URL));
-        mPlaceDetails.setWebSiteUrl(intent.getStringExtra(ListRestaurantViewFragment.KEY_RESTAURANT_WEB_SITE_URL));
+
+        // Retrieves the details of the restaurant sent by Caller
+        mRestaurantDetails = new RestaurantDetails();
+        String restaurantDetails = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
+        mRestaurantDetails = new Gson().fromJson(restaurantDetails,RestaurantDetails.class);
+
+        // Retrieves the Workmates List who will eat at this restaurant sent by Caller
+        Type collectionType = new TypeToken<List<WorkmateDetails>>() {}.getType();
+        mWorkmatesDetails = new ArrayList<>();
+        String workmatesDetails = intent.getStringExtra(KEY_LIST_WORKMATES_RESTAURANT_CARD);
+        mWorkmatesDetails = new Gson().fromJson(workmatesDetails,collectionType);
+
+        for (WorkmateDetails workmatesD : mWorkmatesDetails) {
+            Log.d(TAG, "getRestaurantDetails: mWorkmatesDetails = "+workmatesD.getName());
+        }
     }
 
     /**
@@ -115,16 +138,30 @@ public class RestaurantCardActivity extends BaseActivity {
     private void updateUI(){
         Log.d(TAG, "updateUI: ");
 
-        this.mName.setText(mPlaceDetails.getName());
-        this.mAddress.setText(mPlaceDetails.getAddress());
+        this.mName.setText(mRestaurantDetails.getName());
+        this.mAddress.setText(mRestaurantDetails.getAddress());
 
         // Display Stars
-        if (mPlaceDetails.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
-        if (mPlaceDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
-        if (mPlaceDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
+        if (mRestaurantDetails.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
+        if (mRestaurantDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
+        if (mRestaurantDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
 
         // Display Photo of the restaurant
         mGlide = Glide.with(this);
-        mGlide.load(mPlaceDetails.getPhotoUrl()).into(this.mImage);
+        mGlide.load(mRestaurantDetails.getPhotoUrl()).into(this.mImage);
+
+        // Display Workmates List
+        // The FragmentManager (Support)
+        ListWorkmatesViewFragment listWorkmatesViewFragment =
+                (ListWorkmatesViewFragment) getSupportFragmentManager().findFragmentById(R.id.activity_restaurant_workmates_list);
+        // If no created ListWorkmatesViewFragment
+        if (listWorkmatesViewFragment == null) {
+            // Create new history fragment and send Workmates List in parameter
+            listWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(mWorkmatesDetails);
+            // Add it to FrameLayout container
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.activity_restaurant_workmates_list,listWorkmatesViewFragment)
+                    .commit();
+        }
     }
 }

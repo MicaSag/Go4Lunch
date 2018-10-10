@@ -11,7 +11,7 @@
         android:id="@+id/fragment_list_workmates_view_item_card"
         android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         card_view:cardCornerRadius="1dp">
 
         <LinearLayout
@@ -20,23 +20,26 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/margin"
-            android:layout_marginBottom="@dimen/margin"
-            android:gravity="center">
+            android:layout_marginBottom="@dimen/margin">
 
             <!-- Smiley -->
             <ImageView
-                android:id="@+id/fragment_list_workmates_view_item_participant_photo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/baseline_perm_identity_black_24"/>
+                android:id="@+id/fragment_list_workmates_view_item_workmate_photo"
+                android:scaleType="centerCrop"
+                android:layout_marginTop="@dimen/margin"
+                android:layout_marginBottom="@dimen/margin"
+                android:layout_width="@dimen/recycler_image_width"
+                android:layout_height="@dimen/recycler_image_height"
+                android:layout_margin="@dimen/recycler_image_margin"/>
 
             <TextView
-                android:id="@+id/fragment_list_workmates_view_item_participating_information"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/fragment_list_workmates_view_item_workmate_details"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:hint="(Not information"/>
+                android:hint="Henry hasn't decided yet"/>
 
         </LinearLayout>
 

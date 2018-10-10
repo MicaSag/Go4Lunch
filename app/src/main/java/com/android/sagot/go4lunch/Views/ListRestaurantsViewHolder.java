@@ -14,10 +14,10 @@ import com.bumptech.glide.RequestManager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
+public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
 
     // For debug
-    private static final String TAG = ListRestaurantViewHolder.class.getSimpleName();
+    private static final String TAG = ListRestaurantsViewHolder.class.getSimpleName();
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.fragment_list_restaurant_view_item_card) CardView mCard;
@@ -33,7 +33,7 @@ public class ListRestaurantViewHolder extends RecyclerView.ViewHolder {
     @BindView(R.id.fragment_list_restaurant_view_item_image) ImageView mImage;
 
 
-    public ListRestaurantViewHolder(View itemView) {
+    public ListRestaurantsViewHolder(View itemView) {
         super(itemView);
         Log.d(TAG, "ListViewHolder: ");
 

@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -15,14 +15,14 @@ import java.util.List;
 public class ListWorkmatesViewAdapter extends RecyclerView.Adapter<ListWorkmatesViewHolder> {
 
     // FOR DATA
-    private List<RestaurantDetails> mListPlaceDetails;
+    private List<WorkmateDetails> mListWorkmatesDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
 
     // CONSTRUCTOR
-    public ListWorkmatesViewAdapter(List<RestaurantDetails> listPlaceDetails, RequestManager glide) {
-        mListPlaceDetails = listPlaceDetails;
+    public ListWorkmatesViewAdapter(List<WorkmateDetails> listParticipantsDetails, RequestManager glide) {
+        mListWorkmatesDetails = listParticipantsDetails;
         mGlide = glide;
     }
 
@@ -36,20 +36,20 @@ public class ListWorkmatesViewAdapter extends RecyclerView.Adapter<ListWorkmates
         return new ListWorkmatesViewHolder(view);
     }
 
-    // UPDATE VIEW HOLDER WITH A DETAILS PLACE
+    // UPDATE VIEW HOLDER WITH A PARTICIPANT INFORMATION
     @Override
     public void onBindViewHolder(ListWorkmatesViewHolder viewHolder, int position) {
-        viewHolder.updateWithParticipantDescription(mListPlaceDetails.get(position), this.mGlide);
+        viewHolder.updateWithParticipantDetails(mListWorkmatesDetails.get(position), this.mGlide);
     }
 
     // RETURN THE TOTAL COUNT OF ITEMS IN THE LIST
     @Override
     public int getItemCount() {
-        return mListPlaceDetails.size();
+        return mListWorkmatesDetails.size();
     }
 
-    // Returns the current position
-    public RestaurantDetails getPlaceDetails(int position){
-        return this.mListPlaceDetails.get(position);
+    // Returns the Restaurant Identifier of the current position
+    public String getRestaurantIdentifier(int position){
+        return this.mListWorkmatesDetails.get(position).getRestaurantIdentifier();
     }
 }

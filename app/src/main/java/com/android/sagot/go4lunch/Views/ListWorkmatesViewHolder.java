@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -17,12 +17,12 @@ import butterknife.ButterKnife;
 public class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
 
     // For debug
-    private static final String TAG = ListRestaurantViewHolder.class.getSimpleName();
+    private static final String TAG = ListWorkmatesViewHolder.class.getSimpleName();
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.fragment_list_workmates_view_item_card) CardView mCard;
-    @BindView(R.id.fragment_list_workmates_view_item_participant_photo) ImageView mPhoto;
-    @BindView(R.id.fragment_list_workmates_view_item_participating_information) TextView mInformation;
+    @BindView(R.id.fragment_list_workmates_view_item_workmate_photo) ImageView mPhoto;
+    @BindView(R.id.fragment_list_workmates_view_item_workmate_details) TextView mDetails;
 
 
     public ListWorkmatesViewHolder(View itemView) {
@@ -34,12 +34,16 @@ public class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithParticipantDescription(RestaurantDetails placeDetails, RequestManager glide){
-        Log.d(TAG, "updateWithPlaceDetails: ");
+    public void updateWithParticipantDetails(WorkmateDetails workmateDetails, RequestManager glide){
+        Log.d(TAG, "updateWithParticipantDescription: ");
 
-        this.mInformation.setText(placeDetails.getAddress());
+        String details = workmateDetails.getName()
+                + " is eating at '"
+                + workmateDetails.getRestaurantName()
+                + "'";
+        this.mDetails.setText(details);
 
-        glide.load(placeDetails.getPhotoUrl()).into(this.mPhoto);
+        glide.load(workmateDetails.getParticipantPhotoUrl()).into(this.mPhoto);
 
     }
 }

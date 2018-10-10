@@ -12,44 +12,44 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.List;
 
-public class ListRestaurantViewAdapter extends RecyclerView.Adapter<ListRestaurantViewHolder> {
+public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaurantsViewHolder> {
 
     // FOR DATA
-    private List<RestaurantDetails> mListPlaceDetails;
+    private List<RestaurantDetails> mListRestaurantsDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
 
     // CONSTRUCTOR
-    public ListRestaurantViewAdapter(List<RestaurantDetails> listPlaceDetails, RequestManager glide) {
-       mListPlaceDetails = listPlaceDetails;
+    public ListRestaurantsViewAdapter(List<RestaurantDetails> listRestaurantsDetails, RequestManager glide) {
+       mListRestaurantsDetails = listRestaurantsDetails;
        mGlide = glide;
     }
 
     @Override
-    public ListRestaurantViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ListRestaurantsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // CREATE VIEW HOLDER AND INFLATING ITS XML LAYOUT
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.fragment_list_restaurant_view_item, parent, false);
+        View view = inflater.inflate(R.layout.fragment_list_restaurants_view_item, parent, false);
 
-        return new ListRestaurantViewHolder(view);
+        return new ListRestaurantsViewHolder(view);
     }
 
     // UPDATE VIEW HOLDER WITH A DETAILS PLACE
     @Override
-    public void onBindViewHolder(ListRestaurantViewHolder viewHolder, int position) {
-        viewHolder.updateWithPlaceDetails(mListPlaceDetails.get(position), this.mGlide);
+    public void onBindViewHolder(ListRestaurantsViewHolder viewHolder, int position) {
+        viewHolder.updateWithPlaceDetails(mListRestaurantsDetails.get(position), this.mGlide);
     }
 
     // RETURN THE TOTAL COUNT OF ITEMS IN THE LIST
     @Override
     public int getItemCount() {
-        return mListPlaceDetails.size();
+        return mListRestaurantsDetails.size();
     }
 
     // Returns the current position
-    public RestaurantDetails getPlaceDetails(int position){
-        return this.mListPlaceDetails.get(position);
+    public RestaurantDetails getRestaurantDetails(int position){
+        return this.mListRestaurantsDetails.get(position);
     }
 }

@@ -10,16 +10,36 @@ import java.util.List;
 
 public class Go4LunchViewModel extends ViewModel {
 
-    // For save PlacesDetails List
-    private List<RestaurantDetails> mListPlacesDetails ;
+    // For save the status of the location permission granted
+    private boolean mLocationPermissionGranted;
 
-    // for set PlacesDetails List
-    public void setListPlaceDetails(List<RestaurantDetails> listPlaceDetails) {
-        mListPlacesDetails = listPlaceDetails;
+    // For save PlacesDetails List
+    private List<RestaurantDetails> mRestaurantsDetails ;
+
+    // For save ParticipantsDetails List
+    private List<WorkmateDetails> mWorkmatesDetails ;
+
+    public boolean isLocationPermissionGranted() {
+        return mLocationPermissionGranted;
     }
 
-    // For get PlacesDetails List
-    public List<RestaurantDetails> getListPlaceDetails() {
-        return mListPlacesDetails;
+    public void setLocationPermissionGranted(boolean locationPermissionGranted) {
+        mLocationPermissionGranted = locationPermissionGranted;
+    }
+
+    public List<RestaurantDetails> getRestaurantsDetails() {
+        return mRestaurantsDetails;
+    }
+
+    public void setRestaurantsDetails(List<RestaurantDetails> restaurantsDetails) {
+        mRestaurantsDetails = restaurantsDetails;
+    }
+
+    public List<WorkmateDetails> getWorkmatesDetails() {
+        return mWorkmatesDetails;
+    }
+
+    public void setWorkmatesDetails(List<WorkmateDetails> workmatesDetails) {
+        mWorkmatesDetails = workmatesDetails;
     }
 }
