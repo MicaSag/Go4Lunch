@@ -53,6 +53,19 @@
             android:theme="@style/AppTheme.RestaurantCard"> <!-- Change color status Bar -->
         </activity>
 
+        <!-- WEB VIEW Activity -->
+        <!-- A child of the Welcome Activity -->
+        <activity
+            android:name=".Controllers.Activities.WebViewActivity"
+            android:label="Restaurant Web Site"
+            android:parentActivityName=".Controllers.Activities.WelcomeActivity">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.WelcomeActivity" />
+        </activity>
+
     </application>
 
 </manifest>

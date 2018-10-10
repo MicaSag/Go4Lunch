@@ -1,9 +1,7 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +13,8 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListWorkmatesViewAdapter;
@@ -32,16 +30,24 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+/**************************************************************************************************
+ *
+ *  FRAGMENT that displays the Workmates List
+ *  -----------------------------------------
+ *  IN = Caller Name     : String
+ *       Workmates List : List<WorkmateDetails>
+ *
+ **************************************************************************************************/
 public class ListWorkmatesViewFragment extends Fragment {
 
     // FOR TRACES
     private static final String TAG = ListWorkmatesViewFragment.class.getSimpleName();
 
-    // Parameter for the construction of the fragment
-    public static final String KEY_LIST_WORKMATES = "KEY_LIST_WORKMATES";
+    // Parameters for the construction of the fragment
+    // 1 ==> Key Caller
+    public static final String KEY_CALLER_LIST_WORKMATES_VIEW = "KEY_CALLER_LIST_WORKMATES_VIEW";
+    // 2 ==> Workmates List
+    public static final String KEY_LIST_WORKMATES_VIEW = "KEY_LIST_WORKMATES";
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.fragment_list_workmates_view_recycler_view) RecyclerView mRecyclerView;
@@ -56,13 +62,12 @@ public class ListWorkmatesViewFragment extends Fragment {
     public ListWorkmatesViewFragment() {
         // Required empty public constructor
     }
-
-    public static ListWorkmatesViewFragment newInstance(List<WorkmateDetails> workmatesDetails) {
+    // ---------------------------------------------------------------------------------------------
+    //                                  FRAGMENT INSTANTIATION
+    // ---------------------------------------------------------------------------------------------
+    public static ListWorkmatesViewFragment newInstance(List<WorkmateDetails> workmatesDetails,
+                                                        String caller) {
         Log.d(TAG, "newInstance: ");
-
-        for (WorkmateDetails workmatesD : workmatesDetails) {
-            Log.d(TAG, "newInstance: workmatesDetails = "+workmatesD.getName());
-        }
 
         // Create new fragment
         ListWorkmatesViewFragment listWorkmatesViewFragment = new ListWorkmatesViewFragment();
@@ -74,46 +79,53 @@ public class ListWorkmatesViewFragment extends Fragment {
                 .disableHtmlEscaping()
                 .create();
         String json = gson.toJson(workmatesDetails);
-        args.putString(KEY_LIST_WORKMATES, json);
+
+        // 1 ==> Add Caller
+        args.putString(KEY_CALLER_LIST_WORKMATES_VIEW, caller);
+        // 2 ==> Add Workmates List
+        args.putString(KEY_LIST_WORKMATES_VIEW, json);
 
         listWorkmatesViewFragment.setArguments(args);
 
         return listWorkmatesViewFragment;
     }
-
+    // ---------------------------------------------------------------------------------------------
+    //                                    ENTRY POINT
+    // ---------------------------------------------------------------------------------------------
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
 
         // Inflate the layout for this fragment
-        mListView = inflater.inflate(R.layout.fragment_list_workmates_view, container, false);
+        mListView = inflater.inflate(R.layout.fragment_list_workmates_view,
+                container, false);
 
         // Telling ButterKnife to bind all views in layout
         ButterKnife.bind(this, mListView);
 
         // Get data from Bundle (created in method newInstance)
-        // Restoring the Date with a Gson Object
+        // 1 ==>  Workmates List
         Type collectionType = new TypeToken<List<WorkmateDetails>>() {}.getType();
         mWorkmatesDetails = new ArrayList<>();
-        mWorkmatesDetails = new Gson().fromJson(getArguments().getString(KEY_LIST_WORKMATES, ""),collectionType);
-
-        for (WorkmateDetails workmatesD : mWorkmatesDetails) {
-            Log.d(TAG, "newInstance: mWorkmatesDetails = "+workmatesD.getName());
-        }
+        mWorkmatesDetails = new Gson().fromJson(getArguments()
+                .getString(KEY_LIST_WORKMATES_VIEW, ""),collectionType);
+        // 2 ==> Caller
+        String caller = getArguments().getString(KEY_CALLER_LIST_WORKMATES_VIEW, "");
+        Log.d(TAG, "onCreateView: caller = "+caller);
 
         // Configure RecyclerView
         this.configureRecyclerView();
 
         // Calling the method that configuring click on RecyclerView
-        this.configureOnClickRecyclerView();
+        // Only if tha caller is WelcomeActivity
+        if (caller.equals("WelcomeActivity")) this.configureOnClickRecyclerView();
 
         return mListView;
     }
-
-    // -----------------
-    // CONFIGURATION
-    // -----------------
+    // ---------------------------------------------------------------------------------------------
+    //                                    CONFIGURATION
+    // ---------------------------------------------------------------------------------------------
     // Configure RecyclerView, Adapter, LayoutManager & glue it together
     private void configureRecyclerView(){
         Log.d(TAG, "configureRecyclerView: ");
@@ -125,10 +137,9 @@ public class ListWorkmatesViewFragment extends Fragment {
         // Set layout manager to position the items
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
-
-    // -----------------
-    //     ACTIONS
-    // -----------------
+    // ---------------------------------------------------------------------------------------------
+    //                                       ACTIONS
+    // ---------------------------------------------------------------------------------------------
     //  Configure clickListener on Item of the RecyclerView
     private void configureOnClickRecyclerView(){
         ItemClickSupport.addTo(mRecyclerView, R.layout.fragment_list_workmates_view_item)
@@ -138,17 +149,14 @@ public class ListWorkmatesViewFragment extends Fragment {
                     startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
                 });
     }
-
-    // --------------------
-    //   CALL ACTIVITY
-    // -------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                    CALL ACTIVITY
+    // ---------------------------------------------------------------------------------------------
     private void startRestaurantCardActivity(String restaurantIdentifier){
         Log.d(TAG, "startRestaurantCardActivity: ");
 
         // Create a intent for call RestaurantCardActivity
         Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
-
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
 
         final Gson gson = new GsonBuilder()
                 .serializeNulls()
@@ -156,15 +164,15 @@ public class ListWorkmatesViewFragment extends Fragment {
                 .create();
         String json;
 
+        // Browse the list of restaurants loaded in the ViewModel
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
         for (RestaurantDetails restaurantDetails :  model.getRestaurantsDetails()){
-            Log.d(TAG, "startRestaurantCardActivity: restaurantIdentifier      = "+restaurantIdentifier);
-            Log.d(TAG, "startRestaurantCardActivity: restaurantDetails.getId() = "+restaurantDetails.getId());
+
+            // Search restaurant details
             if (restaurantIdentifier.equals(restaurantDetails.getId())) {
 
-                // Create à KEY_RESTAURANT_CARD String with a Gson Object
+                // 1 ==> Sends the Restaurant details
                 json = gson.toJson(restaurantDetails);
-
-                // Sends the position of the selected item
                 intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
 
                 // Go out as soon as the restaurant details are found
@@ -172,12 +180,8 @@ public class ListWorkmatesViewFragment extends Fragment {
             }
         }
 
-        for (WorkmateDetails workmatesD : model.getWorkmatesDetails()) {
-            Log.d(TAG, "startRestaurantCardActivity: workmatesDetails = "+workmatesD.getName());
-        }
-
+        // 2 ==> Sends the workmates list
         json = gson.toJson(mWorkmatesDetails);
-        // Sends the workmates list
         intent.putExtra(RestaurantCardActivity.KEY_LIST_WORKMATES_RESTAURANT_CARD, json);
 
         // Call RestaurantCardActivity

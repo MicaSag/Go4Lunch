@@ -1,6 +1,5 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.location.Location;
@@ -23,11 +22,13 @@ import com.google.gson.GsonBuilder;
 
 import io.reactivex.disposables.Disposable;
 
-
-/**
- * Created by Michaël SAGOT on 23/08/2018.
- */
-
+/**************************************************************************************************
+ *
+ *  FRAGMENT that displays the Restaurant List
+ *  ------------------------------------------
+ *  IN = Last Know Location : Location
+ *
+ **************************************************************************************************/
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     // For debug
@@ -64,7 +65,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public MapViewFragment() {
         // Required empty public constructor
     }
-
+    // ---------------------------------------------------------------------------------------------
+    //                               FRAGMENT INSTANTIATION
+    // ---------------------------------------------------------------------------------------------
     public static MapViewFragment newInstance(Location lastKnownLocation) {
 
         // Create new fragment
@@ -83,10 +86,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         return mapViewFragment;
     }
-
-    // --------------------
-    //     ENTRY POINT
-    // --------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                    ENTRY POINT
+    // ---------------------------------------------------------------------------------------------
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -106,9 +108,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return rootView;
     }
 
-    // -------------------------------
-    //   GOOGLE PLAY SERVICE : MAPS
-    // -------------------------------
+    // ---------------------------------------------------------------------------------------------
+    //                            GOOGLE PLAY SERVICE : MAPS
+    // ---------------------------------------------------------------------------------------------
     public void configurePlayServiceMaps() {
         Log.d(TAG, "configurePlayServiceMaps: ");
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -134,7 +136,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         // Show current Location
         showCurrentLocation();
     }
-
+    // ---------------------------------------------------------------------------------------------
+    //                                       METHODS
+    // ---------------------------------------------------------------------------------------------
     /**
      * Method that places the map on a current location
      */
@@ -149,7 +153,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         // Update Location UI
         updateLocationUI();
     }
-
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
@@ -173,10 +176,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             }
         }
     }
-
-    // --------------------
-    //  CALLBACKS METHODS
-    // --------------------
     /**
      *  Method use for CallBacks to the Welcome Activity
      */
@@ -190,20 +189,5 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             throw new ClassCastException(context.toString()
                     + " must implement showSnackBarListener");
         }
-    }
-    
-    // -----------
-    //  ( OUT )
-    // -----------
-    @Override
-    public void onDestroy() {
-        //Unsubscribe the stream when the fragment is destroyed so as not to create a memory leaks
-        this.disposeWhenDestroy();
-        super.onDestroy();
-    }
-
-    //  Unsubscribe the stream when the fragment is destroyed so as not to create a memory leaks
-    private void disposeWhenDestroy(){
-        if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
     }
 }

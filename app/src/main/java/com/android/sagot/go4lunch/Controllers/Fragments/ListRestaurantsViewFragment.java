@@ -1,6 +1,5 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import android.view.ViewGroup;
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
@@ -29,9 +27,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+/**************************************************************************************************
+ *
+ *  FRAGMENT that displays the Restaurant List
+ *  ------------------------------------------
+ *  IN = No parameters
+ *
+ **************************************************************************************************/
 public class ListRestaurantsViewFragment extends Fragment {
 
     // FOR TRACES
@@ -50,20 +52,23 @@ public class ListRestaurantsViewFragment extends Fragment {
     public ListRestaurantsViewFragment() {
         // Required empty public constructor
     }
-
+    // ---------------------------------------------------------------------------------------------
+    //                                  FRAGMENT INSTANTIATION
+    // ---------------------------------------------------------------------------------------------
     public static ListRestaurantsViewFragment newInstance() {
         Log.d(TAG, "newInstance: ");
 
         // Create new fragment
-        ListRestaurantsViewFragment listRestaurantsViewFragment = new ListRestaurantsViewFragment();
-
-        return listRestaurantsViewFragment;
+        return new ListRestaurantsViewFragment();
     }
-
+    // ---------------------------------------------------------------------------------------------
+    //                                    ENTRY POINT
+    // ---------------------------------------------------------------------------------------------
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
+
         // Inflate the layout for this fragment
         mListView = inflater.inflate(R.layout.fragment_list_restaurants_views, container, false);
 
@@ -78,18 +83,16 @@ public class ListRestaurantsViewFragment extends Fragment {
 
         return mListView;
     }
-
-    // -----------------
-    // CONFIGURATION
-    // -----------------
+    // ---------------------------------------------------------------------------------------------
+    //                                    CONFIGURATION
+    // ---------------------------------------------------------------------------------------------
     // Configure RecyclerView, Adapter, LayoutManager & glue it together
     private void configureRecyclerView(){
         Log.d(TAG, "configureRecyclerView: ");
 
-        mRestaurantsDetails = new ArrayList<>();
-
         // Get the list of WorkmatesDetails from ViewModel
         Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        mRestaurantsDetails = new ArrayList<>();
         mRestaurantsDetails = model.getRestaurantsDetails();
 
         // Create adapter passing the list of RestaurantDetails
@@ -99,12 +102,13 @@ public class ListRestaurantsViewFragment extends Fragment {
         // Set layout manager to position the items
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
-
-    // -----------------
-    //     ACTIONS
-    // -----------------
+    // ---------------------------------------------------------------------------------------------
+    //                                       ACTIONS
+    // ---------------------------------------------------------------------------------------------
     //  Configure clickListener on Item of the RecyclerView
     private void configureOnClickRecyclerView(){
+        Log.d(TAG, "configureOnClickRecyclerView: ");
+
         ItemClickSupport.addTo(mRecyclerView, R.layout.fragment_list_restaurants_view_item)
                 .setOnItemClickListener((recyclerView, position, v) -> {
 
@@ -112,37 +116,31 @@ public class ListRestaurantsViewFragment extends Fragment {
                     startRestaurantCardActivity(mAdapter.getRestaurantDetails(position));
                     });
     }
-
-    // --------------------
-    //   CALL ACTIVITY
-    // -------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                    CALL ACTIVITY
+    // ---------------------------------------------------------------------------------------------
     private void startRestaurantCardActivity(RestaurantDetails restaurantDetails){
         Log.d(TAG, "startRestaurantCardActivity: ");
 
         // Create a intent for call RestaurantCardActivity
         Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
 
-        // Create à KEY_DETAILS_RESTAURANT_CARD String with a Gson Object
+        // Create a Gson Object
         final Gson gson = new GsonBuilder()
                 .serializeNulls()
                 .disableHtmlEscaping()
                 .create();
+
+        // 1 ==> Sends the Restaurant details
         String json = gson.toJson(restaurantDetails);
-        // Sends the restaurant details
         intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
 
-        // Create à KEY_LIST_WORKMATES_RESTAURANT_CARD String with a Gson Object
+        // 2 ==> Sends the list of Workmates saved in the viewModel
         Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-
-        for (WorkmateDetails workmatesD : model.getWorkmatesDetails()) {
-            Log.d(TAG, "startRestaurantCardActivity: workmatesDetails = "+workmatesD.getName());
-        }
-
         json = gson.toJson(model.getWorkmatesDetails());
-        // Sends the workmates list
         intent.putExtra(RestaurantCardActivity.KEY_LIST_WORKMATES_RESTAURANT_CARD, json);
 
-        // Call RestaurantCardActivity
+        // Call RestaurantCardActivity with 3 parameters
         startActivity(intent);
     }
 }

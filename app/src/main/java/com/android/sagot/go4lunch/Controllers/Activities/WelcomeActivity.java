@@ -58,7 +58,6 @@ import io.reactivex.observers.DisposableObserver;
 public class WelcomeActivity extends BaseActivity
                             implements  NavigationView.OnNavigationItemSelectedListener,
                                         MapViewFragment.ShowSnackBarListener  {
-
     // FOR TRACES
     private static final String TAG = WelcomeActivity.class.getSimpleName();
 
@@ -495,6 +494,8 @@ public class WelcomeActivity extends BaseActivity
             restaurant.setNbrStars(2);
             restaurant.setNbrParticipants(9);
             restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
+            //restaurant.setWebSiteUrl(placeD.getResult().getWebsite());
+            restaurant.setWebSiteUrl("http://dcmoto.free.fr/programmes/_html/index.html");
 
             mListRestaurantsDetails.add(restaurant);
             Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
@@ -504,6 +505,7 @@ public class WelcomeActivity extends BaseActivity
             Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
             Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
             Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
+            Log.d(TAG, "responseHttpRequestAnalyze:      web site    = "+restaurant.getWebSiteUrl());
         }
 
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
@@ -565,7 +567,8 @@ public class WelcomeActivity extends BaseActivity
         //Instantiate fragment used by BottomNavigationView
         mMapViewFragment = MapViewFragment.newInstance(mLastKnownLocation);
         mListRestaurantsViewFragment = ListRestaurantsViewFragment.newInstance();
-        mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(mWorkmatesDetails);
+        String callerName = this.getClass().getSimpleName();
+        mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(mWorkmatesDetails, callerName);
 
         // Save the active Fragment
         mActiveFragment = mMapViewFragment;
@@ -583,6 +586,22 @@ public class WelcomeActivity extends BaseActivity
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment,"MapViewFragment")
                 .commit();
     }
+    // ---------------------------------------------------------------------------------------------
+    //                                        ( OUT )
+    // ---------------------------------------------------------------------------------------------
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
 
+        //Unsubscribe the stream when the Activity is destroyed so as not to create a memory leaks
+        this.disposeWhenDestroy();
+        super.onDestroy();
+    }
 
+    //  Unsubscribe the stream when the Activity is destroyed so as not to create a memory leaks
+    private void disposeWhenDestroy(){
+        Log.d(TAG, "disposeWhenDestroy: ");
+
+        if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
+    }
 }
