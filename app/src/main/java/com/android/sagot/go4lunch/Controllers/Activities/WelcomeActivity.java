@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragment;
@@ -51,16 +52,27 @@ import butterknife.BindView;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-/**
- * Created by Michaël SAGOT on 17/08/2018.
- */
+/**************************************************************************************************
+ *
+ *  ACTIVITY that displays Body of the application
+ *  -----------------------------------------------
+ *  EXTENDS     : BaseActivity
+ *  IMPLEMENTS  : NavigationView.OnNavigationItemSelectedListener
+ *                  => To use the actions performed on the NavigationView
+ *              : MapViewFragment.ShowSnackBarListener
+ *                  => For Showing MapViewFragment information messages
+ *
+ **************************************************************************************************/
 
 public class WelcomeActivity extends BaseActivity
                             implements  NavigationView.OnNavigationItemSelectedListener,
                                         MapViewFragment.ShowSnackBarListener  {
-    // FOR TRACES
+    // For TRACES
+    // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
 
+    // For use VIEWS
+    // --------------
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.activity_welcome_coordinator_layout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.activity_welcome_bottom_navigation) BottomNavigationView bottomNavigationView;
@@ -68,7 +80,13 @@ public class WelcomeActivity extends BaseActivity
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
-    // -- Bottom Navigation View configuration
+    // For initialize VIEW MODEL
+    // --------------------------
+    // list of participating workmates
+    private List<WorkmateDetails> mWorkmatesDetails;
+
+    // For configuration Bottom Navigation View
+    // -----------------------------------------
     // Declare three fragment for used with the Bottom Navigation view
     private Fragment mMapViewFragment;
     private Fragment mListRestaurantsViewFragment;
@@ -78,16 +96,15 @@ public class WelcomeActivity extends BaseActivity
     // Declare an object fragment Manager
     private FragmentManager mFragmentManager;
 
-    // list of participating workmates
-    private List<WorkmateDetails> mWorkmatesDetails;
-
-    //--------------------------
-    // FOR DETERMINATE LOCATION
-    //--------------------------
-    // ==> For use location permission
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;  // Request Code
-    // For save the status of the location permission granted
+    // For use LOCATION permission
+    // ---------------------------
+    // 1 _ Request Code
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    // 2 _ For save the status of the location permission granted
     private boolean mLocationPermissionGranted;
+
+    // For determinate Location
+    // -------------------------
     // Default location if not permission granted ( Paris )
     private final LatLng mDefaultLocation = new LatLng(48.844304, 2.374377);
     // The geographical location where the device is currently located.
@@ -97,15 +114,14 @@ public class WelcomeActivity extends BaseActivity
     // The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
-    //--------------------------
-    //   FOR USE API REST
-    //--------------------------
+    // For use API REST
+    // -----------------
     // Declare Subscription
     protected Disposable mDisposable;
 
-    // -------------------------
-    // DECLARATION BASE METHODS
-    // -------------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                DECLARATION BASE METHODS
+    // ---------------------------------------------------------------------------------------------
     // BASE METHOD Implementation
     // Get the activity layout
     // CALLED BY BASE METHOD 'onCreate(...)'
@@ -221,25 +237,9 @@ public class WelcomeActivity extends BaseActivity
             this.mDrawerLayout.closeDrawer(GravityCompat.START);
         }
     }
-
-    // ----------------------------
-    // REST REQUESTS FOR SIGN OUT
-    // ----------------------------
-    // Create http requests (SignOut)
-    private void signOutUserFromFireBase(){
-        AuthUI.getInstance()
-                .signOut(this)
-                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
-    }
-
-    // Create OnCompleteListener called after tasks ended
-    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
-        return aVoid -> finish();
-    }
-
-    // ------------------------------
-    // GET LIST WORKMATES REGISTERED
-    // ------------------------------
+    // ---------------------------------------------------------------------------------------------
+    //                             GET LIST WORKMATES REGISTERED
+    // ---------------------------------------------------------------------------------------------
     private void getWorkmates(){
 
         mWorkmatesDetails = new ArrayList<>();
@@ -247,7 +247,7 @@ public class WelcomeActivity extends BaseActivity
         WorkmateDetails workmateDetails = new WorkmateDetails();
         workmateDetails.setName("Julien");
         workmateDetails.setRestaurantName("Le Grill du Barbu");
-        workmateDetails.setRestaurantIdentifier("ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
+        workmateDetails.setRestaurantIdentifier("ChIJLdtTqJkQ3UcRIJP4hzQoHMg");
         workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
         mWorkmatesDetails.add(workmateDetails);
 
@@ -261,7 +261,7 @@ public class WelcomeActivity extends BaseActivity
         workmateDetails = new WorkmateDetails();
         workmateDetails.setName("Bubule");
         workmateDetails.setRestaurantName("La cuise de la chauve souris verte");
-        workmateDetails.setRestaurantIdentifier("ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
+        workmateDetails.setRestaurantIdentifier("ChIJZer74J8Q3UcR_A7s76dPR3A");
         workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
         mWorkmatesDetails.add(workmateDetails);
 
@@ -275,7 +275,6 @@ public class WelcomeActivity extends BaseActivity
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
         model.setWorkmatesDetails(mWorkmatesDetails);
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                    PERMISSION METHODS
     // ---------------------------------------------------------------------------------------------
@@ -298,6 +297,9 @@ public class WelcomeActivity extends BaseActivity
                 // Get the last know location of the phone
                 Log.d(TAG, "getLocationPermission: Permission already granted by User");
                 mLocationPermissionGranted = true;
+                // Save Location Permission Granted
+                Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+                model.setLocationPermissionGranted(mLocationPermissionGranted);
                 getLastKnownCurrentLocationDevice();
             } else {
                 // Permissions not Granted
@@ -335,13 +337,15 @@ public class WelcomeActivity extends BaseActivity
                     mLastKnownLocation.setLatitude(mDefaultLocation.latitude);
                     mLastKnownLocation.setLongitude(mDefaultLocation.longitude);
 
-                    // Configure PlacesService
-                    this.configureGooglePlaceService();
+                    // Get List Restaurants Details
+                    this.getListRestaurantsDetails();
                 }
+                // Save Location Permission Granted
+                Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+                model.setLocationPermissionGranted(mLocationPermissionGranted);
             }
         }
     }
-
     /**
      * Retrieves Coordinates of the best and most recent device location information if Exists
      */
@@ -368,8 +372,8 @@ public class WelcomeActivity extends BaseActivity
                         mLastKnownLocation.setLatitude(mDefaultLocation.latitude);
                         mLastKnownLocation.setLongitude(mDefaultLocation.longitude);
                     }
-                    // Configure PlacesService
-                    this.configureGooglePlaceService();
+                    // Get List restaurants Details
+                    this.getListRestaurantsDetails();
                 }
             });
         } catch (SecurityException e)  {
@@ -378,149 +382,75 @@ public class WelcomeActivity extends BaseActivity
     }
 
     // ---------------------------------------------------------------------------------------------
-    //                          GOOGLE PLAY SERVICE : PLACES
+    //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
-    public static String locationStringFromLocation(final Location location) {
-        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES)
-                + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+    //           FOR SIGN OUT REQUEST
+    // -------------------------------
+    // Create http requests (SignOut)
+    private void signOutUserFromFireBase(){
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
     }
-
-    public void configureGooglePlaceService() {
-        Log.d(TAG, "configureGooglePlaceService: ");
-
-        // Get api_key
-        String key = getResources().getString(R.string.google_maps_key);
-
-        // Criteria of the query
-        Map<String, String> mQuery;
-        // Create filters
-        mQuery = new HashMap<>();
-        // --> Add Criteria <--
-        // -- Location Paris Gare de lyon
-        mQuery.put("key", key);
-        mQuery.put("placeid", "ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
-
+    // Create OnCompleteListener called after tasks ended
+    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
+        return aVoid -> finish();
+    }
+    // ------------------------------
+    //   FOR GOOGLE PLACES REQUEST
+    // ------------------------------
+    public void getListRestaurantsDetails() {
+        Log.d(TAG, "getListRestaurantsDetails: ");
 
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchPlaceDetails(mQuery)
-                .subscribeWith(new DisposableObserver<PlaceDetails>() {
+        mDisposable = GooglePlaceStreams.streamFetchListRestaurantDetails(locationStringFromLocation(mLastKnownLocation))
+                .subscribeWith(new DisposableObserver<List<RestaurantDetails>>() {
                     @Override
-                    public void onNext(PlaceDetails placeDetails) {
-                        Log.d(TAG, "onNext: ");
-                        // Analyze the answer
-                        responseHttpRequestAnalyze(placeDetails);
+                    public void onNext(List<RestaurantDetails> listRestaurantsDetails) {
+                        Log.d(TAG, "getListRestaurantsDetails : onNext: ");
+                        // Save Restaurant List in ViewModel
+                        saveListRestaurantDetailsInViewModel(listRestaurantsDetails);
                     }
-
                     @Override
                     public void onError(Throwable e) {
                         // Display a toast message
-                        //updateUIWhenErrorHTTPRequest();
-                        Log.d(TAG, "onError: ");
+                        updateUIWhenErrorHTTPRequest();
+                        Log.d(TAG, "getListRestaurantsDetails : onError: ");
                     }
                     @Override
-                    public void onComplete() { Log.d(TAG,"On Complete !!"); }
+                    public void onComplete() {
+                        Log.d(TAG,"getListRestaurantsDetails : On Complete !!");
+
+                    }
                 });
     }
 
-    public void configureGooglePlaceService2() {
-        Log.d(TAG, "configureGooglePlaceService: ");
+    // Generate a toast Message if error during Downloading
+    protected void updateUIWhenErrorHTTPRequest(){
+        Log.d(TAG, "updateUIWhenErrorHTTPRequest: ");
 
-        // Get api_key
-        String key = getResources().getString(R.string.google_maps_key);
-
-        // Criteria of the query
-        Map<String, String> mQuery;
-        // Create filters
-        mQuery = new HashMap<>();
-        // --> Add Criteria <--
-        // -- Location Paris Gare de lyon
-        mQuery.put("key", key);
-        Log.d(TAG, "configureGooglePlaceService: Location = "+locationStringFromLocation(mLastKnownLocation));
-        mQuery.put("location",locationStringFromLocation(mLastKnownLocation));
-        mQuery.put("radius", "100");
-        mQuery.put("type", "restaurant");
-
-        // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchPlacesNearBySearch(mQuery)
-                .subscribeWith(new DisposableObserver<PlaceNearBySearch>() {
-                    @Override
-                    public void onNext(PlaceNearBySearch placeDetails) {
-                        Log.d(TAG, "onNext: ");
-                        // Analyze the answer
-                        //responseHttpRequestAnalyze(placeDetails);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        // Display a toast message
-                        //updateUIWhenErrorHTTPRequest();
-                        Log.d(TAG, "onError: ");
-                    }
-                    @Override
-                    public void onComplete() { Log.d(TAG,"On Complete !!"); }
-                });
+        Toast.makeText(this, "Error during Downloading", Toast.LENGTH_LONG).show();
     }
 
-    // Analyze the answer of HttpRequestWithRetrofit
-    protected void responseHttpRequestAnalyze(PlaceDetails placeDetails) {
-        Log.d(TAG, "responseHTTPRequestAnalyze: ");
+    public void saveListRestaurantDetailsInViewModel(List<RestaurantDetails> listRestaurantsDetails){
+        Log.d(TAG, "saveListRestaurantDetailsInViewModel: ");
 
-        //List of restaurants found
-        //List<RestaurantDetails> mListRestaurantsDetails;
-        List<PlaceDetails> mListPlaceDetails;
-
-        // Creating a list of RestaurantDetails Restaurants
-        mListPlaceDetails = new ArrayList<>();
-        mListPlaceDetails.add(placeDetails);
-
-        //Instantiate a RestaurantDetails Restaurant Variable
-        RestaurantDetails restaurant;
-        List<RestaurantDetails> mListRestaurantsDetails;
-        mListRestaurantsDetails = new ArrayList<>();
-
-        //Here we recover only the elements of the query that interests us
-        for (PlaceDetails placeD : mListPlaceDetails) {
-
-            // Creating a New RestaurantDetails Restaurant Variable
-            restaurant = new RestaurantDetails();
-            restaurant.setId(placeD.getResult().getPlaceId());
-            restaurant.setName(placeD.getResult().getName());
-            if (placeD.getResult().getOpeningHours().getOpenNow() == true){
-                restaurant.setOpeningTime(placeD.getResult().getOpeningHours().getPeriods().get(0).getOpen().getTime());
-            }else restaurant.setOpeningTime("Closing soon");
-            restaurant.setAddress(placeD.getResult().getFormattedAddress());
-            restaurant.setLat(placeD.getResult().getGeometry().getLocation().getLat().toString());
-            restaurant.setLng(placeD.getResult().getGeometry().getLocation().getLng().toString());
-            restaurant.setNbrStars(2);
-            restaurant.setNbrParticipants(9);
-            restaurant.setPhotoUrl("https://cdn.pixabay.com/photo/2018/07/14/15/27/cafe-3537801_960_720.jpg");
-            //restaurant.setWebSiteUrl(placeD.getResult().getWebsite());
-            restaurant.setWebSiteUrl("http://dcmoto.free.fr/programmes/_html/index.html");
-
-            mListRestaurantsDetails.add(restaurant);
-            Log.d(TAG, "responseHttpRequestAnalyze: ***************************************");
-            Log.d(TAG, "responseHttpRequestAnalyze:      Place Id    = "+restaurant.getId());
-            Log.d(TAG, "responseHttpRequestAnalyze:      Name        = "+restaurant.getName());
-            Log.d(TAG, "responseHttpRequestAnalyze:      Address     = "+restaurant.getAddress());
-            Log.d(TAG, "responseHttpRequestAnalyze:      OpeningTime = "+restaurant.getOpeningTime());
-            Log.d(TAG, "responseHttpRequestAnalyze:      Lat         = "+restaurant.getLat());
-            Log.d(TAG, "responseHttpRequestAnalyze:      Lng         = "+restaurant.getLng());
-            Log.d(TAG, "responseHttpRequestAnalyze:      web site    = "+restaurant.getWebSiteUrl());
-        }
-
+        // Save Restaurant List in ViewModel
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-        // Save Restaurant List
-        model.setRestaurantsDetails(mListRestaurantsDetails);
-        // Save Location Permission
-        model.setLocationPermissionGranted(mLocationPermissionGranted);
-
-        Log.d(TAG, "responseHttpRequestAnalyze: isLocationPermissionGranted = "+model.isLocationPermissionGranted());
+        model.setRestaurantsDetails(listRestaurantsDetails);
 
         // We have recovered all the data necessary for the display
         // We can display and make the interface available
         configureBottomView();
     }
 
+    // Formatting Location Coordinates in String
+    public static String locationStringFromLocation(final Location location) {
+        Log.d(TAG, "locationStringFromLocation: ");
+
+        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES)
+                + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+    }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
     // ---------------------------------------------------------------------------------------------
@@ -535,7 +465,6 @@ public class WelcomeActivity extends BaseActivity
         // Add three fragments used by the FragmentManager and activates only the Fragment MapViewFragment
         addFragmentsInFragmentManager();
     }
-
     // >> ACTIONS <-------
     private Boolean updateMainFragment(Integer integer){
         switch (integer) {
@@ -557,10 +486,9 @@ public class WelcomeActivity extends BaseActivity
         }
         return true;
     }
-
-    // -----------
-    //  FRAGMENTS
-    // -----------
+    // ---------------------------------------------------------------------------------------------
+    //                                      FRAGMENTS
+    // ---------------------------------------------------------------------------------------------
     private void addFragmentsInFragmentManager(){
         Log.d(TAG, "addFragments: ");
 
@@ -597,7 +525,6 @@ public class WelcomeActivity extends BaseActivity
         this.disposeWhenDestroy();
         super.onDestroy();
     }
-
     //  Unsubscribe the stream when the Activity is destroyed so as not to create a memory leaks
     private void disposeWhenDestroy(){
         Log.d(TAG, "disposeWhenDestroy: ");

@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Using By Network Provider and Gps Provider -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Using for Call Number -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <!-- Using for make internet requests -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"

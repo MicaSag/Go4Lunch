@@ -1,8 +1,14 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +32,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 /**************************************************************************************************
  *
@@ -102,8 +110,23 @@ public class RestaurantCardActivity extends BaseActivity {
     // ---------------------------------------------------------------------------------------------
     // Click on Call Button
     @OnClick(R.id.activity_restaurant_call_button)
-    protected void submitCallButton(View view){
+    // Ask permission when accessing to this listener
+    @AfterPermissionGranted(RC_CALL_PHONE_PERMISSION)
+    public void submitCallButton(View view){
         Log.d(TAG, "submitCallButton: ");
+
+        if (!EasyPermissions.hasPermissions(this, PERMISSION_CALL_PHONE)) {
+            EasyPermissions.requestPermissions(this, "Permission CALL_PHONE", RC_CALL_PHONE_PERMISSION, PERMISSION_CALL_PHONE);
+            return;
+        }
+        Log.d(TAG, "submitCallButton: Permission GRANTED :-)");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // 2 - Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     // Click on Like Button

@@ -143,4 +143,12 @@ public class ListRestaurantsViewFragment extends Fragment {
         // Call RestaurantCardActivity with 3 parameters
         startActivity(intent);
     }
+
+    // -------------------
+    // UPDATE UI
+    // -------------------
+
+    public void updateUI(){
+        mAdapter.notifyDataSetChanged();
+    }
 }

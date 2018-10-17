@@ -51,9 +51,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     // _ That is, the last-known location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
 
-    // Declare Subscription
-    protected Disposable mDisposable;
-
     // ==> CallBack
     // Interface for ShowSnakeBar
     public interface ShowSnackBarListener {
