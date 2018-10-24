@@ -16,9 +16,6 @@ public class Go4LunchViewModel extends ViewModel {
     // For save PlacesDetails List
     private List<RestaurantDetails> mRestaurantsDetails ;
 
-    // For save ParticipantsDetails List
-    private List<WorkmateDetails> mWorkmatesDetails ;
-
     public boolean isLocationPermissionGranted() {
         return mLocationPermissionGranted;
     }
@@ -33,13 +30,5 @@ public class Go4LunchViewModel extends ViewModel {
 
     public void setRestaurantsDetails(List<RestaurantDetails> restaurantsDetails) {
         mRestaurantsDetails = restaurantsDetails;
-    }
-
-    public List<WorkmateDetails> getWorkmatesDetails() {
-        return mWorkmatesDetails;
-    }
-
-    public void setWorkmatesDetails(List<WorkmateDetails> workmatesDetails) {
-        mWorkmatesDetails = workmatesDetails;
     }
 }

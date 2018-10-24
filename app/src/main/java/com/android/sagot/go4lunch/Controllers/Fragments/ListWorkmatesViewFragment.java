@@ -14,18 +14,16 @@ import android.view.ViewGroup;
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListWorkmatesViewAdapter;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.Query;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,8 +32,7 @@ import butterknife.ButterKnife;
  *
  *  FRAGMENT that displays the Workmates List
  *  -----------------------------------------
- *  IN = Caller Name     : String
- *       Workmates List : List<WorkmateDetails>
+ *  IN = Restaurant Identifier  : String
  *
  **************************************************************************************************/
 public class ListWorkmatesViewFragment extends Fragment {
@@ -43,21 +40,18 @@ public class ListWorkmatesViewFragment extends Fragment {
     // FOR TRACES
     private static final String TAG = ListWorkmatesViewFragment.class.getSimpleName();
 
-    // Parameters for the construction of the fragment
-    // 1 ==> Key Caller
-    public static final String KEY_CALLER_LIST_WORKMATES_VIEW = "KEY_CALLER_LIST_WORKMATES_VIEW";
-    // 2 ==> Workmates List
-    public static final String KEY_LIST_WORKMATES_VIEW = "KEY_LIST_WORKMATES";
-
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.fragment_list_workmates_view_recycler_view) RecyclerView mRecyclerView;
 
     // View of the Fragment
     private View mListView;
 
-    // Declare list of WorkmatesDetails & his Adapter
-    private List<WorkmateDetails> mWorkmatesDetails;
+    // Declare Adapter of the RecyclerView
     private ListWorkmatesViewAdapter mAdapter;
+    // And its parameter a restaurant identifier
+    private String mRestaurantIdentifier;
+    // Parameter for the construction of the fragment
+    public static final String KEY_RESTAURANT_IDENTIFIER = "KEY_RESTAURANT_IDENTIFIER";
 
     public ListWorkmatesViewFragment() {
         // Required empty public constructor
@@ -65,8 +59,7 @@ public class ListWorkmatesViewFragment extends Fragment {
     // ---------------------------------------------------------------------------------------------
     //                                  FRAGMENT INSTANTIATION
     // ---------------------------------------------------------------------------------------------
-    public static ListWorkmatesViewFragment newInstance(List<WorkmateDetails> workmatesDetails,
-                                                        String caller) {
+    public static ListWorkmatesViewFragment newInstance(String restaurantIdentifier) {
         Log.d(TAG, "newInstance: ");
 
         // Create new fragment
@@ -74,16 +67,9 @@ public class ListWorkmatesViewFragment extends Fragment {
 
         // Create bundle and add it some data
         Bundle args = new Bundle();
-        final Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .disableHtmlEscaping()
-                .create();
-        String json = gson.toJson(workmatesDetails);
 
-        // 1 ==> Add Caller
-        args.putString(KEY_CALLER_LIST_WORKMATES_VIEW, caller);
-        // 2 ==> Add Workmates List
-        args.putString(KEY_LIST_WORKMATES_VIEW, json);
+        // ==> PUT restaurantIdentifier
+        args.putString(KEY_RESTAURANT_IDENTIFIER, restaurantIdentifier);
 
         listWorkmatesViewFragment.setArguments(args);
 
@@ -104,22 +90,16 @@ public class ListWorkmatesViewFragment extends Fragment {
         // Telling ButterKnife to bind all views in layout
         ButterKnife.bind(this, mListView);
 
-        // Get data from Bundle (created in method newInstance)
-        // 1 ==>  Workmates List
-        Type collectionType = new TypeToken<List<WorkmateDetails>>() {}.getType();
-        mWorkmatesDetails = new ArrayList<>();
-        mWorkmatesDetails = new Gson().fromJson(getArguments()
-                .getString(KEY_LIST_WORKMATES_VIEW, ""),collectionType);
-        // 2 ==> Caller
-        String caller = getArguments().getString(KEY_CALLER_LIST_WORKMATES_VIEW, "");
-        Log.d(TAG, "onCreateView: caller = "+caller);
+        //==> GET restaurantIdentifier
+        mRestaurantIdentifier = getArguments().getString(KEY_RESTAURANT_IDENTIFIER, "");
+        Log.d(TAG, "onCreateView: restaurantIdentifier = "+mRestaurantIdentifier);
 
         // Configure RecyclerView
         this.configureRecyclerView();
 
         // Calling the method that configuring click on RecyclerView
-        // Only if tha caller is WelcomeActivity
-        if (caller.equals("WelcomeActivity")) this.configureOnClickRecyclerView();
+        // Only if the restaurantIdentifier is empty
+        if (mRestaurantIdentifier == "") this.configureOnClickRecyclerView();
 
         return mListView;
     }
@@ -130,12 +110,31 @@ public class ListWorkmatesViewFragment extends Fragment {
     private void configureRecyclerView(){
         Log.d(TAG, "configureRecyclerView: ");
 
+        // Create a FireStore Query
+        Query query;
+        // if the restaurant ID is empty then all workmates will be displayed
+        if (mRestaurantIdentifier == "" ) {
+            query = UserHelper.getAllUser();
+        } else {
+            // Otherwise the displayed workmates will only be those who have selected the restaurant
+            // whose identifier has been passed as a parameter of the fragment
+            query = UserHelper.getAllUser().whereEqualTo("restaurantIdentifier",mRestaurantIdentifier);
+        }
         // Create adapter passing the list of RestaurantDetails
-        this.mAdapter = new ListWorkmatesViewAdapter(mWorkmatesDetails, Glide.with(this));
+        this.mAdapter = new ListWorkmatesViewAdapter(generateOptionsForAdapter(query)
+                                                                    , Glide.with(this));
+
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);
         // Set layout manager to position the items
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    }
+    //  options for RecyclerView from a Query
+    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query){
+        return new FirestoreRecyclerOptions.Builder<User>()
+                .setQuery(query, User.class)
+                .setLifecycleOwner(this)
+                .build();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
@@ -145,8 +144,11 @@ public class ListWorkmatesViewFragment extends Fragment {
         ItemClickSupport.addTo(mRecyclerView, R.layout.fragment_list_workmates_view_item)
                 .setOnItemClickListener((recyclerView, position, v) -> {
 
-                    //Launch Restaurant Card Activity with placeDetails
-                    startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
+                    // The restaurant card is called if the workmate chooses one
+                    if (mAdapter.getRestaurantIdentifier(position) != null) {
+                        //Launch Restaurant Card Activity with restaurantIdentifier
+                        ListWorkmatesViewFragment.this.startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
+                    }
                 });
     }
     // ---------------------------------------------------------------------------------------------
@@ -171,7 +173,7 @@ public class ListWorkmatesViewFragment extends Fragment {
             // Search restaurant details
             if (restaurantIdentifier.equals(restaurantDetails.getId())) {
 
-                // 1 ==> Sends the Restaurant details
+                // ==> Sends the Restaurant details
                 json = gson.toJson(restaurantDetails);
                 intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
 
@@ -180,11 +182,36 @@ public class ListWorkmatesViewFragment extends Fragment {
             }
         }
 
-        // 2 ==> Sends the workmates list
-        json = gson.toJson(mWorkmatesDetails);
-        intent.putExtra(RestaurantCardActivity.KEY_LIST_WORKMATES_RESTAURANT_CARD, json);
-
         // Call RestaurantCardActivity
         startActivity(intent);
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                          UPDATE UI
+    // ---------------------------------------------------------------------------------------------
+    public void updateUI(){
+        Log.d(TAG, "updateUI: ");
+        
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public String searchRestaurantName() {
+        Log.d(TAG, "searchRestaurantName: ");
+        
+        // Search Restaurant Name
+        String restaurantName = "no name";
+        // Browse the list of restaurants loaded in the ViewModel
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        for (RestaurantDetails restaurantDetails : model.getRestaurantsDetails()) {
+
+            // Search restaurant details
+            if (mRestaurantIdentifier.equals(restaurantDetails.getId())) {
+
+                restaurantName = restaurantDetails.getName();
+
+                // Go out as soon as the restaurant details are found
+                break;
+            }
+        }
+        return restaurantName;
     }
 }

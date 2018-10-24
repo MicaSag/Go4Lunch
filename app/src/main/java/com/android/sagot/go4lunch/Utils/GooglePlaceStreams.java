@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Utils;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
@@ -47,9 +48,10 @@ public class GooglePlaceStreams {
 
                     if (placeNearBySearch.getResults().size() != 0) {
                         for (PlaceNearBySearchResult result : placeNearBySearch.getResults()) {
+                            Log.d(TAG, "streamFetchListRestaurantId: placeId = "+result.getPlaceId());
                             listPlaceIdNearBySearch.add(result.getPlaceId());
                         }
-                    }
+                    } else Log.d(TAG, "streamFetchListRestaurantId: placeNearBySearch.getResults().size() = null");
                     //Observable from the restaurant Id list found
                     return listPlacesId;
                 });
@@ -67,85 +69,62 @@ public class GooglePlaceStreams {
     }
 
     // Return Restaurants Details List near by search
-    public static Observable<List<RestaurantDetails>> streamFetchListRestaurantDetails(String location) {
+    public static Observable<List<RestaurantDetails>> streamFetchListRestaurantDetails(String location, Context context) {
         Log.d(TAG, "streamFetchListRestaurantDetails: ");
 
         return streamFetchListRestaurantId(location)
-                .concatMap(new Function<List<String>, Observable<List<RestaurantDetails>>>(){
+                .concatMap((Function<List<String>, Observable<List<RestaurantDetails>>>) restaurantId -> Observable.fromIterable(restaurantId)
+                        .concatMap((Function<String, Observable<RestaurantDetails>>) restaurantId1 -> {
 
-                    @Override
-                    public Observable<List<RestaurantDetails>> apply(List<String> restaurantId) throws Exception {
+                            Observable<PlaceDetails> observablePlaceDetails = streamFetchPlaceDetails(restaurantId1);
 
-                        return Observable.fromIterable(restaurantId)
-                                .concatMap(new Function<String, Observable<RestaurantDetails>>(){
-                                    @Override
-                                    public Observable<RestaurantDetails> apply(String restaurantId) throws Exception {
+                            return observablePlaceDetails
+                                    .concatMap((Function<PlaceDetails, Observable<RestaurantDetails>>) placeDetails -> {
 
-                                        Observable<PlaceDetails> observablePlaceDetails = streamFetchPlaceDetails(restaurantId);
+                                        // Creating a New RestaurantDetails Restaurant Variable
+                                        RestaurantDetails restaurantDetails = new RestaurantDetails();
 
-                                        return observablePlaceDetails
-                                                .concatMap(new Function<PlaceDetails, Observable<RestaurantDetails>>() {
+                                        final PlaceDetailsResult result = placeDetails.getResult();
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + result.getPlaceId());
 
-                                                    @Override
-                                                    public Observable<RestaurantDetails> apply(PlaceDetails placeDetails) throws Exception {
+                                        restaurantDetails.setId(result.getPlaceId());
+                                        restaurantDetails.setName(result.getName());
+                                        if (result.getOpeningHours() != null) {
+                                            if (result.getOpeningHours().getPeriods().get(0).getClose() != null) {
+                                                restaurantDetails.setOpeningTime("Open until " + result.getOpeningHours().getPeriods().get(0).getClose().getTime() + "pm");
+                                            }
+                                        }
+                                        //}else restaurantDetails.setOpeningTime("Closing soon");
+                                        restaurantDetails.setAddress(result.getFormattedAddress());
+                                        restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
+                                        restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
+                                        restaurantDetails.setNbrStars(2);
+                                        restaurantDetails.setNbrParticipants(9);
 
-                                                        // Creating a New RestaurantDetails Restaurant Variable
-                                                        RestaurantDetails restaurantDetails = new RestaurantDetails();
+                                        if (result.getPhotos() != null) {
+                                            restaurantDetails.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
+                                                    + "maxwidth=2304"
+                                                    + "&photoreference=" + result.getPhotos().get(0).getPhotoReference()
+                                                    + "&key=AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4");
+                                        }
 
-                                                        final PlaceDetailsResult result = placeDetails.getResult();
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = "+result.getPlaceId());
+                                        if (result.getWebsite() != null) {
+                                            restaurantDetails.setWebSiteUrl(result.getWebsite());
+                                        }
 
-                                                        restaurantDetails.setId(result.getPlaceId());
-                                                        restaurantDetails.setName(result.getName());
-                                                        if (result.getOpeningHours() != null) {
-                                                            if (result.getOpeningHours().getPeriods().get(0).getClose() != null) {
-                                                                restaurantDetails.setOpeningTime("Open until " + result.getOpeningHours().getPeriods().get(0).getClose().getTime() + "pm");
-                                                            }
-                                                        }
-                                                        //}else restaurantDetails.setOpeningTime("Closing soon");
-                                                        restaurantDetails.setAddress(result.getFormattedAddress());
-                                                        restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
-                                                        restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
-                                                        restaurantDetails.setNbrStars(2);
-                                                        restaurantDetails.setNbrParticipants(9);
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: ***************************************");
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + restaurantDetails.getId());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Name        = " + restaurantDetails.getName());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Address     = " + restaurantDetails.getAddress());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      OpeningTime = " + restaurantDetails.getOpeningTime());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lat         = " + restaurantDetails.getLat());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = " + restaurantDetails.getLng());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurantDetails.getWebSiteUrl());
 
-                                                        if (result.getPhotos() != null) {
-                                                            restaurantDetails.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
-                                                                    + "maxwidth=2304"
-                                                                    + "&photoreference=" + result.getPhotos().get(0).getPhotoReference()
-                                                                    + "&key=AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4");
-                                                        }
-
-                                                        if (result.getWebsite() != null) {
-                                                            restaurantDetails.setWebSiteUrl(result.getWebsite());
-                                                        }
-
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails: ***************************************");
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = "+restaurantDetails.getId());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Name        = "+restaurantDetails.getName());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Address     = "+restaurantDetails.getAddress());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      OpeningTime = "+restaurantDetails.getOpeningTime());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lat         = "+restaurantDetails.getLat());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = "+restaurantDetails.getLng());
-                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = "+restaurantDetails.getWebSiteUrl());
-
-                                                        return Observable.just(restaurantDetails);
-                                                    }
-                                        });
-                                    }
-                                })
-                                .toList()
-                                .toObservable();
-                    }
-                });
+                                        return Observable.just(restaurantDetails);
+                                    });
+                        })
+                        .toList()
+                        .toObservable());
     }
-
-    // Google Place Photo STREAM
-    /*public static Observable<GooglePlacePhoto> streamFetchPlacePhoto(String apiKey, Map<String,String> filters){
-        GooglePlaceService googlePlaceService = GooglePlaceService.retrofit.create(GooglePlaceService.class);
-        return googlePlaceService.getPlacePhoto(apiKey,filters)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .timeout(10, TimeUnit.SECONDS);
-    }*/
 }

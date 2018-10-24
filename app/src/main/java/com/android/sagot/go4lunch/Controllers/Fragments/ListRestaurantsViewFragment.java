@@ -131,14 +131,9 @@ public class ListRestaurantsViewFragment extends Fragment {
                 .disableHtmlEscaping()
                 .create();
 
-        // 1 ==> Sends the Restaurant details
+        // ==> Sends the Restaurant details
         String json = gson.toJson(restaurantDetails);
         intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
-
-        // 2 ==> Sends the list of Workmates saved in the viewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        json = gson.toJson(model.getWorkmatesDetails());
-        intent.putExtra(RestaurantCardActivity.KEY_LIST_WORKMATES_RESTAURANT_CARD, json);
 
         // Call RestaurantCardActivity with 3 parameters
         startActivity(intent);

@@ -9,6 +9,8 @@
     <dimen name="margin">5dip</dimen>
     <dimen name="half_margin">10dip</dimen>
     <dimen name="large_margin">15dip</dimen>
+    <dimen name="big_margin">20dip</dimen>
+    <dimen name="very_big_margin">50dip</dimen>
     <dimen name="top_margin">10dip</dimen>
     <dimen name="bottom_margin">10dip</dimen>
     <dimen name="start_margin">40dip</dimen>
@@ -19,8 +21,9 @@
     <dimen name="text_size_button">13sp</dimen>
     <dimen name="text_size_mini">8sp</dimen>
 
-    <!-- Default NavigationView Header height -->
-    <dimen name="nav_header_height">176dp</dimen>
+    <!-- NavigationView Header -->
+    <dimen name="nav_header_height">230dp</dimen>
+    <dimen name="nav_header_text_size">12sp</dimen>
 
     <!-- RESTAURANT CARD ACTIVITY DIMENS -->
     <dimen name="card_align_margin">3dip</dimen>

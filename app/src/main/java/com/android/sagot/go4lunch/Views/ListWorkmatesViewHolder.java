@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -34,16 +34,23 @@ public class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithParticipantDetails(WorkmateDetails workmateDetails, RequestManager glide){
+    public void updateWithParticipantDetails(User user, RequestManager glide){
         Log.d(TAG, "updateWithParticipantDescription: ");
 
-        String details = workmateDetails.getName()
-                + " is eating at '"
-                + workmateDetails.getRestaurantName()
-                + "'";
+        // display details
+        String details;
+        if (user.getRestaurantName() != null) {
+            details = user.getUserName()
+                    + " is eating at ("
+                    + user.getRestaurantName()
+                    + ")";
+        } else {
+            details = user.getUserName()
+                    + " hasn't decided yet";
+        }
         this.mDetails.setText(details);
 
-        glide.load(workmateDetails.getParticipantPhotoUrl()).into(this.mPhoto);
+        glide.load(user.getUrlPicture()).into(this.mPhoto);
 
     }
 }

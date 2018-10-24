@@ -9,6 +9,7 @@ import android.view.View;
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
@@ -35,9 +36,9 @@ public class MainActivity extends BaseActivity {
     // Identifier for Sign-In Activity
     private static final int RC_SIGN_IN = 100;
 
-    // -------------------------
-    // DECLARATION BASE METHODS
-    // -------------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                DECLARATION BASE METHODS
+    // ---------------------------------------------------------------------------------------------
     // BASE METHOD Implementation
     // Get the activity layout
     // CALLED BY BASE METHOD 'onCreate(...)'
@@ -54,9 +55,9 @@ public class MainActivity extends BaseActivity {
         return mCoordinatorLayout;
     }
 
-    // --------------------
-    // ACTIONS
-    // --------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                          ACTIONS
+    // ---------------------------------------------------------------------------------------------
 
     @OnClick(R.id.main_activity_facebook_login_button)
     public void onClickFacebookLoginButton() {
@@ -70,13 +71,14 @@ public class MainActivity extends BaseActivity {
         this.startGoogleSignInActivity();
     }
 
-    // --------------------
-    //   AUTHENTICATION
-    // --------------------
+    // ---------------------------------------------------------------------------------------------
+    //                                        AUTHENTICATION
+    // ---------------------------------------------------------------------------------------------
 
     // Launch Google Sign-In
     private void startGoogleSignInActivity(){
         Log.d(TAG, "startSignInActivity: ");
+
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -92,6 +94,7 @@ public class MainActivity extends BaseActivity {
     // Launch Google Sign-In
     private void startFaceBookSignInActivity(){
         Log.d(TAG, "startSignInActivity: ");
+
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -107,9 +110,10 @@ public class MainActivity extends BaseActivity {
     // Method that retrieves the result of the authentication
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]");
+        Log.d(TAG, "onActivityResult: ");
+
         super.onActivityResult(requestCode, resultCode, data);
-        // 4 - Handle SignIn Activity response on activity result
+        // Handle SignIn Activity response on activity result
         this.handleResponseAfterSignIn(requestCode, resultCode, data);
     }
 
@@ -121,6 +125,8 @@ public class MainActivity extends BaseActivity {
 
         if (requestCode == RC_SIGN_IN) {   // = 100
             if (resultCode == RESULT_OK) { // SUCCESS = -1
+                // CREATE user in FireStore
+                this.createUserInFireStore();
                 showSnackBar(getString(R.string.connection_succeed));
                 // Call Welcome Activity
                 startWelcomeActivity();
@@ -137,11 +143,26 @@ public class MainActivity extends BaseActivity {
             }
         }
     }
+    // Method that creates the user in the FireStore base
+    private void createUserInFireStore(){
+        Log.d(TAG, "createUserInFireStore: ");
 
-    // --------------------
-    //   CALL ACTIVITY
-    // -------------------
+        if (this.getCurrentUser() != null){
+
+            String urlPicture = (this.getCurrentUser().getPhotoUrl() != null) ? this.getCurrentUser().getPhotoUrl().toString() : null;
+            String userName = this.getCurrentUser().getDisplayName();
+            String uid = this.getCurrentUser().getUid();
+
+            UserHelper.createUser(uid, userName, null, null,null,urlPicture)
+                    .addOnFailureListener(this.onFailureListener());
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                      CALL ACTIVITY
+    // ---------------------------------------------------------------------------------------------
     private void startWelcomeActivity(){
+        Log.d(TAG, "startWelcomeActivity: ");
+
         Intent intent = new Intent(this, WelcomeActivity.class);
         startActivity(intent);
     }

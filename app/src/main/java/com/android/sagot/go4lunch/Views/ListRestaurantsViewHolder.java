@@ -64,7 +64,7 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
         if (placeDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
         if (placeDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
 
-        glide.load(placeDetails.getPhotoUrl()).into(this.mImage);
+        if (placeDetails.getPhotoUrl() != null) glide.load(placeDetails.getPhotoUrl()).into(this.mImage);
 
     }
 }

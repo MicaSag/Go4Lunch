@@ -11,16 +11,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import io.reactivex.disposables.Disposable;
+import java.util.List;
+
+import butterknife.OnClick;
+import pub.devrel.easypermissions.AfterPermissionGranted;
 
 /**************************************************************************************************
  *
@@ -29,7 +36,7 @@ import io.reactivex.disposables.Disposable;
  *  IN = Last Know Location : Location
  *
  **************************************************************************************************/
-public class MapViewFragment extends Fragment implements OnMapReadyCallback {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback,  GoogleMap.OnMarkerClickListener {
 
     // For debug
     private static final String TAG = MapViewFragment.class.getSimpleName();
@@ -115,7 +122,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             mMapFragment = SupportMapFragment.newInstance();
             mMapFragment.getMapAsync(this);
         }
-
         // Build the map
         getChildFragmentManager().beginTransaction().replace(R.id.fragment_map_view, mMapFragment).commit();
     }
@@ -132,6 +138,20 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         // Show current Location
         showCurrentLocation();
+
+        // Display Restaurants pin
+        displayRestaurantsMarker();
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                       ACTIONS
+    // ---------------------------------------------------------------------------------------------
+    // Click on Restaurants Map Marker
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        //Launch Restaurant Card Activity with placeDetails
+        //startRestaurantCardActivity(mAdapter.getRestaurantDetails(Integer.parseInt(marker.getTag().toString())));
+        return false;
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS
@@ -143,6 +163,35 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "showCurrentLocation: ");
         Log.d(TAG, "showCurrentLocation: mLastKnownLocation.getLatitude()  = " + mLastKnownLocation.getLatitude());
         Log.d(TAG, "showCurrentLocation: mLastKnownLocation.getLongitude() = " + mLastKnownLocation.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mLastKnownLocation.getLatitude(),
+                        mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
+        // Update Location UI
+        updateLocationUI();
+    }
+    /**
+     * Method that display restaurants Markers
+     */
+    private void displayRestaurantsMarker() {
+        Log.d(TAG, "displayRestaurantsMarker: ");
+
+        // Load Restaurant List in ViewModel
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        List<RestaurantDetails> listRestaurants = model.getRestaurantsDetails();
+
+        for (RestaurantDetails restaurantDetails : listRestaurants){
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(   Double.parseDouble(restaurantDetails.getLat()),
+                                            Double.parseDouble(restaurantDetails.getLng())
+                                        )
+                            )
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green))
+                    .title(restaurantDetails.getName())
+                    );
+            marker.setTag(restaurantDetails.getId());
+        }
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(mLastKnownLocation.getLatitude(),
                         mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));

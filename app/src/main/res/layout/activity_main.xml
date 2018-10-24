@@ -44,7 +44,7 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/white"/>
 
-            <!-- DESCRIPTION FIREBASE OC -->
+            <!-- DESCRIPTION GO4LUNCH  -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

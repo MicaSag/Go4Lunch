@@ -17,6 +17,9 @@
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <!-- Used in NavigationHeader -->
+    <string name="navigation_header_user_name">no user name found</string>
+    <string name="navigation_header_user_email">no user email found</string>
 
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_map_view">Map View</string>

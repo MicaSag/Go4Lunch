@@ -1,55 +1,46 @@
 package com.android.sagot.go4lunch.Views;
 
-import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
-import java.util.List;
+import io.reactivex.annotations.NonNull;
 
-public class ListWorkmatesViewAdapter extends RecyclerView.Adapter<ListWorkmatesViewHolder> {
-
-    // FOR DATA
-    private List<WorkmateDetails> mListWorkmatesDetails;
+public class ListWorkmatesViewAdapter extends FirestoreRecyclerAdapter<User, ListWorkmatesViewHolder> {
 
     // Declaring a Glide object
     private RequestManager mGlide;
 
+    // Declare Options<User>
+    FirestoreRecyclerOptions<User> mOptions;
+
     // CONSTRUCTOR
-    public ListWorkmatesViewAdapter(List<WorkmateDetails> listParticipantsDetails, RequestManager glide) {
-        mListWorkmatesDetails = listParticipantsDetails;
+    public ListWorkmatesViewAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide) {
+        super(options);
+        mOptions = options;
         mGlide = glide;
     }
 
     @Override
     public ListWorkmatesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // CREATE VIEW HOLDER AND INFLATING ITS XML LAYOUT
-        Context context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.fragment_list_workmates_view_item, parent, false);
-
-        return new ListWorkmatesViewHolder(view);
+        return new ListWorkmatesViewHolder(LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.fragment_list_workmates_view_item, parent, false));
     }
 
     // UPDATE VIEW HOLDER WITH A PARTICIPANT INFORMATION
     @Override
-    public void onBindViewHolder(ListWorkmatesViewHolder viewHolder, int position) {
-        viewHolder.updateWithParticipantDetails(mListWorkmatesDetails.get(position), this.mGlide);
-    }
-
-    // RETURN THE TOTAL COUNT OF ITEMS IN THE LIST
-    @Override
-    public int getItemCount() {
-        return mListWorkmatesDetails.size();
+    public void onBindViewHolder(@NonNull ListWorkmatesViewHolder viewHolder, int position, @NonNull User user) {
+        viewHolder.updateWithParticipantDetails(user, mGlide);
     }
 
     // Returns the Restaurant Identifier of the current position
     public String getRestaurantIdentifier(int position){
-        return this.mListWorkmatesDetails.get(position).getRestaurantIdentifier();
+        return mOptions.getSnapshots().get(position).getRestaurantIdentifier();
     }
 }

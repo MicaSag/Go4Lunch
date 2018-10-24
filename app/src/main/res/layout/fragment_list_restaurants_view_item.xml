@@ -175,7 +175,8 @@
                 android:layout_marginBottom="@dimen/margin"
                 android:layout_width="@dimen/recycler_image_width"
                 android:layout_height="@dimen/recycler_image_height"
-                android:layout_margin="@dimen/recycler_image_margin"/>
+                android:layout_margin="@dimen/recycler_image_margin"
+                android:src="@drawable/pic_no_image_available_600x600"/>
 
         </LinearLayout>
 

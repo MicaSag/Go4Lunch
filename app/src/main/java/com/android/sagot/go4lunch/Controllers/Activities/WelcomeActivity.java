@@ -19,10 +19,13 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
@@ -30,12 +33,11 @@ import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragm
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
-import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -43,10 +45,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import io.reactivex.disposables.Disposable;
@@ -79,11 +78,6 @@ public class WelcomeActivity extends BaseActivity
     @BindView(R.id.activity_welcome_drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
-
-    // For initialize VIEW MODEL
-    // --------------------------
-    // list of participating workmates
-    private List<WorkmateDetails> mWorkmatesDetails;
 
     // For configuration Bottom Navigation View
     // -----------------------------------------
@@ -145,9 +139,6 @@ public class WelcomeActivity extends BaseActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get the list of Workmates registered in the
-        this.getWorkmates();
-
         // Get Location permission
         getLocationPermission();
 
@@ -195,10 +186,44 @@ public class WelcomeActivity extends BaseActivity
     // Configure NavigationView
     private void configureNavigationView() {
         Log.d(TAG, "configureNavigationView: ");
+
+        // Configure NavigationHeader
+        configureNavigationHeader();
+
         // Subscribes to listen the navigationView
         mNavigationView.setNavigationItemSelectedListener(this);
         // Mark as selected the first menu item
         this.mNavigationView.getMenu().getItem(0).setChecked(true);
+    }
+
+    // Configure NavigationHeader
+    private void configureNavigationHeader() {
+
+        View navigationHeader = mNavigationView.inflateHeaderView(R.layout.activity_welcome_nav_header);
+        ImageView userPhoto = navigationHeader.findViewById(R.id.navigation_header_user_photo);
+        TextView userName = navigationHeader.findViewById(R.id.navigation_header_user_name);
+        TextView userEmail = navigationHeader.findViewById(R.id.navigation_header_user_email);
+
+        if (this.getCurrentUser() != null){
+
+            //Get picture URL from Firebase
+            if (this.getCurrentUser().getPhotoUrl() != null) {
+                Glide.with(this)
+                        .load(this.getCurrentUser().getPhotoUrl())
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(userPhoto);
+            }
+
+            //Get email & username from Firebase
+            String email = TextUtils.isEmpty(this.getCurrentUser().getEmail())
+                    ? getString(R.string.navigation_header_user_email) : this.getCurrentUser().getEmail();
+            String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName())
+                    ? getString(R.string.navigation_header_user_name) : this.getCurrentUser().getDisplayName();
+
+            //Update views with data
+            userName.setText(username);
+            userEmail.setText(email);
+        }
     }
 
     // >> ACTIONS <-------
@@ -236,44 +261,6 @@ public class WelcomeActivity extends BaseActivity
         if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             this.mDrawerLayout.closeDrawer(GravityCompat.START);
         }
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                             GET LIST WORKMATES REGISTERED
-    // ---------------------------------------------------------------------------------------------
-    private void getWorkmates(){
-
-        mWorkmatesDetails = new ArrayList<>();
-
-        WorkmateDetails workmateDetails = new WorkmateDetails();
-        workmateDetails.setName("Julien");
-        workmateDetails.setRestaurantName("Le Grill du Barbu");
-        workmateDetails.setRestaurantIdentifier("ChIJLdtTqJkQ3UcRIJP4hzQoHMg");
-        workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
-        mWorkmatesDetails.add(workmateDetails);
-
-        workmateDetails = new WorkmateDetails();
-        workmateDetails.setName("Hélène");
-        workmateDetails.setRestaurantName("La cuise de la chauve souris verte");
-        workmateDetails.setRestaurantIdentifier("ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
-        workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
-        mWorkmatesDetails.add(workmateDetails);
-
-        workmateDetails = new WorkmateDetails();
-        workmateDetails.setName("Bubule");
-        workmateDetails.setRestaurantName("La cuise de la chauve souris verte");
-        workmateDetails.setRestaurantIdentifier("ChIJZer74J8Q3UcR_A7s76dPR3A");
-        workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
-        mWorkmatesDetails.add(workmateDetails);
-
-        workmateDetails = new WorkmateDetails();
-        workmateDetails.setName("Tarzan");
-        workmateDetails.setRestaurantName("En haut de l''arbre");
-        workmateDetails.setRestaurantIdentifier("ChIJZ7eTV3Ua3UcRU8Fzi4HfXG0");
-        workmateDetails.setParticipantPhotoUrl("https://9d4912fdd2045774d0d6-e8a43afd12aae363bbf177a3329a9da5.ssl.cf2.rackcdn.com/images/500xblank/ANDRU.jpg");
-        mWorkmatesDetails.add(workmateDetails);
-
-        Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-        model.setWorkmatesDetails(mWorkmatesDetails);
     }
     // ---------------------------------------------------------------------------------------------
     //                                    PERMISSION METHODS
@@ -384,7 +371,7 @@ public class WelcomeActivity extends BaseActivity
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
-    //           FOR SIGN OUT REQUEST
+    //      FOR SIGN OUT REQUEST
     // -------------------------------
     // Create http requests (SignOut)
     private void signOutUserFromFireBase(){
@@ -402,8 +389,9 @@ public class WelcomeActivity extends BaseActivity
     public void getListRestaurantsDetails() {
         Log.d(TAG, "getListRestaurantsDetails: ");
 
+        Log.d(TAG, "getListRestaurantsDetails: mLastKnownLocation = "+locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchListRestaurantDetails(locationStringFromLocation(mLastKnownLocation))
+        mDisposable = GooglePlaceStreams.streamFetchListRestaurantDetails(locationStringFromLocation(mLastKnownLocation),this)
                 .subscribeWith(new DisposableObserver<List<RestaurantDetails>>() {
                     @Override
                     public void onNext(List<RestaurantDetails> listRestaurantsDetails) {
@@ -448,8 +436,12 @@ public class WelcomeActivity extends BaseActivity
     public static String locationStringFromLocation(final Location location) {
         Log.d(TAG, "locationStringFromLocation: ");
 
-        return Location.convert(location.getLatitude(), Location.FORMAT_DEGREES)
-                + "," + Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+        String latitude = Location.convert(location.getLatitude(), Location.FORMAT_DEGREES);
+        String lat = latitude.replaceAll(",",".");
+        String longitude = Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
+        String lon = longitude.replaceAll(",",".");
+        Log.d(TAG, "locationStringFromLocation: "+lat+ "," + lon);
+        return lat+ "," + lon;
     }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
@@ -495,8 +487,7 @@ public class WelcomeActivity extends BaseActivity
         //Instantiate fragment used by BottomNavigationView
         mMapViewFragment = MapViewFragment.newInstance(mLastKnownLocation);
         mListRestaurantsViewFragment = ListRestaurantsViewFragment.newInstance();
-        String callerName = this.getClass().getSimpleName();
-        mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(mWorkmatesDetails, callerName);
+        mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(null);
 
         // Save the active Fragment
         mActiveFragment = mMapViewFragment;

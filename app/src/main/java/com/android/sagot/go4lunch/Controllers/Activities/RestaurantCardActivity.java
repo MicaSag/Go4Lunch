@@ -1,34 +1,24 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
+import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
-import com.android.sagot.go4lunch.Models.WorkmateDetails;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -39,8 +29,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  *
  *  ACTIVITY that displays the Restaurant
  *  -----------------------------------------
- *  IN = Key Caller     : String
- *       Workmates List : List<WorkmateDetails>
+ *  IN = Restaurant Details     : RestaurantDetails
  *
  **************************************************************************************************/
 
@@ -62,17 +51,16 @@ public class RestaurantCardActivity extends BaseActivity {
 
     // Create the key details restaurant
     public static final String KEY_DETAILS_RESTAURANT_CARD = "KEY_DETAILS_RESTAURANT_CARD";
-    // Create the key workmates List
-    public static final String KEY_LIST_WORKMATES_RESTAURANT_CARD = "KEY_LIST_WORKMATES_RESTAURANT_CARD";
 
     // --> Data retrieved from the caller
     // Declare a RestaurantDetails
     private RestaurantDetails mRestaurantDetails;
-    // Declare list of WorkmatesDetails
-    private List<WorkmateDetails> mWorkmatesDetails;
 
     // Declaring a Glide object
     private RequestManager mGlide;
+
+    // Declare ListRestaurantsView FRAGMENT
+    private ListWorkmatesViewFragment mListWorkmatesViewFragment;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -108,7 +96,8 @@ public class RestaurantCardActivity extends BaseActivity {
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
     // ---------------------------------------------------------------------------------------------
-    // Click on Call Button
+    // CALL Button
+    //**************
     @OnClick(R.id.activity_restaurant_call_button)
     // Ask permission when accessing to this listener
     @AfterPermissionGranted(RC_CALL_PHONE_PERMISSION)
@@ -119,23 +108,31 @@ public class RestaurantCardActivity extends BaseActivity {
             EasyPermissions.requestPermissions(this, "Permission CALL_PHONE", RC_CALL_PHONE_PERMISSION, PERMISSION_CALL_PHONE);
             return;
         }
-        Log.d(TAG, "submitCallButton: Permission GRANTED :-)");
+        try {
+            Log.d(TAG, "submitCallButton: Permission GRANTED :-)");
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0616176149"));
+            startActivity(callIntent);
+        }catch (SecurityException e){
+            Log.d(TAG, "submitCallButton: EXCEPTION ALERTE ALERTE ALERTE");
+        }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // 2 - Forward results to EasyPermissions
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
-
-    // Click on Like Button
+    //**************
+    // LIKE Button
+    //**************
     @OnClick(R.id.activity_restaurant_like_button)
     protected void submitLikeButton(View view){
         Log.d(TAG, "submitLikeButton: ");
+
+        UserHelper.updateRestaurantIdentifier(getCurrentUser().getUid(),mRestaurantDetails.getId());
+        UserHelper.updateRestaurantName(getCurrentUser().getUid(),mRestaurantDetails.getName());
+        mListWorkmatesViewFragment.updateUI();
     }
 
-    // Click on Web Site Button
+    //*****************
+    // WEB SITE Button
+    //*****************
     @OnClick(R.id.activity_restaurant_web_site_button)
     protected void submitWebSiteButton(View view){
         Log.d(TAG, "submitWebSiteButton: ");
@@ -145,6 +142,18 @@ public class RestaurantCardActivity extends BaseActivity {
         Intent myIntent = new Intent(this, WebViewActivity.class);
         myIntent.putExtra(WebViewActivity.KEY_RESTAURANT_WEB_SITE_URL,mRestaurantDetails.getWebSiteUrl());
         this.startActivity(myIntent);
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                   REQUEST PERMISSION
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Method to ask the user for permission to make calls
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS
@@ -158,16 +167,10 @@ public class RestaurantCardActivity extends BaseActivity {
         // Recover intent of the Caller
         Intent intent = getIntent();
 
-        // 1 ==> Retrieves the details of the restaurant sent by Caller
+        // ==> Retrieves the details of the restaurant sent by Caller
         mRestaurantDetails = new RestaurantDetails();
         String restaurantDetails = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
         mRestaurantDetails = new Gson().fromJson(restaurantDetails,RestaurantDetails.class);
-
-        // 2 ==> Retrieves the Workmates List who will eat at this restaurant sent by Caller
-        Type collectionType = new TypeToken<List<WorkmateDetails>>() {}.getType();
-        mWorkmatesDetails = new ArrayList<>();
-        String workmatesDetails = intent.getStringExtra(KEY_LIST_WORKMATES_RESTAURANT_CARD);
-        mWorkmatesDetails = new Gson().fromJson(workmatesDetails,collectionType);
     }
     /**
      * Method for updating the UI
@@ -192,38 +195,24 @@ public class RestaurantCardActivity extends BaseActivity {
         }
 
         // Display Photo of the restaurant
-        mGlide = Glide.with(this);
-        mGlide.load(mRestaurantDetails.getPhotoUrl()).into(this.mImage);
+        if (mRestaurantDetails.getPhotoUrl() != null) {
+            mGlide = Glide.with(this);
+            mGlide.load(mRestaurantDetails.getPhotoUrl()).into(this.mImage);
+        }
 
         // Display Workmates List
         // Use The FragmentManager(Support) for Display the listWorkmatesViewFragment
-        ListWorkmatesViewFragment listWorkmatesViewFragment =
-                (ListWorkmatesViewFragment) getSupportFragmentManager()
+        mListWorkmatesViewFragment = (ListWorkmatesViewFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.activity_restaurant_workmates_list);
         // If no created ListWorkmatesViewFragment
-        if (listWorkmatesViewFragment == null) {
-            // Create new ListWorkmatesViewFragment and send Workmates List and caller Name in parameters
-            String callerName = this.getClass().getSimpleName();
-            listWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(builtWorkmatesListToDisplay(), callerName);
+        if (mListWorkmatesViewFragment == null) {
+            // Create new ListWorkmatesViewFragment and send the restaurant identifier in parameter
+            String restaurantIdentifier = mRestaurantDetails.getId();
+            mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(restaurantIdentifier);
             // Add it to FrameLayout container
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.activity_restaurant_workmates_list,listWorkmatesViewFragment)
+                    .add(R.id.activity_restaurant_workmates_list,mListWorkmatesViewFragment)
                     .commit();
         }
-    }
-    /**
-     * Method who builds the list of Workmates to display
-     * Only the Workmates that eats in this restaurant this afternoon will be displayed
-     */
-    private List<WorkmateDetails> builtWorkmatesListToDisplay(){
-        Log.d(TAG, "builtWorkmatesListToDisplay: ");
-
-        List<WorkmateDetails> workmatesDetails = new ArrayList<>();
-        for (WorkmateDetails workmateDetails : mWorkmatesDetails){
-
-            if (workmateDetails.getRestaurantIdentifier()
-                    .equals(mRestaurantDetails.getId())) workmatesDetails.add(workmateDetails);
-        }
-        return workmatesDetails;
     }
 }
