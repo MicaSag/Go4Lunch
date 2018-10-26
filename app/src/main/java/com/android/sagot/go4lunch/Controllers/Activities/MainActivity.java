@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.firebase.ui.auth.AuthUI;
@@ -144,18 +145,26 @@ public class MainActivity extends BaseActivity {
         }
     }
     // Method that creates the user in the FireStore base
-    private void createUserInFireStore(){
+    private void createUserInFireStore() {
         Log.d(TAG, "createUserInFireStore: ");
 
-        if (this.getCurrentUser() != null){
+        // Get additional data from FireStore : restaurantIdentifier
+        UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
+            User currentUser = documentSnapshot.toObject(User.class);
+            if (currentUser == null) {
+                Log.d(TAG, "createUserInFireStore: currentUser Is null");
 
-            String urlPicture = (this.getCurrentUser().getPhotoUrl() != null) ? this.getCurrentUser().getPhotoUrl().toString() : null;
-            String userName = this.getCurrentUser().getDisplayName();
-            String uid = this.getCurrentUser().getUid();
+                String urlPicture = (this.getCurrentUser().getPhotoUrl() != null) ? this.getCurrentUser().getPhotoUrl().toString() : null;
+                String userName = this.getCurrentUser().getDisplayName();
+                String uid = this.getCurrentUser().getUid();
 
-            UserHelper.createUser(uid, userName, null, null,null,urlPicture)
-                    .addOnFailureListener(this.onFailureListener());
-        }
+                UserHelper.createUser(uid, userName, null, null, null, urlPicture)
+                        .addOnFailureListener(this.onFailureListener());
+            }
+            else{
+                Log.d(TAG, "createUserInFireStore: currentUser Is not null");
+            }
+        });
     }
     // ---------------------------------------------------------------------------------------------
     //                                      CALL ACTIVITY

@@ -47,4 +47,12 @@
         <item name="android:textColorHint">@android:color/white</item>
     </style>
 
+    <!-- TEXT STYLE -->
+    <style name ="NormalItalicText">
+        <item name="android:textStyle">italic</item>
+    </style>
+    <style name ="NormalBoldText">
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

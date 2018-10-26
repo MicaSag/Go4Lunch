@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -11,13 +12,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
-import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.gson.Gson;
 
 import butterknife.BindView;
@@ -48,6 +51,9 @@ public class RestaurantCardActivity extends BaseActivity {
     @BindView(R.id.activity_restaurant_card_image) ImageView mImage;
     @BindView(R.id.activity_restaurant_web_site_button) ImageButton mWebSiteButton;
     @BindView(R.id.activity_restaurant_web_site_text) TextView mWebSiteText;
+    @BindView(R.id.activity_restaurant_call_button) ImageButton mPhoneButton;
+    @BindView(R.id.activity_restaurant_call_text) TextView mPhoneText;
+    @BindView(R.id.activity_restaurant_floating_action_button) FloatingActionButton mFloatingActionButton;
 
     // Create the key details restaurant
     public static final String KEY_DETAILS_RESTAURANT_CARD = "KEY_DETAILS_RESTAURANT_CARD";
@@ -55,12 +61,11 @@ public class RestaurantCardActivity extends BaseActivity {
     // --> Data retrieved from the caller
     // Declare a RestaurantDetails
     private RestaurantDetails mRestaurantDetails;
+    // Declare Current User data
+    private User mUser;
 
     // Declaring a Glide object
     private RequestManager mGlide;
-
-    // Declare ListRestaurantsView FRAGMENT
-    private ListWorkmatesViewFragment mListWorkmatesViewFragment;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -87,6 +92,9 @@ public class RestaurantCardActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // update Floating Action Button
+        updateFloatingActionButton();
+
         // Obtain RestaurantDetails
         getRestaurantDetails();
 
@@ -94,8 +102,69 @@ public class RestaurantCardActivity extends BaseActivity {
         updateUI();
     }
     // ---------------------------------------------------------------------------------------------
+    //                                       METHODS
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Method for recovering data sent by the caller
+     */
+    private void getRestaurantDetails(){
+        Log.d(TAG, "getRestaurantDetails: ");
+
+        // Recover intent of the Caller
+        Intent intent = getIntent();
+
+        // ==> Retrieves the details of the restaurant sent by Caller
+        mRestaurantDetails = new RestaurantDetails();
+        String restaurantDetails = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
+        mRestaurantDetails = new Gson().fromJson(restaurantDetails,RestaurantDetails.class);
+    }
+    // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
     // ---------------------------------------------------------------------------------------------
+    //*****************************
+    // CALL Floating Action Button
+    //*****************************
+    @OnClick(R.id.activity_restaurant_floating_action_button)
+    public void submitFloatingActionButton(View view){
+        Log.d(TAG, "submitFloatingActionButton: ");
+
+        // Get additional data from FireStore : restaurantIdentifier
+        UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                User currentUser = documentSnapshot.toObject(User.class);
+                String restaurantIdentifier = currentUser.getRestaurantIdentifier();
+
+                // If the user has already chosen restaurant to eat
+                if (restaurantIdentifier != null) {
+
+                    // if the restaurant already chosen by the user is the same as the restaurant listing
+                    if (restaurantIdentifier.equals(mRestaurantDetails.getId())) {
+
+                        // We cancel the user's choice
+                        UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), null);
+                        UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), null);
+                        mFloatingActionButton.setImageResource(R.drawable.no_verified_x96);
+                    } else {
+
+                        // We accept the choice of the user
+                        UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getId());
+                        UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getName());
+                        mFloatingActionButton.setImageResource(R.drawable.verified_x96);
+                    }
+                } else {
+
+                    // We accept the choice of the user
+                    UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getId());
+                    UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getName());
+                    mFloatingActionButton.setImageResource(R.drawable.verified_x96);
+                }
+                // Display New Workmates List
+                RestaurantCardActivity.this.displayWorkmatesList();
+            }
+        });
+    }
+    //**************
     // CALL Button
     //**************
     @OnClick(R.id.activity_restaurant_call_button)
@@ -111,23 +180,20 @@ public class RestaurantCardActivity extends BaseActivity {
         try {
             Log.d(TAG, "submitCallButton: Permission GRANTED :-)");
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("tel:0616176149"));
+            String phoneNumber = "tel:"+mRestaurantDetails.getPhone().replaceAll(" ","");
+            Log.d(TAG, "submitCallButton: phoneNumber = "+phoneNumber);
+            callIntent.setData(Uri.parse(phoneNumber));
             startActivity(callIntent);
         }catch (SecurityException e){
             Log.d(TAG, "submitCallButton: EXCEPTION ALERTE ALERTE ALERTE");
         }
     }
-
     //**************
     // LIKE Button
     //**************
     @OnClick(R.id.activity_restaurant_like_button)
     protected void submitLikeButton(View view){
         Log.d(TAG, "submitLikeButton: ");
-
-        UserHelper.updateRestaurantIdentifier(getCurrentUser().getUid(),mRestaurantDetails.getId());
-        UserHelper.updateRestaurantName(getCurrentUser().getUid(),mRestaurantDetails.getName());
-        mListWorkmatesViewFragment.updateUI();
     }
 
     //*****************
@@ -156,21 +222,24 @@ public class RestaurantCardActivity extends BaseActivity {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
     // ---------------------------------------------------------------------------------------------
-    //                                       METHODS
+    //                                      UPDATE UI
     // ---------------------------------------------------------------------------------------------
     /**
-     * Method for recovering data sent by the caller
+     * Method that changes the learning of the FAB according to the user's current choice
      */
-    private void getRestaurantDetails(){
-        Log.d(TAG, "getRestaurantDetails: ");
+    private void updateFloatingActionButton(){
+        Log.d(TAG, "getCurrentUserDetails: ");
 
-        // Recover intent of the Caller
-        Intent intent = getIntent();
+        // Get additional data from FireStore : restaurantIdentifier
+        UserHelper.getUser(this.getCurrentUser().getUid())
+                .addOnSuccessListener(documentSnapshot -> {
+                    this.mUser = documentSnapshot.toObject(User.class);
 
-        // ==> Retrieves the details of the restaurant sent by Caller
-        mRestaurantDetails = new RestaurantDetails();
-        String restaurantDetails = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
-        mRestaurantDetails = new Gson().fromJson(restaurantDetails,RestaurantDetails.class);
+                    if (mUser.getRestaurantIdentifier() != null)
+                        if (mUser.getRestaurantIdentifier().equals(mRestaurantDetails.getId()))
+                            mFloatingActionButton.setImageResource(R.drawable.verified_x96);
+                        else mFloatingActionButton.setImageResource(R.drawable.no_verified_x96);
+                });
     }
     /**
      * Method for updating the UI
@@ -180,6 +249,7 @@ public class RestaurantCardActivity extends BaseActivity {
 
         // Display Name of the restaurant
         this.mName.setText(mRestaurantDetails.getName());
+
         // Display Address of the Restaurant
         this.mAddress.setText(mRestaurantDetails.getAddress());
 
@@ -194,6 +264,12 @@ public class RestaurantCardActivity extends BaseActivity {
             mWebSiteText.setVisibility(View.INVISIBLE);
         }
 
+        // Display Phone Button
+        if (mRestaurantDetails.getPhone() == null) {
+            mPhoneButton.setVisibility(View.INVISIBLE);
+            mPhoneText.setVisibility(View.INVISIBLE);
+        }
+
         // Display Photo of the restaurant
         if (mRestaurantDetails.getPhotoUrl() != null) {
             mGlide = Glide.with(this);
@@ -201,17 +277,37 @@ public class RestaurantCardActivity extends BaseActivity {
         }
 
         // Display Workmates List
-        // Use The FragmentManager(Support) for Display the listWorkmatesViewFragment
-        mListWorkmatesViewFragment = (ListWorkmatesViewFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.activity_restaurant_workmates_list);
-        // If no created ListWorkmatesViewFragment
-        if (mListWorkmatesViewFragment == null) {
-            // Create new ListWorkmatesViewFragment and send the restaurant identifier in parameter
-            String restaurantIdentifier = mRestaurantDetails.getId();
-            mListWorkmatesViewFragment = ListWorkmatesViewFragment.newInstance(restaurantIdentifier);
-            // Add it to FrameLayout container
+        displayWorkmatesList();
+    }
+
+    /**
+     * Method who uses The FragmentManager(Support) for displaying Workmates List
+     */
+    private void displayWorkmatesList(){
+        Log.d(TAG, "displayWorkmatesList: ");
+
+        // 1_Get the current fragment
+        ListWorkmatesViewFragment currentListWorkmatesViewFragment
+                = (ListWorkmatesViewFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.activity_restaurant_workmates_list);
+
+        // 2_Create new ListWorkmatesViewFragment and send the restaurant identifier in parameter
+        String restaurantIdentifier = mRestaurantDetails.getId();
+        ListWorkmatesViewFragment listWorkmatesViewFragment 
+                = ListWorkmatesViewFragment.newInstance(restaurantIdentifier);
+
+        // 3_Put the new fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.activity_restaurant_workmates_list,listWorkmatesViewFragment)
+                .commit();
+
+        // If the fragment exist
+        if (currentListWorkmatesViewFragment != null) {
+            Log.d(TAG, "displayWorkmatesList: Fragment Exist");
+
+            // 4_Destroys the old fragment
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.activity_restaurant_workmates_list,mListWorkmatesViewFragment)
+                    .remove(currentListWorkmatesViewFragment)
                     .commit();
         }
     }

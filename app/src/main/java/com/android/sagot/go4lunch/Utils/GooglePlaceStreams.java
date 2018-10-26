@@ -87,30 +87,49 @@ public class GooglePlaceStreams {
                                         final PlaceDetailsResult result = placeDetails.getResult();
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + result.getPlaceId());
 
+                                        // Restaurant  ID
                                         restaurantDetails.setId(result.getPlaceId());
+
+                                        // Restaurant Name
                                         restaurantDetails.setName(result.getName());
+
+                                        // OpeningHours
                                         if (result.getOpeningHours() != null) {
                                             if (result.getOpeningHours().getPeriods().get(0).getClose() != null) {
                                                 restaurantDetails.setOpeningTime("Open until " + result.getOpeningHours().getPeriods().get(0).getClose().getTime() + "pm");
                                             }
                                         }
-                                        //}else restaurantDetails.setOpeningTime("Closing soon");
+                                        // Restaurant Address
                                         restaurantDetails.setAddress(result.getFormattedAddress());
-                                        restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
-                                        restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
-                                        restaurantDetails.setNbrStars(2);
-                                        restaurantDetails.setNbrParticipants(9);
 
+                                        // Lat position
+                                        restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
+
+                                        // Lng position
+                                        restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
+
+                                        // Zero Star by default
+                                        restaurantDetails.setNbrStars(2);
+
+                                        // Zero participant by default
+                                        restaurantDetails.setNbrParticipants(22);
+
+                                        // Photo URL
                                         if (result.getPhotos() != null) {
                                             restaurantDetails.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
-                                                    + "maxwidth=2304"
+                                                    + "maxwidth=" + GooglePlaceService.maxWidth
                                                     + "&photoreference=" + result.getPhotos().get(0).getPhotoReference()
-                                                    + "&key=AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4");
+                                                    + "&key=" + GooglePlaceService.key);
                                         }
 
+                                        // Web Site URL
                                         if (result.getWebsite() != null) {
                                             restaurantDetails.setWebSiteUrl(result.getWebsite());
                                         }
+
+                                        // Phone Number
+                                        if (result.getFormattedPhoneNumber() != null)
+                                            restaurantDetails.setPhone(result.getFormattedPhoneNumber());
 
                                         Log.d(TAG, "streamFetchListRestaurantDetails: ***************************************");
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + restaurantDetails.getId());

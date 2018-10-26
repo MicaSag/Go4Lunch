@@ -19,11 +19,17 @@ public class ListWorkmatesViewAdapter extends FirestoreRecyclerAdapter<User, Lis
     // Declare Options<User>
     FirestoreRecyclerOptions<User> mOptions;
 
+    // Declare restaurant Identifier
+    String mRestaurantIdentifier;
+
     // CONSTRUCTOR
-    public ListWorkmatesViewAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide) {
+    public ListWorkmatesViewAdapter(@NonNull FirestoreRecyclerOptions<User> options
+                                        , RequestManager glide
+                                        , String restaurantIdentifier) {
         super(options);
         mOptions = options;
         mGlide = glide;
+        mRestaurantIdentifier = restaurantIdentifier;
     }
 
     @Override
@@ -36,7 +42,7 @@ public class ListWorkmatesViewAdapter extends FirestoreRecyclerAdapter<User, Lis
     // UPDATE VIEW HOLDER WITH A PARTICIPANT INFORMATION
     @Override
     public void onBindViewHolder(@NonNull ListWorkmatesViewHolder viewHolder, int position, @NonNull User user) {
-        viewHolder.updateWithParticipantDetails(user, mGlide);
+        viewHolder.updateWithParticipantDetails(user, mGlide, mRestaurantIdentifier);
     }
 
     // Returns the Restaurant Identifier of the current position

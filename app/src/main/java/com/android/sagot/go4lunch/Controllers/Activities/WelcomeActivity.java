@@ -381,7 +381,12 @@ public class WelcomeActivity extends BaseActivity
     }
     // Create OnCompleteListener called after tasks ended
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
-        return aVoid -> finish();
+        return new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                finish();
+            }
+        };
     }
     // ------------------------------
     //   FOR GOOGLE PLACES REQUEST

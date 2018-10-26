@@ -27,11 +27,6 @@ public interface GooglePlaceService {
     @GET("details/json?key="+key)
     Observable<PlaceDetails> getPlaceDetails(@Query("placeid") String placeId);
 
-    // Place Photo
-    //@GET("/photo?key="+key+"&maxwidth="+maxWidth)
-    //Observable<PlacePhoto> getPlacePhoto(@Query("photoreference") String photoReference);
-
-
     // Use excludeFieldsWithoutExposeAnnotation() for ignore some fields
     public static final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://maps.googleapis.com/maps/api/place/")
@@ -39,7 +34,6 @@ public interface GooglePlaceService {
                     new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
-
 }
 
 

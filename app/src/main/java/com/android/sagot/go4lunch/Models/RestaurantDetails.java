@@ -15,6 +15,7 @@ public class RestaurantDetails {
     private String mType;           // Type od the place
     private String mLat;            // Latitude  of the place on the Map
     private String mLng;            // Longitude of the place on the Map
+    private String mPhone;          // Phone number to call the restaurant
 
     public String getId() {
         return mId;
@@ -110,5 +111,13 @@ public class RestaurantDetails {
 
     public void setWebSiteUrl(String webSiteUrl) {
         mWebSiteUrl = webSiteUrl;
+    }
+
+    public String getPhone() {
+        return mPhone;
+    }
+
+    public void setPhone(String phone) {
+        mPhone = phone;
     }
 }

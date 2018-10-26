@@ -118,11 +118,13 @@ public class ListWorkmatesViewFragment extends Fragment {
         } else {
             // Otherwise the displayed workmates will only be those who have selected the restaurant
             // whose identifier has been passed as a parameter of the fragment
-            query = UserHelper.getAllUser().whereEqualTo("restaurantIdentifier",mRestaurantIdentifier);
+            query = UserHelper.getAllUser()
+                    .whereEqualTo("restaurantIdentifier",mRestaurantIdentifier);
         }
         // Create adapter passing the list of RestaurantDetails
         this.mAdapter = new ListWorkmatesViewAdapter(generateOptionsForAdapter(query)
-                                                                    , Glide.with(this));
+                                                                , Glide.with(this)
+                                                                ,mRestaurantIdentifier );
 
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);
@@ -147,7 +149,9 @@ public class ListWorkmatesViewFragment extends Fragment {
                     // The restaurant card is called if the workmate chooses one
                     if (mAdapter.getRestaurantIdentifier(position) != null) {
                         //Launch Restaurant Card Activity with restaurantIdentifier
-                        ListWorkmatesViewFragment.this.startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
+                        ListWorkmatesViewFragment.this
+                                .startRestaurantCardActivity(mAdapter
+                                        .getRestaurantIdentifier(position));
                     }
                 });
     }
@@ -181,19 +185,12 @@ public class ListWorkmatesViewFragment extends Fragment {
                 break;
             }
         }
-
         // Call RestaurantCardActivity
         startActivity(intent);
     }
     // ---------------------------------------------------------------------------------------------
     //                                          UPDATE UI
     // ---------------------------------------------------------------------------------------------
-    public void updateUI(){
-        Log.d(TAG, "updateUI: ");
-        
-        mAdapter.notifyDataSetChanged();
-    }
-
     public String searchRestaurantName() {
         Log.d(TAG, "searchRestaurantName: ");
         

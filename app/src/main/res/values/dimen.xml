@@ -29,6 +29,7 @@
     <dimen name="card_align_margin">3dip</dimen>
     <dimen name="card_top_margin">4dip</dimen>
     <dimen name="card_start_margin">10dip</dimen>
+    <dimen name="card_fab_image_size">32dip</dimen>
 
     <!-- Item recycler view -->
     <dimen name="recycler_padding">1dip</dimen>

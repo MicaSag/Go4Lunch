@@ -136,13 +136,14 @@
                             android:backgroundTint="@color/colorPrimary"
                             android:background="@drawable/baseline_call_black_24"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/top_margin"
-                        android:layout_marginBottom="@dimen/top_margin"
-                        android:text="CALL"
-                        android:textColor="@color/colorPrimary"/>
+                        <TextView
+                            android:id="@+id/activity_restaurant_call_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/top_margin"
+                            android:layout_marginBottom="@dimen/top_margin"
+                            android:text="CALL"
+                            android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
 
@@ -218,13 +219,15 @@
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fragment_detail_fab"
+        android:id="@+id/activity_restaurant_floating_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:clickable="true"
+        android:src="@drawable/no_verified_x96"
+        app:fabSize="auto"
+        app:maxImageSize="@dimen/card_fab_image_size"
         app:backgroundTint="@android:color/white"
-        android:src="@drawable/sharp_check_circle_black_36"
         app:layout_anchor="@id/activity_restaurant_card_image"
         app:layout_anchorGravity="bottom|right|end"/>
 
