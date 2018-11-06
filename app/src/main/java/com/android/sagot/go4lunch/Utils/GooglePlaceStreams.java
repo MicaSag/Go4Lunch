@@ -91,21 +91,26 @@ public class GooglePlaceStreams {
                                         restaurantDetails.setId(result.getPlaceId());
 
                                         // Restaurant Name
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Restaurant Name");
                                         restaurantDetails.setName(result.getName());
 
                                         // OpeningHours
-                                        if (result.getOpeningHours() != null) {
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : OpeningHours");
+                                        /*if (result.getOpeningHours() != null) {
                                             if (result.getOpeningHours().getPeriods().get(0).getClose() != null) {
                                                 restaurantDetails.setOpeningTime("Open until " + result.getOpeningHours().getPeriods().get(0).getClose().getTime() + "pm");
                                             }
-                                        }
+                                        }*/
                                         // Restaurant Address
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Address");
                                         restaurantDetails.setAddress(result.getFormattedAddress());
 
                                         // Lat position
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Lat");
                                         restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
 
                                         // Lng position
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Lng");
                                         restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
 
                                         // Zero Star by default
@@ -115,6 +120,7 @@ public class GooglePlaceStreams {
                                         restaurantDetails.setNbrParticipants(22);
 
                                         // Photo URL
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Photo URL");
                                         if (result.getPhotos() != null) {
                                             restaurantDetails.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
                                                     + "maxwidth=" + GooglePlaceService.maxWidth
@@ -123,11 +129,13 @@ public class GooglePlaceStreams {
                                         }
 
                                         // Web Site URL
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Web Site");
                                         if (result.getWebsite() != null) {
                                             restaurantDetails.setWebSiteUrl(result.getWebsite());
                                         }
 
                                         // Phone Number
+                                        Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Phone Number");
                                         if (result.getFormattedPhoneNumber() != null)
                                             restaurantDetails.setPhone(result.getFormattedPhoneNumber());
 

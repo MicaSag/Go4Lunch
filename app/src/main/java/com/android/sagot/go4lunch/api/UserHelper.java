@@ -6,6 +6,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
@@ -33,8 +34,11 @@ public class UserHelper {
         return UserHelper.getUsersCollection().document(uid).get();
     }
 
+    public static Task<QuerySnapshot> getAllUserInfos(){
+        return UserHelper.getUsersCollection().get();
+    }
     public static Query getAllUser(){
-        return UserHelper.getUsersCollection();
+        return UserHelper.getUsersCollection().orderBy("userName").limit(10);
     }
 
     // --- UPDATE ---

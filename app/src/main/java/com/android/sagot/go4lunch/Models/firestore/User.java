@@ -13,6 +13,7 @@ public class User {
     @Nullable private List<String> mListRestaurantLiked;
     @Nullable private String mUrlPicture;
 
+    // Blank constructor necessary for use with FireBase
     public User() { }
 
     public User(String uid, String userName, @Nullable String restaurantIdentifier, @Nullable String restaurantName,

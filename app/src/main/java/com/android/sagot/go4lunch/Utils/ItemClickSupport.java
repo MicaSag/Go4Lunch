@@ -5,7 +5,7 @@ import android.view.View;
 
 /*
  * Class to manage user clicks on each element of the RecyclerView
- * source code : https://stackoverflow.com/questions/24885223/why-doesnt-recyclerview-have-onitemclicklistener 
+ * source code : https://stackoverflow.com/questions/24885223/why-doesnt-recyclerview-have-onitemclicklistener
  */
 
 public class ItemClickSupport {

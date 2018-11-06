@@ -2,17 +2,22 @@ package com.android.sagot.go4lunch.Controllers.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,6 +26,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -36,7 +47,7 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
  *  IN = Last Know Location : Location
  *
  **************************************************************************************************/
-public class MapViewFragment extends Fragment implements OnMapReadyCallback,  GoogleMap.OnMarkerClickListener {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback,  GoogleMap.OnInfoWindowClickListener {
 
     // For debug
     private static final String TAG = MapViewFragment.class.getSimpleName();
@@ -136,6 +147,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,  Go
         // Disable 3D Building
         mMap.setBuildingsEnabled(false);
 
+        // Activate OnMarkerClickListener
+        mMap.setOnInfoWindowClickListener(this);
+
         // Show current Location
         showCurrentLocation();
 
@@ -147,11 +161,44 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,  Go
     // ---------------------------------------------------------------------------------------------
     // Click on Restaurants Map Marker
     @Override
-    public boolean onMarkerClick(Marker marker) {
+    public void onInfoWindowClick(Marker marker) {
+        Log.d(TAG, "onMarkerClick: ");
 
-        //Launch Restaurant Card Activity with placeDetails
-        //startRestaurantCardActivity(mAdapter.getRestaurantDetails(Integer.parseInt(marker.getTag().toString())));
-        return false;
+        // Save Restaurant List in ViewModel
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        List<RestaurantDetails> listRestaurantDetails = model.getRestaurantsDetails();
+
+        Log.d(TAG, "onMarkerClick: marker.tag = "+marker.getTag());
+        for (RestaurantDetails restaurantDetails : listRestaurantDetails) {
+
+            if (marker.getTag().equals(restaurantDetails.getId())) {
+                Log.d(TAG, "onMarkerClick: ");
+                //Launch Restaurant Card Activity with placeDetails
+                startRestaurantCardActivity(restaurantDetails);
+            }
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                    CALL ACTIVITY
+    // ---------------------------------------------------------------------------------------------
+    private void startRestaurantCardActivity(RestaurantDetails restaurantDetails){
+        Log.d(TAG, "startRestaurantCardActivity: ");
+
+        // Create a intent for call RestaurantCardActivity
+        Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
+
+        // Create a Gson Object
+        final Gson gson = new GsonBuilder()
+                .serializeNulls()
+                .disableHtmlEscaping()
+                .create();
+
+        // ==> Sends the Restaurant details
+        String json = gson.toJson(restaurantDetails);
+        intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
+
+        // Call RestaurantCardActivity with 3 parameters
+        startActivity(intent);
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS
@@ -176,28 +223,63 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,  Go
     private void displayRestaurantsMarker() {
         Log.d(TAG, "displayRestaurantsMarker: ");
 
-        // Load Restaurant List in ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        List<RestaurantDetails> listRestaurants = model.getRestaurantsDetails();
+        // Get additional data from FireStore : restaurantIdentifier
+        UserHelper.getAllUserInfos().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> querySnapshotTask) {
 
-        for (RestaurantDetails restaurantDetails : listRestaurants){
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(   Double.parseDouble(restaurantDetails.getLat()),
-                                            Double.parseDouble(restaurantDetails.getLng())
+                if (querySnapshotTask.isSuccessful()) {
+
+                    // Load Restaurant List in ViewModel
+                    Go4LunchViewModel model = ViewModelProviders.of(MapViewFragment.this.getActivity()).get(Go4LunchViewModel.class);
+                    List<RestaurantDetails> listRestaurants = model.getRestaurantsDetails();
+
+                    for (RestaurantDetails restaurantDetails : listRestaurants){
+
+                        // Declare a Marker for current Restaurant
+                        Marker marker = null;
+
+                        // Find out if the restaurant is chosen by a Workmates
+                        for (QueryDocumentSnapshot document : querySnapshotTask.getResult()) {
+
+                            if (restaurantDetails.getId().equals(document.get("restaurantIdentifier"))) {
+                                Log.d(TAG, "onComplete: GREENNNNN");
+                                Log.d(TAG, "onComplete: restaurantDetails.getId() = " + restaurantDetails.getId());
+                                marker = mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(Double.parseDouble(restaurantDetails.getLat()),
+                                                        Double.parseDouble(restaurantDetails.getLng())
+                                                )
                                         )
-                            )
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green))
-                    .title(restaurantDetails.getName())
-                    );
-            marker.setTag(restaurantDetails.getId());
-        }
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mLastKnownLocation.getLatitude(),
-                        mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-
-        // Update Location UI
-        updateLocationUI();
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green))
+                                        .title(restaurantDetails.getName())
+                                );
+                                break;
+                            }
+                        }
+                        if (marker == null){
+                            // Default Marker
+                            Log.d(TAG, "onComplete: ORANGEEEE");
+                            marker = mMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(Double.parseDouble(restaurantDetails.getLat()),
+                                                    Double.parseDouble(restaurantDetails.getLng())
+                                            )
+                                    )
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange))
+                                    .title(restaurantDetails.getName())
+                            );
+                        }
+                        marker.setTag(restaurantDetails.getId());
+                    }
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(mLastKnownLocation.getLatitude(),
+                                    mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                    // Update Location UI
+                    MapViewFragment.this.updateLocationUI();
+                } else {
+                    Log.d(TAG, "onComplete: Error getting documents : ", querySnapshotTask.getException());
+                }
+            }
+        });
     }
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.

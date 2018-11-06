@@ -36,14 +36,22 @@ import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
@@ -241,6 +249,7 @@ public class WelcomeActivity extends BaseActivity
                 finish();
                 break;
             case R.id.activity_welcome_drawer_settings:
+                displayRestaurantsMarker();
                 break;
             case R.id.activity_welcome_drawer_logout:
                 this.signOutUserFromFireBase();
@@ -252,6 +261,26 @@ public class WelcomeActivity extends BaseActivity
         this.mDrawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+    /**
+     * Method that display restaurants Markers
+     */
+    private void displayRestaurantsMarker() {
+        Log.d(TAG, "displayRestaurantsMarker: ");
+
+        // Get additional data from FireStore : restaurantIdentifier
+        UserHelper.getAllUserInfos().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> querySnapshotTask) {
+
+                if (querySnapshotTask.isSuccessful()) {
+
+                    Log.d(TAG, "onComplete: SUCCESFULL");
+                } else {
+                    Log.d(TAG, "onComplete: Error getting documents : ", querySnapshotTask.getException());
+                }
+            }
+        });
     }
 
     @Override
