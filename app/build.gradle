@@ -6,6 +6,7 @@ android {
         applicationId "com.android.sagot.go4lunch"
         minSdkVersion 19
         targetSdkVersion 28
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -23,6 +24,10 @@ android {
 }
 
 dependencies {
+
+    // MultiDex
+    implementation 'com.android.support:multidex:1.0.3'
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // Add appcompat for use ToolBar
@@ -50,10 +55,10 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
 
     // FireBase Integration
-    implementation 'com.google.firebase:firebase-core:16.0.1' // For FireBase Integration
-    implementation 'com.firebaseui:firebase-ui-auth:3.3.1'    // For FireBase UI Authentication
-    implementation 'com.firebaseui:firebase-ui-firestore:3.3.1' // For use FireStore
-    implementation 'com.firebaseui:firebase-ui-storage:3.3.1' // For use Storage
+    implementation 'com.google.firebase:firebase-core:16.0.3' // For FireBase Integration
+    implementation 'com.firebaseui:firebase-ui-auth:4.1.0'    // For FireBase UI Authentication
+    implementation 'com.firebaseui:firebase-ui-firestore:4.1.0' // For use FireStore
+    implementation 'com.firebaseui:firebase-ui-storage:4.1.0' // For use Storage
     implementation 'com.facebook.android:facebook-android-sdk:4.34.0' // For FaceBook Authentication
 
     // Add Api Google Play Service : Map

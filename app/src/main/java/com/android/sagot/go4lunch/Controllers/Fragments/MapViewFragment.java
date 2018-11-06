@@ -2,20 +2,17 @@ package com.android.sagot.go4lunch.Controllers.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
+import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
-import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,18 +24,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
-
-import butterknife.OnClick;
-import pub.devrel.easypermissions.AfterPermissionGranted;
 
 /**************************************************************************************************
  *
@@ -47,7 +39,7 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
  *  IN = Last Know Location : Location
  *
  **************************************************************************************************/
-public class MapViewFragment extends Fragment implements OnMapReadyCallback,  GoogleMap.OnInfoWindowClickListener {
+public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,  GoogleMap.OnInfoWindowClickListener {
 
     // For debug
     private static final String TAG = MapViewFragment.class.getSimpleName();
@@ -164,41 +156,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback,  Go
     public void onInfoWindowClick(Marker marker) {
         Log.d(TAG, "onMarkerClick: ");
 
-        // Save Restaurant List in ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        List<RestaurantDetails> listRestaurantDetails = model.getRestaurantsDetails();
-
         Log.d(TAG, "onMarkerClick: marker.tag = "+marker.getTag());
-        for (RestaurantDetails restaurantDetails : listRestaurantDetails) {
 
-            if (marker.getTag().equals(restaurantDetails.getId())) {
-                Log.d(TAG, "onMarkerClick: ");
-                //Launch Restaurant Card Activity with placeDetails
-                startRestaurantCardActivity(restaurantDetails);
-            }
-        }
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                    CALL ACTIVITY
-    // ---------------------------------------------------------------------------------------------
-    private void startRestaurantCardActivity(RestaurantDetails restaurantDetails){
-        Log.d(TAG, "startRestaurantCardActivity: ");
-
-        // Create a intent for call RestaurantCardActivity
-        Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
-
-        // Create a Gson Object
-        final Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .disableHtmlEscaping()
-                .create();
-
-        // ==> Sends the Restaurant details
-        String json = gson.toJson(restaurantDetails);
-        intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
-
-        // Call RestaurantCardActivity with 3 parameters
-        startActivity(intent);
+        //Launch Restaurant Card Activity with restaurantIdentifier
+        startRestaurantCardActivity((String) marker.getTag());
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS

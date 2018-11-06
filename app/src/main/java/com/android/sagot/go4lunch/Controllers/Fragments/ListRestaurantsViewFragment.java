@@ -1,9 +1,7 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,15 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
+import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
 import com.bumptech.glide.Glide;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +30,7 @@ import butterknife.ButterKnife;
  *  IN = No parameters
  *
  **************************************************************************************************/
-public class ListRestaurantsViewFragment extends Fragment {
+public class ListRestaurantsViewFragment extends BaseFragment {
 
     // FOR TRACES
     private static final String TAG = ListRestaurantsViewFragment.class.getSimpleName();
@@ -117,32 +113,8 @@ public class ListRestaurantsViewFragment extends Fragment {
                     });
     }
     // ---------------------------------------------------------------------------------------------
-    //                                    CALL ACTIVITY
+    //                                       UPDATE UI
     // ---------------------------------------------------------------------------------------------
-    private void startRestaurantCardActivity(RestaurantDetails restaurantDetails){
-        Log.d(TAG, "startRestaurantCardActivity: ");
-
-        // Create a intent for call RestaurantCardActivity
-        Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
-
-        // Create a Gson Object
-        final Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .disableHtmlEscaping()
-                .create();
-
-        // ==> Sends the Restaurant details
-        String json = gson.toJson(restaurantDetails);
-        intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
-
-        // Call RestaurantCardActivity with 3 parameters
-        startActivity(intent);
-    }
-
-    // -------------------
-    // UPDATE UI
-    // -------------------
-
     public void updateUI(){
         mAdapter.notifyDataSetChanged();
     }

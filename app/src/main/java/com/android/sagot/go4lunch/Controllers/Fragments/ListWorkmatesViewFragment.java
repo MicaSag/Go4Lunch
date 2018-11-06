@@ -1,9 +1,7 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
+import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.RestaurantDetails;
 import com.android.sagot.go4lunch.Models.firestore.User;
@@ -22,8 +20,6 @@ import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,7 +31,7 @@ import butterknife.ButterKnife;
  *  IN = Restaurant Identifier  : String
  *
  **************************************************************************************************/
-public class ListWorkmatesViewFragment extends Fragment {
+public class ListWorkmatesViewFragment extends BaseFragment {
 
     // FOR TRACES
     private static final String TAG = ListWorkmatesViewFragment.class.getSimpleName();
@@ -154,39 +150,6 @@ public class ListWorkmatesViewFragment extends Fragment {
                                         .getRestaurantIdentifier(position));
                     }
                 });
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                    CALL ACTIVITY
-    // ---------------------------------------------------------------------------------------------
-    private void startRestaurantCardActivity(String restaurantIdentifier){
-        Log.d(TAG, "startRestaurantCardActivity: ");
-
-        // Create a intent for call RestaurantCardActivity
-        Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);
-
-        final Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .disableHtmlEscaping()
-                .create();
-        String json;
-
-        // Browse the list of restaurants loaded in the ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        for (RestaurantDetails restaurantDetails :  model.getRestaurantsDetails()){
-
-            // Search restaurant details
-            if (restaurantIdentifier.equals(restaurantDetails.getId())) {
-
-                // ==> Sends the Restaurant details
-                json = gson.toJson(restaurantDetails);
-                intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD, json);
-
-                // Go out as soon as the restaurant details are found
-                break;
-            }
-        }
-        // Call RestaurantCardActivity
-        startActivity(intent);
     }
     // ---------------------------------------------------------------------------------------------
     //                                          UPDATE UI

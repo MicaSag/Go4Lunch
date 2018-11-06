@@ -139,7 +139,6 @@ public class WelcomeActivity extends BaseActivity
     protected View getCoordinatorLayout() {
         return mCoordinatorLayout;
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                      ENTRY POINT
     // ---------------------------------------------------------------------------------------------
@@ -156,7 +155,6 @@ public class WelcomeActivity extends BaseActivity
         this.configureDrawerLayout();
         this.configureNavigationView();
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
     // ---------------------------------------------------------------------------------------------
@@ -177,7 +175,6 @@ public class WelcomeActivity extends BaseActivity
         getMenuInflater().inflate(R.menu.activity_welcome_menu_toolbar, menu);
         return true;
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                     NAVIGATION DRAWER
     // ---------------------------------------------------------------------------------------------
@@ -249,7 +246,6 @@ public class WelcomeActivity extends BaseActivity
                 finish();
                 break;
             case R.id.activity_welcome_drawer_settings:
-                displayRestaurantsMarker();
                 break;
             case R.id.activity_welcome_drawer_logout:
                 this.signOutUserFromFireBase();
@@ -261,26 +257,6 @@ public class WelcomeActivity extends BaseActivity
         this.mDrawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
-    }
-    /**
-     * Method that display restaurants Markers
-     */
-    private void displayRestaurantsMarker() {
-        Log.d(TAG, "displayRestaurantsMarker: ");
-
-        // Get additional data from FireStore : restaurantIdentifier
-        UserHelper.getAllUserInfos().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> querySnapshotTask) {
-
-                if (querySnapshotTask.isSuccessful()) {
-
-                    Log.d(TAG, "onComplete: SUCCESFULL");
-                } else {
-                    Log.d(TAG, "onComplete: Error getting documents : ", querySnapshotTask.getException());
-                }
-            }
-        });
     }
 
     @Override

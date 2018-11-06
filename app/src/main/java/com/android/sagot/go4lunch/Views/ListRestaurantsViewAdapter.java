@@ -49,7 +49,7 @@ public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaur
     }
 
     // Returns the current position
-    public RestaurantDetails getRestaurantDetails(int position){
-        return this.mListRestaurantsDetails.get(position);
+    public String getRestaurantDetails(int position){
+        return this.mListRestaurantsDetails.get(position).getId();
     }
 }
