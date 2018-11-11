@@ -30,29 +30,29 @@ import android.widget.Toast;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragment;
-import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
+import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
+import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -155,6 +155,7 @@ public class WelcomeActivity extends BaseActivity
         this.configureDrawerLayout();
         this.configureNavigationView();
     }
+
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
     // ---------------------------------------------------------------------------------------------
@@ -211,7 +212,7 @@ public class WelcomeActivity extends BaseActivity
 
         if (this.getCurrentUser() != null){
 
-            //Get picture URL from Firebase
+            //Get picture URL from FireBase
             if (this.getCurrentUser().getPhotoUrl() != null) {
                 Glide.with(this)
                         .load(this.getCurrentUser().getPhotoUrl())
@@ -219,7 +220,7 @@ public class WelcomeActivity extends BaseActivity
                         .into(userPhoto);
             }
 
-            //Get email & username from Firebase
+            //Get email & username from FireBase
             String email = TextUtils.isEmpty(this.getCurrentUser().getEmail())
                     ? getString(R.string.navigation_header_user_email) : this.getCurrentUser().getEmail();
             String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName())
@@ -364,7 +365,7 @@ public class WelcomeActivity extends BaseActivity
                         mLastKnownLocation.setLatitude(mDefaultLocation.latitude);
                         mLastKnownLocation.setLongitude(mDefaultLocation.longitude);
                     }
-                    // Get List restaurants Details
+                    // Get List restaurants Details ans save its in Model
                     this.getListRestaurantsDetails();
                 }
             });
@@ -402,12 +403,17 @@ public class WelcomeActivity extends BaseActivity
         Log.d(TAG, "getListRestaurantsDetails: mLastKnownLocation = "+locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
         mDisposable = GooglePlaceStreams.streamFetchListRestaurantDetails(locationStringFromLocation(mLastKnownLocation),this)
-                .subscribeWith(new DisposableObserver<List<RestaurantDetails>>() {
+                .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                     @Override
-                    public void onNext(List<RestaurantDetails> listRestaurantsDetails) {
+                    public void onNext(List<Restaurant> listRestaurant) {
                         Log.d(TAG, "getListRestaurantsDetails : onNext: ");
-                        // Save Restaurant List in ViewModel
-                        saveListRestaurantDetailsInViewModel(listRestaurantsDetails);
+                        // Create Restaurant in FireBase Database
+                        // Load Restaurant List in ViewModel
+                        saveRestaurantListInModel(listRestaurant);
+
+                        // We have recovered all the data necessary for the display
+                        // We can display and make the interface available
+                        configureBottomView();
                     }
                     @Override
                     public void onError(Throwable e) {
@@ -428,18 +434,6 @@ public class WelcomeActivity extends BaseActivity
         Log.d(TAG, "updateUIWhenErrorHTTPRequest: ");
 
         Toast.makeText(this, "Error during Downloading", Toast.LENGTH_LONG).show();
-    }
-
-    public void saveListRestaurantDetailsInViewModel(List<RestaurantDetails> listRestaurantsDetails){
-        Log.d(TAG, "saveListRestaurantDetailsInViewModel: ");
-
-        // Save Restaurant List in ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-        model.setRestaurantsDetails(listRestaurantsDetails);
-
-        // We have recovered all the data necessary for the display
-        // We can display and make the interface available
-        configureBottomView();
     }
 
     // Formatting Location Coordinates in String

@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -42,29 +42,36 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithPlaceDetails(RestaurantDetails placeDetails, RequestManager glide){
+    public void updateWithRestaurantDetails(Restaurant restaurant, RequestManager glide) {
         Log.d(TAG, "updateWithPlaceDetails: ");
 
-        this.mName.setText(placeDetails.getName());
-        this.mAddress.setText(placeDetails.getAddress());
-        this.mOpeningHours.setText(placeDetails.getOpeningTime());
-        this.mDistance.setText(placeDetails.getDistance());
+        this.mName.setText(restaurant.getName());
+        this.mAddress.setText(restaurant.getAddress());
+        this.mOpeningHours.setText(restaurant.getOpeningTime());
+        this.mDistance.setText(restaurant.getDistance());
 
         // Display Number of Participants
-        String participants = "("+placeDetails.getNbrParticipants()+")";
+        String participants = "(" + restaurant.getNbrParticipants() + ")";
         this.mParticipants.setText(participants);
         // do not show participant information if the number of participants is null
-        if (placeDetails.getNbrParticipants() == 0){
+        if (restaurant.getNbrParticipants() == 0) {
+            Log.d(TAG, "updateWithRestaurantDetails: restaurant : " + restaurant.getName() + " --> nbrParticipants (" + restaurant.getNbrParticipants() + ") = INSIBLE");
             mParticipantsSmiley.setVisibility(View.INVISIBLE);
             mParticipants.setVisibility(View.INVISIBLE);
+        } else {
+            mParticipantsSmiley.setVisibility(View.VISIBLE);
+            mParticipants.setVisibility(View.VISIBLE);
         }
 
         // Display Stars
-        if (placeDetails.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
-        if (placeDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
-        if (placeDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
+        if (restaurant.getNbrStars() < 3) mStarThree.setVisibility(View.INVISIBLE);
+        else mStarThree.setVisibility(View.VISIBLE);
+        if (restaurant.getNbrStars() < 2) mStarTwo.setVisibility(View.INVISIBLE);
+        else mStarTwo.setVisibility(View.VISIBLE);
+        if (restaurant.getNbrStars() < 1) mStarOne.setVisibility(View.INVISIBLE);
+        else mStarOne.setVisibility(View.VISIBLE);
 
-        if (placeDetails.getPhotoUrl() != null) glide.load(placeDetails.getPhotoUrl()).into(this.mImage);
-
+        // Display restaurant Photo
+        if (restaurant.getPhotoUrl() != null) glide.load(restaurant.getPhotoUrl()).into(this.mImage);
     }
 }

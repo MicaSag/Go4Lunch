@@ -58,7 +58,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.3' // For FireBase Integration
     implementation 'com.firebaseui:firebase-ui-auth:4.1.0'    // For FireBase UI Authentication
     implementation 'com.firebaseui:firebase-ui-firestore:4.1.0' // For use FireStore
-    implementation 'com.firebaseui:firebase-ui-storage:4.1.0' // For use Storage
+    implementation 'com.firebaseui:firebase-ui-storage:4.1.0' // For use
     implementation 'com.facebook.android:facebook-android-sdk:4.34.0' // For FaceBook Authentication
 
     // Add Api Google Play Service : Map

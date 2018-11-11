@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
@@ -161,12 +161,12 @@ public class ListWorkmatesViewFragment extends BaseFragment {
         String restaurantName = "no name";
         // Browse the list of restaurants loaded in the ViewModel
         Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        for (RestaurantDetails restaurantDetails : model.getRestaurantsDetails()) {
+        for (Restaurant restaurant : model.getRestaurants()) {
 
             // Search restaurant details
-            if (mRestaurantIdentifier.equals(restaurantDetails.getId())) {
+            if (mRestaurantIdentifier.equals(restaurant.getIdentifier())) {
 
-                restaurantName = restaurantDetails.getName();
+                restaurantName = restaurant.getName();
 
                 // Go out as soon as the restaurant details are found
                 break;

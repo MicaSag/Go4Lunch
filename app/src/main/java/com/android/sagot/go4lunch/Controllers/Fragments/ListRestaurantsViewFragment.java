@@ -1,6 +1,5 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,15 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
-import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
+import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.bumptech.glide.Glide;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.Query;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,8 +39,7 @@ public class ListRestaurantsViewFragment extends BaseFragment {
     // View of the Fragment
     private View mListView;
 
-    // Declare list of RestaurantDetails & Adapter
-    private List<RestaurantDetails> mRestaurantsDetails;
+    // Declare Adapter of the RecyclerView
     private ListRestaurantsViewAdapter mAdapter;
 
     public ListRestaurantsViewFragment() {
@@ -86,17 +83,24 @@ public class ListRestaurantsViewFragment extends BaseFragment {
     private void configureRecyclerView(){
         Log.d(TAG, "configureRecyclerView: ");
 
-        // Get the list of WorkmatesDetails from ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        mRestaurantsDetails = new ArrayList<>();
-        mRestaurantsDetails = model.getRestaurantsDetails();
+        // Create a FireStore Query
+        Query query = RestaurantHelper.getAllRestaurant();
 
         // Create adapter passing the list of RestaurantDetails
-        this.mAdapter = new ListRestaurantsViewAdapter(mRestaurantsDetails, Glide.with(this));
+        this.mAdapter = new ListRestaurantsViewAdapter(generateOptionsForAdapter(query)
+                , Glide.with(this));
+
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);
         // Set layout manager to position the items
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    }
+    //  options for RecyclerView from a Query
+    private FirestoreRecyclerOptions<Restaurant> generateOptionsForAdapter(Query query){
+        return new FirestoreRecyclerOptions.Builder<Restaurant>()
+                .setQuery(query, Restaurant.class)
+                .setLifecycleOwner(this)
+                .build();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
@@ -109,7 +113,7 @@ public class ListRestaurantsViewFragment extends BaseFragment {
                 .setOnItemClickListener((recyclerView, position, v) -> {
 
                     //Launch Restaurant Card Activity with placeDetails
-                    startRestaurantCardActivity(mAdapter.getRestaurantDetails(position));
+                    startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
                     });
     }
     // ---------------------------------------------------------------------------------------------

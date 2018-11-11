@@ -1,13 +1,18 @@
 package com.android.sagot.go4lunch.Utils;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetailsResult;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+import com.android.sagot.go4lunch.api.RestaurantHelper;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,30 +74,31 @@ public class GooglePlaceStreams {
     }
 
     // Return Restaurants Details List near by search
-    public static Observable<List<RestaurantDetails>> streamFetchListRestaurantDetails(String location, Context context) {
+    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(String location, Context context) {
         Log.d(TAG, "streamFetchListRestaurantDetails: ");
 
         return streamFetchListRestaurantId(location)
-                .concatMap((Function<List<String>, Observable<List<RestaurantDetails>>>) restaurantId -> Observable.fromIterable(restaurantId)
-                        .concatMap((Function<String, Observable<RestaurantDetails>>) restaurantId1 -> {
+                .concatMap((Function<List<String>, Observable<List<Restaurant>>>) restaurantId -> Observable.fromIterable(restaurantId)
+                        .concatMap((Function<String, Observable<Restaurant>>) restaurantId1 -> {
 
                             Observable<PlaceDetails> observablePlaceDetails = streamFetchPlaceDetails(restaurantId1);
 
                             return observablePlaceDetails
-                                    .concatMap((Function<PlaceDetails, Observable<RestaurantDetails>>) placeDetails -> {
+                                    .concatMap((Function<PlaceDetails, Observable<Restaurant>>) placeDetails -> {
 
                                         // Creating a New RestaurantDetails Restaurant Variable
-                                        RestaurantDetails restaurantDetails = new RestaurantDetails();
+                                        Restaurant restaurant = new Restaurant();
 
                                         final PlaceDetailsResult result = placeDetails.getResult();
+
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + result.getPlaceId());
 
                                         // Restaurant  ID
-                                        restaurantDetails.setId(result.getPlaceId());
+                                        restaurant.setIdentifier(result.getPlaceId());
 
                                         // Restaurant Name
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Restaurant Name");
-                                        restaurantDetails.setName(result.getName());
+                                        restaurant.setName(result.getName());
 
                                         // OpeningHours
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : OpeningHours");
@@ -103,52 +109,72 @@ public class GooglePlaceStreams {
                                         }*/
                                         // Restaurant Address
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Address");
-                                        restaurantDetails.setAddress(result.getFormattedAddress());
+                                        restaurant.setAddress(result.getFormattedAddress());
 
                                         // Lat position
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Lat");
-                                        restaurantDetails.setLat(result.getGeometry().getLocation().getLat().toString());
+                                        restaurant.setLat(result.getGeometry().getLocation().getLat().toString());
 
                                         // Lng position
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Lng");
-                                        restaurantDetails.setLng(result.getGeometry().getLocation().getLng().toString());
+                                        restaurant.setLng(result.getGeometry().getLocation().getLng().toString());
 
                                         // Zero Star by default
-                                        restaurantDetails.setNbrStars(2);
+                                        restaurant.setNbrStars(0);
 
                                         // Zero participant by default
-                                        restaurantDetails.setNbrParticipants(22);
+                                        restaurant.setNbrParticipants(0);
 
                                         // Photo URL
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Photo URL");
                                         if (result.getPhotos() != null) {
-                                            restaurantDetails.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
+                                            restaurant.setPhotoUrl("https://maps.googleapis.com/maps/api/place/photo?"
                                                     + "maxwidth=" + GooglePlaceService.maxWidth
                                                     + "&photoreference=" + result.getPhotos().get(0).getPhotoReference()
                                                     + "&key=" + GooglePlaceService.key);
-                                        }
+                                        } else restaurant.setPhotoUrl("http://www.bsmc.net.au/wp-content/uploads/No-image-available.jpg");
 
                                         // Web Site URL
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Web Site");
                                         if (result.getWebsite() != null) {
-                                            restaurantDetails.setWebSiteUrl(result.getWebsite());
+                                            restaurant.setWebSiteUrl(result.getWebsite());
                                         }
 
                                         // Phone Number
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Phone Number");
                                         if (result.getFormattedPhoneNumber() != null)
-                                            restaurantDetails.setPhone(result.getFormattedPhoneNumber());
+                                            restaurant.setPhone(result.getFormattedPhoneNumber());
 
                                         Log.d(TAG, "streamFetchListRestaurantDetails: ***************************************");
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + restaurantDetails.getId());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Name        = " + restaurantDetails.getName());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Address     = " + restaurantDetails.getAddress());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      OpeningTime = " + restaurantDetails.getOpeningTime());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lat         = " + restaurantDetails.getLat());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = " + restaurantDetails.getLng());
-                                        Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurantDetails.getWebSiteUrl());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Place Id    = " + restaurant.getIdentifier());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Name        = " + restaurant.getName());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Address     = " + restaurant.getAddress());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      OpeningTime = " + restaurant.getOpeningTime());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lat         = " + restaurant.getLat());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = " + restaurant.getLng());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
 
-                                        return Observable.just(restaurantDetails);
+                                        // Get additional data from FireStore : restaurantIdentifier
+                                        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                Restaurant currentRestaurant = documentSnapshot.toObject(Restaurant.class);
+                                                if (currentRestaurant == null) {
+                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
+
+                                                    RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.w(TAG, "createRestaurant failure.", e);
+                                                        }
+                                                    });
+                                                } else {
+                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
+                                                }
+                                            }
+                                        });
+
+                                        return Observable.just(restaurant);
                                     });
                         })
                         .toList()

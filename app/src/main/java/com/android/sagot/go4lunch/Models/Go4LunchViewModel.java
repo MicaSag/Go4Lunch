@@ -2,6 +2,8 @@ package com.android.sagot.go4lunch.Models;
 
 import android.arch.lifecycle.ViewModel;
 
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+
 import java.util.List;
 
 /**
@@ -14,7 +16,7 @@ public class Go4LunchViewModel extends ViewModel {
     private boolean mLocationPermissionGranted;
 
     // For save PlacesDetails List
-    private List<RestaurantDetails> mRestaurantsDetails ;
+    private List<Restaurant> mListRestaurants ;
 
     public boolean isLocationPermissionGranted() {
         return mLocationPermissionGranted;
@@ -24,11 +26,11 @@ public class Go4LunchViewModel extends ViewModel {
         mLocationPermissionGranted = locationPermissionGranted;
     }
 
-    public List<RestaurantDetails> getRestaurantsDetails() {
-        return mRestaurantsDetails;
+    public List<Restaurant> getRestaurants() {
+        return mListRestaurants;
     }
 
-    public void setRestaurantsDetails(List<RestaurantDetails> restaurantsDetails) {
-        mRestaurantsDetails = restaurantsDetails;
+    public void setRestaurants(List<Restaurant> listRestaurants) {
+        mListRestaurants = listRestaurants;
     }
 }

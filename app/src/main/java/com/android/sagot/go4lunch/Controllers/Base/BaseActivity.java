@@ -2,6 +2,7 @@ package com.android.sagot.go4lunch.Controllers.Base;
 
 
 import android.Manifest;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,10 +15,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
 
 import butterknife.ButterKnife;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -62,6 +67,27 @@ public abstract class BaseActivity extends AppCompatActivity {
         // Get & serialise all views
         ButterKnife.bind(this);
     }
+
+    // ---------------------------------------------------------------------------------------------
+    //                                        VIEW MODEL ACCESS
+    // ---------------------------------------------------------------------------------------------
+    // Generate a toast Message if error during Downloading
+    public void saveRestaurantListInModel(List<Restaurant> listRestaurant){
+        Log.d(TAG, "saveRestaurantList: ");
+
+        Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+        model.setRestaurants(listRestaurant);
+    }
+
+    // Generate a toast Message if error during Downloading
+    public List<Restaurant> getRestaurantListOfTheModel(){
+        Log.d(TAG, "getRestaurantListOfTheModel: ");
+
+        Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+
+        return model.getRestaurants();
+    }
+
     // ---------------------------------------------------------------------------------------------
     //                                             UI
     // ---------------------------------------------------------------------------------------------

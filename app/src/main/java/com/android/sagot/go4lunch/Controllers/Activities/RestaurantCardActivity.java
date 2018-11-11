@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
@@ -58,9 +58,12 @@ public class RestaurantCardActivity extends BaseActivity {
     // Create the key details restaurant
     public static final String KEY_DETAILS_RESTAURANT_CARD = "KEY_DETAILS_RESTAURANT_CARD";
 
+    // Data creation returned to the caller
+    public static final String RETURN_SELECTED_RESTAURANT_CARD = "RETURN_SELECTED_RESTAURANT_CARD";
+
     // --> Data retrieved from the caller
     // Declare a RestaurantDetails
-    private RestaurantDetails mRestaurantDetails;
+    private Restaurant mRestaurant;
     // Declare Current User data
     private User mUser;
 
@@ -114,21 +117,21 @@ public class RestaurantCardActivity extends BaseActivity {
         Intent intent = getIntent();
 
         // ==> Retrieves the details of the restaurant sent by Caller
-        mRestaurantDetails = new RestaurantDetails();
-        String restaurantDetails = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
-        mRestaurantDetails = new Gson().fromJson(restaurantDetails,RestaurantDetails.class);
+        mRestaurant = new Restaurant();
+        String restaurant = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
+        mRestaurant = new Gson().fromJson(restaurant,Restaurant.class);
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
     // ---------------------------------------------------------------------------------------------
     //*****************************
-    // CALL Floating Action Button
+    // PUSH Floating Action Button
     //*****************************
     @OnClick(R.id.activity_restaurant_floating_action_button)
     public void submitFloatingActionButton(View view){
         Log.d(TAG, "submitFloatingActionButton: ");
 
-        // Get additional data from FireStore : restaurantIdentifier
+        // Get additional data from FireStore : restaurantIdentifier of the User choice
         UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -139,7 +142,7 @@ public class RestaurantCardActivity extends BaseActivity {
                 if (restaurantIdentifier != null) {
 
                     // if the restaurant already chosen by the user is the same as the restaurant listing
-                    if (restaurantIdentifier.equals(mRestaurantDetails.getId())) {
+                    if (restaurantIdentifier.equals(mRestaurant.getIdentifier())) {
 
                         // We cancel the user's choice
                         UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), null);
@@ -148,15 +151,15 @@ public class RestaurantCardActivity extends BaseActivity {
                     } else {
 
                         // We accept the choice of the user
-                        UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getId());
-                        UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getName());
+                        UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getIdentifier());
+                        UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getName());
                         mFloatingActionButton.setImageResource(R.drawable.verified_x96);
                     }
                 } else {
 
                     // We accept the choice of the user
-                    UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getId());
-                    UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurantDetails.getName());
+                    UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getIdentifier());
+                    UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getName());
                     mFloatingActionButton.setImageResource(R.drawable.verified_x96);
                 }
                 // Display New Workmates List
@@ -180,7 +183,7 @@ public class RestaurantCardActivity extends BaseActivity {
         try {
             Log.d(TAG, "submitCallButton: Permission GRANTED :-)");
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            String phoneNumber = "tel:"+mRestaurantDetails.getPhone().replaceAll(" ","");
+            String phoneNumber = "tel:"+mRestaurant.getPhone().replaceAll(" ","");
             Log.d(TAG, "submitCallButton: phoneNumber = "+phoneNumber);
             callIntent.setData(Uri.parse(phoneNumber));
             startActivity(callIntent);
@@ -206,7 +209,7 @@ public class RestaurantCardActivity extends BaseActivity {
         // Launch WebViewActivity
         // Param : Url to display
         Intent myIntent = new Intent(this, WebViewActivity.class);
-        myIntent.putExtra(WebViewActivity.KEY_RESTAURANT_WEB_SITE_URL,mRestaurantDetails.getWebSiteUrl());
+        myIntent.putExtra(WebViewActivity.KEY_RESTAURANT_WEB_SITE_URL,mRestaurant.getWebSiteUrl());
         this.startActivity(myIntent);
     }
     // ---------------------------------------------------------------------------------------------
@@ -228,15 +231,15 @@ public class RestaurantCardActivity extends BaseActivity {
      * Method that changes the learning of the FAB according to the user's current choice
      */
     private void updateFloatingActionButton(){
-        Log.d(TAG, "getCurrentUserDetails: ");
+        Log.d(TAG, "updateFloatingActionButton: ");
 
-        // Get additional data from FireStore : restaurantIdentifier
+        // Get additional data from FireStore : restaurantIdentifier of the current user
         UserHelper.getUser(this.getCurrentUser().getUid())
                 .addOnSuccessListener(documentSnapshot -> {
                     this.mUser = documentSnapshot.toObject(User.class);
 
                     if (mUser.getRestaurantIdentifier() != null)
-                        if (mUser.getRestaurantIdentifier().equals(mRestaurantDetails.getId()))
+                        if (mUser.getRestaurantIdentifier().equals(mRestaurant.getIdentifier()))
                             mFloatingActionButton.setImageResource(R.drawable.verified_x96);
                         else mFloatingActionButton.setImageResource(R.drawable.no_verified_x96);
                 });
@@ -248,32 +251,32 @@ public class RestaurantCardActivity extends BaseActivity {
         Log.d(TAG, "updateUI: ");
 
         // Display Name of the restaurant
-        this.mName.setText(mRestaurantDetails.getName());
+        this.mName.setText(mRestaurant.getName());
 
         // Display Address of the Restaurant
-        this.mAddress.setText(mRestaurantDetails.getAddress());
+        this.mAddress.setText(mRestaurant.getAddress());
 
         // Display Stars
-        if (mRestaurantDetails.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
-        if (mRestaurantDetails.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
-        if (mRestaurantDetails.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
+        if (mRestaurant.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
+        if (mRestaurant.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
+        if (mRestaurant.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
 
         // Display WebSite Button
-        if (mRestaurantDetails.getWebSiteUrl() == null) {
+        if (mRestaurant.getWebSiteUrl() == null) {
             mWebSiteButton.setVisibility(View.INVISIBLE);
             mWebSiteText.setVisibility(View.INVISIBLE);
         }
 
         // Display Phone Button
-        if (mRestaurantDetails.getPhone() == null) {
+        if (mRestaurant.getPhone() == null) {
             mPhoneButton.setVisibility(View.INVISIBLE);
             mPhoneText.setVisibility(View.INVISIBLE);
         }
 
         // Display Photo of the restaurant
-        if (mRestaurantDetails.getPhotoUrl() != null) {
+        if (mRestaurant.getPhotoUrl() != null) {
             mGlide = Glide.with(this);
-            mGlide.load(mRestaurantDetails.getPhotoUrl()).into(this.mImage);
+            mGlide.load(mRestaurant.getPhotoUrl()).into(this.mImage);
         }
 
         // Display Workmates List
@@ -292,7 +295,7 @@ public class RestaurantCardActivity extends BaseActivity {
                     .findFragmentById(R.id.activity_restaurant_workmates_list);
 
         // 2_Create new ListWorkmatesViewFragment and send the restaurant identifier in parameter
-        String restaurantIdentifier = mRestaurantDetails.getId();
+        String restaurantIdentifier = mRestaurant.getIdentifier();
         ListWorkmatesViewFragment listWorkmatesViewFragment 
                 = ListWorkmatesViewFragment.newInstance(restaurantIdentifier);
 
@@ -310,5 +313,13 @@ public class RestaurantCardActivity extends BaseActivity {
                     .remove(currentListWorkmatesViewFragment)
                     .commit();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        Intent intent = new Intent();
+        intent.putExtra(RETURN_SELECTED_RESTAURANT_CARD, true);
+        setResult(RESULT_OK, intent);
+
+        super.onDestroy();
     }
 }

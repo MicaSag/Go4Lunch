@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +13,9 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.RestaurantDetails;
+import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,11 +27,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**************************************************************************************************
@@ -55,6 +61,9 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
 
     // ==> For update UI Location
     private static final float DEFAULT_ZOOM = 16f;
+
+    // Restaurants List
+    List<Restaurant> mListRestaurants;
 
     //==> For use Api Google Play Service : Location
     // _ The geographical location where the device is currently located.
@@ -109,6 +118,9 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_map_view, container, false);
 
+        // Load Restaurant List of the ViewModel
+        mListRestaurants = getRestaurantListOfTheModel();
+
         // Configure the Maps Service of Google
         configurePlayServiceMaps();
 
@@ -146,7 +158,8 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         showCurrentLocation();
 
         // Display Restaurants pin
-        displayRestaurantsMarker();
+        //displayRestaurantsMarker();
+        fireStoreListener();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
@@ -179,69 +192,87 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         updateLocationUI();
     }
     /**
-     * Method that display restaurants Markers
+     * Method that display restaurants Markers and ask about the number of participants
      */
-    private void displayRestaurantsMarker() {
-        Log.d(TAG, "displayRestaurantsMarker: ");
+    protected void fireStoreListener() {
+        Log.d(TAG, "fireStoreListener: ");
 
-        // Get additional data from FireStore : restaurantIdentifier
-        UserHelper.getAllUserInfos().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> querySnapshotTask) {
+        for (Restaurant restaurant : mListRestaurants) {
 
-                if (querySnapshotTask.isSuccessful()) {
+            Log.d(TAG, "fireStoreListener: identifier Restaurant = "+restaurant.getIdentifier());
 
-                    // Load Restaurant List in ViewModel
-                    Go4LunchViewModel model = ViewModelProviders.of(MapViewFragment.this.getActivity()).get(Go4LunchViewModel.class);
-                    List<RestaurantDetails> listRestaurants = model.getRestaurantsDetails();
+            // Declare a Marker for current Restaurant
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(Double.parseDouble(restaurant.getLat()),
+                                    Double.parseDouble(restaurant.getLng())
+                            )
+                    )
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange))
+                    .title(restaurant.getName())
+            );
+            marker.setTag(restaurant.getIdentifier());
 
-                    for (RestaurantDetails restaurantDetails : listRestaurants){
+            listerMarkers(restaurant,marker);
 
-                        // Declare a Marker for current Restaurant
-                        Marker marker = null;
-
-                        // Find out if the restaurant is chosen by a Workmates
-                        for (QueryDocumentSnapshot document : querySnapshotTask.getResult()) {
-
-                            if (restaurantDetails.getId().equals(document.get("restaurantIdentifier"))) {
-                                Log.d(TAG, "onComplete: GREENNNNN");
-                                Log.d(TAG, "onComplete: restaurantDetails.getId() = " + restaurantDetails.getId());
-                                marker = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(Double.parseDouble(restaurantDetails.getLat()),
-                                                        Double.parseDouble(restaurantDetails.getLng())
-                                                )
-                                        )
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green))
-                                        .title(restaurantDetails.getName())
-                                );
-                                break;
+            /*RestaurantHelper
+                    .getRestaurantsCollection()
+                    .document(restaurant.getIdentifier())
+                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable DocumentSnapshot restaurant,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                                return;
                             }
+
+                           Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = "+restaurant.get("identifier").toString());
+                           Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = "+restaurant.get("nbrParticipants"));
+                           if (Integer.parseInt(restaurant.get("nbrParticipants").toString()) == 0) {
+                               marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
+                           } else {
+                               marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
+                           }
                         }
-                        if (marker == null){
-                            // Default Marker
-                            Log.d(TAG, "onComplete: ORANGEEEE");
-                            marker = mMap.addMarker(new MarkerOptions()
-                                    .position(new LatLng(Double.parseDouble(restaurantDetails.getLat()),
-                                                    Double.parseDouble(restaurantDetails.getLng())
-                                            )
-                                    )
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange))
-                                    .title(restaurantDetails.getName())
-                            );
-                        }
-                        marker.setTag(restaurantDetails.getId());
-                    }
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mLastKnownLocation.getLatitude(),
-                                    mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                    // Update Location UI
-                    MapViewFragment.this.updateLocationUI();
-                } else {
-                    Log.d(TAG, "onComplete: Error getting documents : ", querySnapshotTask.getException());
-                }
-            }
-        });
+                    });*/
+        }
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mLastKnownLocation.getLatitude(),
+                        mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
+        // Update Location UI
+        MapViewFragment.this.updateLocationUI();
     }
+
+    /**
+     * Updates the map's UI settings based on whether the user has granted location permission.
+     */
+    public void listerMarkers(Restaurant restaurant,Marker marker) {
+
+        RestaurantHelper
+                .getRestaurantsCollection()
+                .document(restaurant.getIdentifier())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot restaurant,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+
+                        Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = "+restaurant.get("identifier").toString());
+                        Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = "+restaurant.get("nbrParticipants"));
+                        if (Integer.parseInt(restaurant.get("nbrParticipants").toString()) == 0) {
+                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
+                        } else {
+                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
+                        }
+                    }
+                });
+    }
+
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
