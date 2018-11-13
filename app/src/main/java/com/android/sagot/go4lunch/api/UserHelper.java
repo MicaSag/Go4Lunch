@@ -4,11 +4,15 @@ import com.android.sagot.go4lunch.Models.firestore.User;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
+import java.util.Map;
+
+import retrofit2.http.FieldMap;
 
 public class UserHelper {
 
@@ -23,7 +27,7 @@ public class UserHelper {
     // --- CREATE ---
 
     public static Task<Void> createUser(String uid, String userName, String restaurantIdentifier, String restaurantName,
-                                        List<String> listRestaurantLiked, String urlPicture) {
+                                        Map<String, String> listRestaurantLiked, String urlPicture) {
         User userToCreate = new User(uid, userName, restaurantIdentifier, restaurantName, listRestaurantLiked, urlPicture);
         return UserHelper.getUsersCollection().document(uid).set(userToCreate);
     }
@@ -55,7 +59,7 @@ public class UserHelper {
         return UserHelper.getUsersCollection().document(uid).update("restaurantName", restaurantName);
     }
 
-    public static Task<Void> updateListRestaurantLiked(String uid, List<String> listRestaurantLiked) {
+    public static Task<Void> updateListRestaurantLiked(String uid, Map<String, String> listRestaurantLiked) {
         return UserHelper.getUsersCollection().document(uid).update("listRestaurantLiked", listRestaurantLiked);
     }
 

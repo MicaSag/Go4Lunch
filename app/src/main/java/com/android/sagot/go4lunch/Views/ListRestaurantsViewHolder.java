@@ -64,11 +64,11 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
         }
 
         // Display Stars
-        if (restaurant.getNbrStars() < 3) mStarThree.setVisibility(View.INVISIBLE);
+        if (restaurant.getNbrLikes() < 3) mStarThree.setVisibility(View.INVISIBLE);
         else mStarThree.setVisibility(View.VISIBLE);
-        if (restaurant.getNbrStars() < 2) mStarTwo.setVisibility(View.INVISIBLE);
+        if (restaurant.getNbrLikes() < 2) mStarTwo.setVisibility(View.INVISIBLE);
         else mStarTwo.setVisibility(View.VISIBLE);
-        if (restaurant.getNbrStars() < 1) mStarOne.setVisibility(View.INVISIBLE);
+        if (restaurant.getNbrLikes() < 1) mStarOne.setVisibility(View.INVISIBLE);
         else mStarOne.setVisibility(View.VISIBLE);
 
         // Display restaurant Photo

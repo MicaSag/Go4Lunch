@@ -9,8 +9,8 @@ public class Restaurant {
     @Nullable private String mAddress;      // Address of Restaurant
     @Nullable private String mOpeningTime;  // Opening time of Restaurant
     @Nullable private String mDistance;     // Distance where the restaurant is from the current position
-    @Nullable private int mNbrParticipants; // Number of participants
-    @Nullable private int mNbrStars;        // Number of stars that the restaurant got
+    @Nullable private long mNbrParticipants;// Number of participants
+    @Nullable private long mNbrLikes;        // Number of likes that the restaurant got
     @Nullable private String mPhotoUrl;     // URL of the Restaurant photo
     @Nullable private String mWebSiteUrl;   // URL of the Web site
     @Nullable private String mType;         // Type of the Restaurant
@@ -23,7 +23,7 @@ public class Restaurant {
 
     //
     public Restaurant(String identifier, String name, @Nullable String address, @Nullable String openingTime,
-                      @Nullable String distance, @Nullable int nbrParticipants, @Nullable int nbrStars,
+                      @Nullable String distance, @Nullable long nbrParticipants, @Nullable long nbrLikes,
                       @Nullable String photoUrl, @Nullable String webSiteUrl, @Nullable String type,
                       @Nullable String lat, @Nullable String lng, @Nullable String phone) {
         mIdentifier = identifier;
@@ -32,7 +32,7 @@ public class Restaurant {
         mOpeningTime = openingTime;
         mDistance = distance;
         mNbrParticipants = nbrParticipants;
-        mNbrStars = nbrStars;
+        mNbrLikes = nbrLikes;
         mPhotoUrl = photoUrl;
         mWebSiteUrl = webSiteUrl;
         mType = type;
@@ -67,13 +67,13 @@ public class Restaurant {
     }
 
     @Nullable
-    public int getNbrParticipants() {
+    public long getNbrParticipants() {
         return mNbrParticipants;
     }
 
     @Nullable
-    public int getNbrStars() {
-        return mNbrStars;
+    public long getNbrLikes() {
+        return mNbrLikes;
     }
 
     @Nullable
@@ -128,12 +128,12 @@ public class Restaurant {
         mDistance = distance;
     }
 
-    public void setNbrParticipants(@Nullable int nbrParticipants) {
+    public void setNbrParticipants(@Nullable long nbrParticipants) {
         mNbrParticipants = nbrParticipants;
     }
 
-    public void setNbrStars(@Nullable int nbrStars) {
-        mNbrStars = nbrStars;
+    public void setNbrLikes(@Nullable long nbrLikes) {
+        mNbrLikes = nbrLikes;
     }
 
     public void setPhotoUrl(@Nullable String photoUrl) {

@@ -3,6 +3,7 @@ package com.android.sagot.go4lunch.Models.firestore;
 import android.support.annotation.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 public class User {
 
@@ -10,14 +11,14 @@ public class User {
     private String mUserName;
     @Nullable private String mRestaurantIdentifier;
     @Nullable private String mRestaurantName;
-    @Nullable private List<String> mListRestaurantLiked;
+    @Nullable private Map<String, String> mListRestaurantLiked;
     @Nullable private String mUrlPicture;
 
     // Blank constructor necessary for use with FireBase
     public User() { }
 
     public User(String uid, String userName, @Nullable String restaurantIdentifier, @Nullable String restaurantName,
-                @Nullable List<String> listRestaurantLiked, @Nullable String urlPicture) {
+                @Nullable Map<String, String> listRestaurantLiked, @Nullable String urlPicture) {
         this.mUid = uid;
         this.mUserName = userName;
         this.mRestaurantIdentifier = restaurantIdentifier;
@@ -32,7 +33,7 @@ public class User {
     @Nullable public String getUrlPicture() { return mUrlPicture; }
     @Nullable public String getRestaurantIdentifier() { return mRestaurantIdentifier; }
     @Nullable public String getRestaurantName() { return mRestaurantName; }
-    @Nullable public List<String> getListRestaurantLiked() { return mListRestaurantLiked; }
+    @Nullable public Map<String, String> getListRestaurantLiked() { return mListRestaurantLiked; }
 
     // --- SETTERS ---
     public void setUserName(String userName) { this.mUserName = userName; }
@@ -40,5 +41,5 @@ public class User {
     public void setUrlPicture(@Nullable String urlPicture) { this.mUrlPicture = urlPicture; }
     public void setRestaurantIdentifier(@Nullable String restaurantName) { mRestaurantIdentifier = restaurantName; }
     public void setRestaurantName(@Nullable String restaurantName) { mRestaurantName = restaurantName; }
-    public void setListRestaurantLiked(@Nullable List<String> listRestaurantLiked) { mListRestaurantLiked = listRestaurantLiked; }
+    public void setListRestaurantLiked(@Nullable Map<String, String> listRestaurantLiked) { mListRestaurantLiked = listRestaurantLiked; }
 }

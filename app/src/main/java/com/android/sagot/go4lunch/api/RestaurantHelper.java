@@ -24,7 +24,7 @@ public class RestaurantHelper {
 
         Restaurant restaurantToCreate = new Restaurant( restaurant.getIdentifier(), restaurant.getName(),
                     restaurant.getAddress(), restaurant.getOpeningTime(), restaurant.getDistance(),
-                    restaurant.getNbrParticipants(), restaurant.getNbrStars(), restaurant.getPhotoUrl(),
+                    restaurant.getNbrParticipants(), restaurant.getNbrLikes(), restaurant.getPhotoUrl(),
                     restaurant.getWebSiteUrl(), restaurant.getType(), restaurant.getLat(), restaurant.getLng(),
                     restaurant.getPhone());
 
@@ -47,7 +47,7 @@ public class RestaurantHelper {
     // --- UPDATE ---
 
     public static Task<Void> updateRestaurantName(String identifier, String name) {
-        return UserHelper.getUsersCollection().document(identifier).update("name", name);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("name", name);
     }
 
     public static Task<Void> updateRestaurantAddress(String identifier, String address) {
@@ -55,43 +55,43 @@ public class RestaurantHelper {
     }
 
     public static Task<Void> updateRestaurantOpeningTime(String identifier, String openingTime) {
-        return UserHelper.getUsersCollection().document(identifier).update("openingTime", openingTime);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("openingTime", openingTime);
     }
 
     public static Task<Void> updateRestaurantDistance(String identifier, String distance) {
-        return UserHelper.getUsersCollection().document(identifier).update("distance", distance);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("distance", distance);
     }
 
-    public static Task<Void> updateRestaurantNbrParticipants(String identifier, String nbrParticipants) {
-        return UserHelper.getUsersCollection().document(identifier).update("nbrParticipants", nbrParticipants);
+    public static Task<Void> updateRestaurantNbrParticipants(String identifier, long nbrParticipants) {
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("nbrParticipants", nbrParticipants);
     }
 
-    public static Task<Void> updateRestaurantNbrStars(String identifier, String nbrStars) {
-        return UserHelper.getUsersCollection().document(identifier).update("nbrStars", nbrStars);
+    public static Task<Void> updateRestaurantNbrLikes(String identifier, long nbrLikes) {
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("nbrLikes", nbrLikes);
     }
 
     public static Task<Void> updateRestaurantPhotoUrl(String identifier, String photoUrl) {
-        return UserHelper.getUsersCollection().document(identifier).update("photoUrl", photoUrl);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("photoUrl", photoUrl);
     }
 
     public static Task<Void> updateWebSiteUrl(String identifier, String webSiteUrl) {
-        return UserHelper.getUsersCollection().document(identifier).update("webSiteUrl", webSiteUrl);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("webSiteUrl", webSiteUrl);
     }
 
     public static Task<Void> updateType(String identifier, String type) {
-        return UserHelper.getUsersCollection().document(identifier).update("type", type);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("type", type);
     }
 
     public static Task<Void> updateLat(String identifier, String lat) {
-        return UserHelper.getUsersCollection().document(identifier).update("lat", lat);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("lat", lat);
     }
 
     public static Task<Void> updateLng(String identifier, String lng) {
-        return UserHelper.getUsersCollection().document(identifier).update("lng", lng);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("lng", lng);
     }
 
     public static Task<Void> updatePhone(String identifier, String phone) {
-        return UserHelper.getUsersCollection().document(identifier).update("phone", phone);
+        return RestaurantHelper.getRestaurantsCollection().document(identifier).update("phone", phone);
     }
 
     // --- DELETE ---

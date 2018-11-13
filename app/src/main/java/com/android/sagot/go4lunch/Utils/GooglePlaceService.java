@@ -16,7 +16,7 @@ public interface GooglePlaceService {
     // Constant parameters
     String key      = "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4";
     String type     = "restaurant";
-    String radius   = "70";
+    String radius   = "1500";
     String maxWidth = "2304";
 
     // Place NearBySearch

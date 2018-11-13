@@ -43,7 +43,7 @@ public class BaseFragment extends Fragment {
     //                                    CALL ACTIVITY
     // ---------------------------------------------------------------------------------------------
     public void startRestaurantCardActivity(String restaurantIdentifier){
-        Log.d(TAG, "startRestaurantCardActivity: ");
+        Log.d(TAG, "startRestaurantCardActivity() called with: restaurantIdentifier = [" + restaurantIdentifier + "]");
 
         // Create a intent for call RestaurantCardActivity
         Intent intent = new Intent(getActivity(), RestaurantCardActivity.class);

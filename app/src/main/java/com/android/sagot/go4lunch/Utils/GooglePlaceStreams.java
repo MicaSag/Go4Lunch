@@ -10,8 +10,10 @@ import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.Pl
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -120,7 +122,7 @@ public class GooglePlaceStreams {
                                         restaurant.setLng(result.getGeometry().getLocation().getLng().toString());
 
                                         // Zero Star by default
-                                        restaurant.setNbrStars(0);
+                                        restaurant.setNbrLikes(0);
 
                                         // Zero participant by default
                                         restaurant.setNbrParticipants(0);
@@ -155,21 +157,28 @@ public class GooglePlaceStreams {
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
 
                                         // Get additional data from FireStore : restaurantIdentifier
-                                        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                             @Override
-                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                Restaurant currentRestaurant = documentSnapshot.toObject(Restaurant.class);
-                                                if (currentRestaurant == null) {
-                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
+                                            public void onComplete(Task<DocumentSnapshot> documentSnapshot) {
 
-                                                    RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
-                                                        @Override
-                                                        public void onFailure(@NonNull Exception e) {
-                                                            Log.w(TAG, "createRestaurant failure.", e);
-                                                        }
-                                                    });
+                                                if (documentSnapshot.isSuccessful()) {
+
+                                                    Restaurant currentRestaurant = documentSnapshot.getResult().toObject(Restaurant.class);
+
+                                                    if (currentRestaurant == null) {
+                                                        Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
+
+                                                        RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
+                                                            @Override
+                                                            public void onFailure(@NonNull Exception e) {
+                                                                Log.w(TAG, "createRestaurant failure.", e);
+                                                            }
+                                                        });
+                                                    } else {
+                                                        Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
+                                                    }
                                                 } else {
-                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
+                                                    Exception e = documentSnapshot.getException();
                                                 }
                                             }
                                         });

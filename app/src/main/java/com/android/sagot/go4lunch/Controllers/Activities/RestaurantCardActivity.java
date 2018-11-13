@@ -1,8 +1,11 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
@@ -16,12 +19,22 @@ import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragmen
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.gson.Gson;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -53,6 +66,8 @@ public class RestaurantCardActivity extends BaseActivity {
     @BindView(R.id.activity_restaurant_web_site_text) TextView mWebSiteText;
     @BindView(R.id.activity_restaurant_call_button) ImageButton mPhoneButton;
     @BindView(R.id.activity_restaurant_call_text) TextView mPhoneText;
+    @BindView(R.id.activity_restaurant_like_button) ImageButton mLikeButton;
+    @BindView(R.id.activity_restaurant_like_text) TextView mLikeText;
     @BindView(R.id.activity_restaurant_floating_action_button) FloatingActionButton mFloatingActionButton;
 
     // Create the key details restaurant
@@ -101,6 +116,12 @@ public class RestaurantCardActivity extends BaseActivity {
         // Obtain RestaurantDetails
         getRestaurantDetails();
 
+        // Enables listening of the number of stars
+        listenNbrLikes();
+
+        // Enables listening of the user Like
+        listenUserLike();
+
         // Update UI
         updateUI();
     }
@@ -121,6 +142,63 @@ public class RestaurantCardActivity extends BaseActivity {
         String restaurant = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
         mRestaurant = new Gson().fromJson(restaurant,Restaurant.class);
     }
+    /**
+     * Enables listening of the number of stars
+     */
+    public void listenNbrLikes() {
+        Log.d(TAG, "listenNbrStars: ");
+
+        RestaurantHelper
+                .getRestaurantsCollection()
+                .document(mRestaurant.getIdentifier())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot restaurant,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        Log.d(TAG, "listenNbrLikes.onEvent: nbrLikes = "+restaurant.get("nbrLikes").toString());
+                        mRestaurant.setNbrLikes((long)restaurant.get("nbrLikes"));
+                        updateUI_Stars();
+                    }
+                });
+    }
+    /**
+     * Enables listening of the user like
+     */
+    public void listenUserLike() {
+        Log.d(TAG, "listenNbrStars: ");
+
+        UserHelper
+                .getUsersCollection()
+                .document(getCurrentUser().getUid())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot user,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        mLikeButton.setColorFilter(getResources().getColor(R.color.colorPrimary));
+                        User currentUser = user.toObject(User.class);
+                        Map<String, String> restaurantLiked = currentUser.getListRestaurantLiked();
+                        if (restaurantLiked != null) {
+                            if (restaurantLiked.containsKey(mRestaurant.getIdentifier())) {
+                                // Remove the like from the restaurant on the user
+                                restaurantLiked.remove(mRestaurant.getIdentifier());
+                                mLikeButton.setImageResource(R.drawable.baseline_star_black_24);
+                            } else {
+                                mLikeButton.setImageResource(R.drawable.baseline_star_border_black_24);
+                            }
+                        }else{
+                            mLikeButton.setImageResource(R.drawable.baseline_star_border_black_24);
+                        }
+                    }
+                });
+    }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
     // ---------------------------------------------------------------------------------------------
@@ -131,13 +209,18 @@ public class RestaurantCardActivity extends BaseActivity {
     public void submitFloatingActionButton(View view){
         Log.d(TAG, "submitFloatingActionButton: ");
 
+        // Disabling the button until the data is updated in FireBase
+        mFloatingActionButton.setEnabled(false);
+
         // Get additional data from FireStore : restaurantIdentifier of the User choice
         UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 User currentUser = documentSnapshot.toObject(User.class);
                 String restaurantIdentifier = currentUser.getRestaurantIdentifier();
+                Log.d(TAG, "onSuccess: 1 restaurantIdentifier = "+restaurantIdentifier);
 
+                int nbrParticipants;
                 // If the user has already chosen restaurant to eat
                 if (restaurantIdentifier != null) {
 
@@ -148,12 +231,14 @@ public class RestaurantCardActivity extends BaseActivity {
                         UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), null);
                         UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), null);
                         mFloatingActionButton.setImageResource(R.drawable.no_verified_x96);
+                        nbrParticipants = -1;
                     } else {
 
                         // We accept the choice of the user
                         UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getIdentifier());
                         UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getName());
                         mFloatingActionButton.setImageResource(R.drawable.verified_x96);
+                        nbrParticipants = +1;
                     }
                 } else {
 
@@ -161,9 +246,126 @@ public class RestaurantCardActivity extends BaseActivity {
                     UserHelper.updateRestaurantIdentifier(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getIdentifier());
                     UserHelper.updateRestaurantName(RestaurantCardActivity.this.getCurrentUser().getUid(), mRestaurant.getName());
                     mFloatingActionButton.setImageResource(R.drawable.verified_x96);
+                    nbrParticipants = +1;
                 }
-                // Display New Workmates List
-                RestaurantCardActivity.this.displayWorkmatesList();
+                Log.d(TAG, "onSuccess: 2 restaurantIdentifier = "+restaurantIdentifier);
+                if (nbrParticipants > 0) {
+                    if (restaurantIdentifier != null ) {
+                        RestaurantHelper.getRestaurant(restaurantIdentifier).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "getRestaurant.onComplete: ");
+                                    Restaurant restaurant = task.getResult().toObject(Restaurant.class);
+                                    RestaurantHelper.updateRestaurantNbrParticipants(restaurantIdentifier
+                                            , restaurant.getNbrParticipants() - 1).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            if (task.isSuccessful()) {
+                                                RestaurantHelper.getRestaurant(mRestaurant.getIdentifier()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                                        if (task.isSuccessful()) {
+                                                            Log.d(TAG, "getRestaurant.onComplete: ");
+                                                            Restaurant restaurant = task.getResult().toObject(Restaurant.class);
+                                                            RestaurantHelper.updateRestaurantNbrParticipants(mRestaurant.getIdentifier()
+                                                                    , restaurant.getNbrParticipants() + nbrParticipants)
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                                                            if (task.isSuccessful()) {
+                                                                                Log.d(TAG, "updateRestaurant.onComplete: ");
+
+                                                                                // Display New Workmates List
+                                                                                RestaurantCardActivity.this.displayWorkmatesList();
+
+                                                                                // Reactivate the button once the updates in FireBase are complete
+                                                                                mFloatingActionButton.setEnabled(true);
+
+                                                                            } else {
+                                                                                Exception e = task.getException();
+                                                                            }
+                                                                        }
+                                                                    });
+                                                        } else {
+                                                            Exception e = task.getException();
+                                                        }
+                                                    }
+                                                });
+                                            } else {
+                                                Exception e = task.getException();
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    Exception e = task.getException();
+                                }
+                            }
+                        });
+                    }else {
+                        RestaurantHelper.getRestaurant(mRestaurant.getIdentifier()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "getRestaurant.onComplete: ");
+                                    Restaurant restaurant = task.getResult().toObject(Restaurant.class);
+                                    RestaurantHelper.updateRestaurantNbrParticipants(mRestaurant.getIdentifier()
+                                            , restaurant.getNbrParticipants() + nbrParticipants)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    if (task.isSuccessful()) {
+                                                        Log.d(TAG, "updateRestaurant.onComplete: ");
+
+                                                        // Display New Workmates List
+                                                        RestaurantCardActivity.this.displayWorkmatesList();
+
+                                                        // Reactivate the button once the updates in FireBase are complete
+                                                        mFloatingActionButton.setEnabled(true);
+
+                                                    } else { Exception e = task.getException(); }
+                                                }
+                                            });
+                                } else { Exception e = task.getException(); }
+                            }
+                        });
+                    }
+                }else {
+                    RestaurantHelper.getRestaurant(mRestaurant.getIdentifier()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "getRestaurant.onComplete: ");
+                                Restaurant restaurant = task.getResult().toObject(Restaurant.class);
+                                RestaurantHelper.updateRestaurantNbrParticipants(mRestaurant.getIdentifier()
+                                        , restaurant.getNbrParticipants() + nbrParticipants)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+
+                                                if (task.isSuccessful()) {
+                                                    Log.d(TAG, "updateRestaurant.onComplete: ");
+
+                                                    // Display New Workmates List
+                                                    RestaurantCardActivity.this.displayWorkmatesList();
+
+                                                    // Reactivate the button once the updates in FireBase are complete
+                                                    mFloatingActionButton.setEnabled(true);
+
+                                                } else { Exception e = task.getException(); }
+                                            }
+                                        });
+                            } else { Exception e = task.getException(); }
+                        }
+                    });
+                }
             }
         });
     }
@@ -197,6 +399,73 @@ public class RestaurantCardActivity extends BaseActivity {
     @OnClick(R.id.activity_restaurant_like_button)
     protected void submitLikeButton(View view){
         Log.d(TAG, "submitLikeButton: ");
+        Log.d(TAG, "submitLikeButton: nbrLikes = "+mRestaurant.getNbrLikes());
+
+        // Disabling the button until the data is updated in FireBase
+        mLikeButton.setEnabled(false);
+        // Get additional data from FireStore : restaurantIdentifier of the User choice
+        UserHelper.getUser(this.getCurrentUser().getUid())
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(Task<DocumentSnapshot> task) {
+
+                    if (task.isSuccessful()) {
+                        User currentUser = task.getResult().toObject(User.class);
+                        Map<String, String> restaurantLiked;
+                        int like;
+                        if (currentUser.getListRestaurantLiked() != null) {
+                            restaurantLiked = currentUser.getListRestaurantLiked();
+                            if (restaurantLiked.containsKey(mRestaurant.getIdentifier())) {
+                                // Decreasing the number of likes by 1
+                                like = -1;
+                                // Remove the like from the restaurant on the user
+                                restaurantLiked.remove(mRestaurant.getIdentifier());
+
+                            } else {
+                                // Increasing the number of likes by 1
+                                like = 1;
+                                // Add the like from the restaurant on the user
+                                restaurantLiked.put(mRestaurant.getIdentifier(), "Liked");
+                            }
+                        }else{
+                            restaurantLiked = new HashMap<>();
+                            // Increasing the number of likes by 1
+                            like = 1;
+                            // Add the like from the restaurant on the user
+                            restaurantLiked.put(mRestaurant.getIdentifier(), "Liked");
+                        }
+                        // Update the like of the restaurant on the user
+                        UserHelper.updateListRestaurantLiked(getCurrentUser().getUid(), restaurantLiked)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                        if (task.isSuccessful()) {
+                                            // Update of the restaurant's number of likes only
+                                            // after the restaurant's like has been registered on the user
+                                            mRestaurant.setNbrLikes(mRestaurant.getNbrLikes() + like);
+                                            RestaurantHelper.updateRestaurantNbrLikes(mRestaurant.getIdentifier(), mRestaurant.getNbrLikes())
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                                            if (task.isSuccessful()) {
+                                                                // Reactivate the button once the updates in FireBase are complete
+                                                                mLikeButton.setEnabled(true);
+                                                            } else {
+                                                                Exception e = task.getException();
+                                                            }
+                                                        }
+                                                    });
+                                        } else {
+                                            Exception e = task.getException();
+                                        }
+                                    }
+                                });
+
+                    }else{ Exception e = task.getException(); }
+                }
+            });
     }
 
     //*****************
@@ -233,15 +502,21 @@ public class RestaurantCardActivity extends BaseActivity {
     private void updateFloatingActionButton(){
         Log.d(TAG, "updateFloatingActionButton: ");
 
+        // Disabling the button until the data is updated in FireBase
+        mFloatingActionButton.setEnabled(false);
+
         // Get additional data from FireStore : restaurantIdentifier of the current user
         UserHelper.getUser(this.getCurrentUser().getUid())
                 .addOnSuccessListener(documentSnapshot -> {
                     this.mUser = documentSnapshot.toObject(User.class);
 
-                    if (mUser.getRestaurantIdentifier() != null)
+                    if (mUser.getRestaurantIdentifier() != null) {
                         if (mUser.getRestaurantIdentifier().equals(mRestaurant.getIdentifier()))
                             mFloatingActionButton.setImageResource(R.drawable.verified_x96);
                         else mFloatingActionButton.setImageResource(R.drawable.no_verified_x96);
+                    }
+                    // Disabling the button until the data is updated in FireBase
+                    mFloatingActionButton.setEnabled(true);
                 });
     }
     /**
@@ -255,11 +530,6 @@ public class RestaurantCardActivity extends BaseActivity {
 
         // Display Address of the Restaurant
         this.mAddress.setText(mRestaurant.getAddress());
-
-        // Display Stars
-        if (mRestaurant.getNbrStars() < 3 ) mStarThree.setVisibility(View.INVISIBLE);
-        if (mRestaurant.getNbrStars() < 2 ) mStarTwo.setVisibility(View.INVISIBLE);
-        if (mRestaurant.getNbrStars() < 1 ) mStarOne.setVisibility(View.INVISIBLE);
 
         // Display WebSite Button
         if (mRestaurant.getWebSiteUrl() == null) {
@@ -281,6 +551,17 @@ public class RestaurantCardActivity extends BaseActivity {
 
         // Display Workmates List
         displayWorkmatesList();
+    }
+
+    private void updateUI_Stars(){
+        Log.d(TAG, "updateUI_Stars: ");
+        // Display Stars
+        if (mRestaurant.getNbrLikes() < 3) mStarThree.setVisibility(View.INVISIBLE);
+        else mStarThree.setVisibility(View.VISIBLE);
+        if (mRestaurant.getNbrLikes() < 2) mStarTwo.setVisibility(View.INVISIBLE);
+        else mStarTwo.setVisibility(View.VISIBLE);
+        if (mRestaurant.getNbrLikes() < 1) mStarOne.setVisibility(View.INVISIBLE);
+        else mStarOne.setVisibility(View.VISIBLE);
     }
 
     /**
