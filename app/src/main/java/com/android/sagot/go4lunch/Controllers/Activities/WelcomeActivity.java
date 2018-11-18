@@ -2,13 +2,11 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -34,8 +32,10 @@ import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragmen
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
+import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
@@ -47,13 +47,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import io.reactivex.disposables.Disposable;
@@ -120,6 +121,10 @@ public class WelcomeActivity extends BaseActivity
     // -----------------
     // Declare Subscription
     protected Disposable mDisposable;
+
+    List<Restaurant> mListRestaurant;
+
+    int i;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -242,10 +247,15 @@ public class WelcomeActivity extends BaseActivity
 
         switch (id) {
             case R.id.activity_welcome_drawer_your_lunch:
-                Intent intent = new Intent(this, RestaurantCardActivity.class);
-                startActivity(intent);
-                finish();
-                break;
+                // Get additional data from FireStore : restaurantIdentifier of the User choice
+                UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        User currentUser = documentSnapshot.toObject(User.class);
+                        Log.d(TAG, "onSuccess: currentUser.restoIdentifiant = "+currentUser.getRestaurantIdentifier());
+                        goToRestaurantActivity(currentUser);
+                    }
+                });
             case R.id.activity_welcome_drawer_settings:
                 break;
             case R.id.activity_welcome_drawer_logout:
@@ -258,6 +268,11 @@ public class WelcomeActivity extends BaseActivity
         this.mDrawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+    public void goToRestaurantActivity(User user){
+        Toolbox.startActivity(this, RestaurantCardActivity.class,
+                RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
+                getRestaurantMapOfTheModel().get(user.getRestaurantIdentifier()));
     }
 
     @Override
@@ -373,7 +388,6 @@ public class WelcomeActivity extends BaseActivity
             Log.e("getDeviceLocation %s", e.getMessage());
         }
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
@@ -400,16 +414,29 @@ public class WelcomeActivity extends BaseActivity
     public void getListRestaurantsDetails() {
         Log.d(TAG, "getListRestaurantsDetails: ");
 
-        Log.d(TAG, "getListRestaurantsDetails: mLastKnownLocation = "+locationStringFromLocation(mLastKnownLocation));
+        Log.d(TAG, "getListRestaurantsDetails: mLastKnownLocation = "
+                +Toolbox.locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
-        mDisposable = GooglePlaceStreams.streamFetchListRestaurantDetails(locationStringFromLocation(mLastKnownLocation),this)
+        mDisposable = GooglePlaceStreams
+                .streamFetchListRestaurantDetails(Toolbox.locationStringFromLocation(mLastKnownLocation),this)
                 .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                     @Override
                     public void onNext(List<Restaurant> listRestaurant) {
                         Log.d(TAG, "getListRestaurantsDetails : onNext: ");
-                        // Create Restaurant in FireBase Database
+
                         // Load Restaurant List in ViewModel
-                        saveRestaurantListInModel(listRestaurant);
+                        Map<String,Restaurant> restos = new LinkedHashMap<>();
+                        for (Restaurant restaurant : listRestaurant){
+                            restos.put(restaurant.getIdentifier(),restaurant);
+                        }
+                        saveRestaurantMapInModel(restos);
+                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = "+getRestaurantMapOfTheModel().size());
+
+                        // Listen Current Restaurant List
+                        listenCurrentListRestaurant();
+
+                        // Save current Opening Hours in FireBase
+                        saveOpeningHoursInFireBase();
 
                         // We have recovered all the data necessary for the display
                         // We can display and make the interface available
@@ -419,7 +446,7 @@ public class WelcomeActivity extends BaseActivity
                     public void onError(Throwable e) {
                         // Display a toast message
                         updateUIWhenErrorHTTPRequest();
-                        Log.d(TAG, "getListRestaurantsDetails : onError: ");
+                        Log.d(TAG, "getListRestaurantsDetails : onError: "+e);
                     }
                     @Override
                     public void onComplete() {
@@ -436,16 +463,42 @@ public class WelcomeActivity extends BaseActivity
         Toast.makeText(this, "Error during Downloading", Toast.LENGTH_LONG).show();
     }
 
-    // Formatting Location Coordinates in String
-    public static String locationStringFromLocation(final Location location) {
-        Log.d(TAG, "locationStringFromLocation: ");
+    // Save current Opening Hours in FireBase
+    protected void saveOpeningHoursInFireBase() {
 
-        String latitude = Location.convert(location.getLatitude(), Location.FORMAT_DEGREES);
-        String lat = latitude.replaceAll(",",".");
-        String longitude = Location.convert(location.getLongitude(), Location.FORMAT_DEGREES);
-        String lon = longitude.replaceAll(",",".");
-        Log.d(TAG, "locationStringFromLocation: "+lat+ "," + lon);
-        return lat+ "," + lon;
+        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
+        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Restaurant> e = it.next();
+            RestaurantHelper.updateRestaurantOpeningTime(e.getValue().getIdentifier(),e.getValue().getOpeningTime())
+                    .addOnFailureListener(this.onFailureListener());
+        }
+    }
+    /**
+     * Enables listening of the number of stars
+     */
+    public void listenCurrentListRestaurant() {
+        Log.d(TAG, "listenCurrentListRestaurant: ");
+
+        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
+        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Restaurant> restaurant = it.next();
+            RestaurantHelper
+                    .getRestaurantsCollection()
+                    .document(restaurant.getValue().getIdentifier())
+                    .addSnapshotListener((document, e) -> {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        Restaurant rest = document.toObject(Restaurant.class);
+                        Log.d(TAG, "onEvent: Id restaurant = "+ rest.getIdentifier());
+                        //ou Log.d(TAG, "onEvent: Id restaurant = "+document.get("identifier"));
+
+                        getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
+                    });
+        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW

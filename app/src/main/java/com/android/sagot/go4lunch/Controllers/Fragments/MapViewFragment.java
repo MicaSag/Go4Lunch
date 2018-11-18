@@ -4,16 +4,17 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,13 +24,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**************************************************************************************************
  *
@@ -56,7 +56,7 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
     private static final float DEFAULT_ZOOM = 16f;
 
     // Restaurants List
-    List<Restaurant> mListRestaurants;
+    Map<String,Restaurant> mListRestaurants;
 
     //==> For use Api Google Play Service : Location
     // _ The geographical location where the device is currently located.
@@ -112,7 +112,7 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         View rootView = inflater.inflate(R.layout.fragment_map_view, container, false);
 
         // Load Restaurant List of the ViewModel
-        mListRestaurants = getRestaurantListOfTheModel();
+        mListRestaurants = getRestaurantMapOfTheModel();
 
         // Configure the Maps Service of Google
         configurePlayServiceMaps();
@@ -161,10 +161,10 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
     public void onInfoWindowClick(Marker marker) {
         Log.d(TAG, "onMarkerClick: ");
 
-        Log.d(TAG, "onMarkerClick: marker.tag = "+marker.getTag());
-
         //Launch Restaurant Card Activity with restaurantIdentifier
-        startRestaurantCardActivity((String) marker.getTag());
+        Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
+                RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
+                getRestaurantMapOfTheModel().get(marker.getTag()));
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS
@@ -190,22 +190,25 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
     protected void DisplayAndListensMarkers() {
         Log.d(TAG, "fireStoreListener: ");
 
-        for (Restaurant restaurant : mListRestaurants) {
+        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
+        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Restaurant> restaurant = it.next();
 
-            Log.d(TAG, "fireStoreListener: identifier Restaurant = "+restaurant.getIdentifier());
+            Log.d(TAG, "fireStoreListener: identifier Restaurant = "+restaurant.getValue().getIdentifier());
 
             // Declare a Marker for current Restaurant
             Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(restaurant.getLat()),
-                                    Double.parseDouble(restaurant.getLng())
+                    .position(new LatLng(Double.parseDouble(restaurant.getValue().getLat()),
+                                    Double.parseDouble(restaurant.getValue().getLng())
                             )
                     )
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange))
-                    .title(restaurant.getName())
+                    .title(restaurant.getValue().getName())
             );
-            marker.setTag(restaurant.getIdentifier());
+            marker.setTag(restaurant.getValue().getIdentifier());
 
-            listenNbrParticipantsForUpdateMarkers(restaurant,marker);
+            listenNbrParticipantsForUpdateMarkers(restaurant.getValue(),marker);
        }
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
@@ -215,7 +218,6 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         // Update Location UI
         MapViewFragment.this.updateLocationUI();
     }
-
     /**
      * Enables listening to the number of participants in each restaurant
      * to enable marker color change in real time
@@ -225,27 +227,22 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         RestaurantHelper
                 .getRestaurantsCollection()
                 .document(restaurant.getIdentifier())
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot restaurant,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                            return;
-                        }
-                        if (restaurant != null) {
-                            Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = " + restaurant.get("identifier"));
-                            Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = " + restaurant.get("nbrParticipants"));
-                            if (Integer.parseInt(restaurant.get("nbrParticipants").toString()) == 0) {
-                                marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
-                            } else {
-                                marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
-                            }
+                .addSnapshotListener((restaurant1, e) -> {
+                    if (e != null) {
+                        Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                        return;
+                    }
+                    if (restaurant1 != null) {
+                        Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = " + restaurant1.get("identifier"));
+                        Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = " + restaurant1.get("nbrParticipants"));
+                        if (Integer.parseInt(restaurant1.get("nbrParticipants").toString()) == 0) {
+                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
+                        } else {
+                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
                         }
                     }
                 });
     }
-
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */

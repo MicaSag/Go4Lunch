@@ -9,12 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
+import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.Views.ListWorkmatesViewAdapter;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
@@ -145,33 +147,10 @@ public class ListWorkmatesViewFragment extends BaseFragment {
                     // The restaurant card is called if the workmate chooses one
                     if (mAdapter.getRestaurantIdentifier(position) != null) {
                         //Launch Restaurant Card Activity with restaurantIdentifier
-                        ListWorkmatesViewFragment.this
-                                .startRestaurantCardActivity(mAdapter
-                                        .getRestaurantIdentifier(position));
+                        Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
+                                RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
+                                getRestaurantMapOfTheModel().get(mAdapter.getRestaurantIdentifier(position)));
                     }
                 });
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                          UPDATE UI
-    // ---------------------------------------------------------------------------------------------
-    public String searchRestaurantName() {
-        Log.d(TAG, "searchRestaurantName: ");
-        
-        // Search Restaurant Name
-        String restaurantName = "no name";
-        // Browse the list of restaurants loaded in the ViewModel
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        for (Restaurant restaurant : model.getRestaurants()) {
-
-            // Search restaurant details
-            if (mRestaurantIdentifier.equals(restaurant.getIdentifier())) {
-
-                restaurantName = restaurant.getName();
-
-                // Go out as soon as the restaurant details are found
-                break;
-            }
-        }
-        return restaurantName;
     }
 }

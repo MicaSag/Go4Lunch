@@ -1,6 +1,8 @@
 package com.android.sagot.go4lunch.Views;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,24 +10,25 @@ import android.view.ViewGroup;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
-import io.reactivex.annotations.NonNull;
+import java.util.Map;
 
-public class ListRestaurantsViewAdapter extends FirestoreRecyclerAdapter<Restaurant, ListRestaurantsViewHolder> {
+public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaurantsViewHolder> {
+
+    // For Debug
+    private static final String TAG = ListRestaurantsViewAdapter.class.getSimpleName();
 
     // Declaring a Glide object
     private RequestManager mGlide;
 
     // Declare Options<User>
-    FirestoreRecyclerOptions<Restaurant> mOptions;
+    Map<String,Restaurant> mListRestaurant;
 
     // CONSTRUCTOR
-    public ListRestaurantsViewAdapter(@NonNull FirestoreRecyclerOptions<Restaurant> options
+    public ListRestaurantsViewAdapter(Map<String,Restaurant> listRestaurant
                                             , RequestManager glide) {
-        super(options);
-        mOptions = options;
+        Log.d(TAG, "ListRestaurantsViewAdapter: ");
+        mListRestaurant = listRestaurant;
         mGlide = glide;
     }
 
@@ -41,13 +44,28 @@ public class ListRestaurantsViewAdapter extends FirestoreRecyclerAdapter<Restaur
 
     // UPDATE VIEW HOLDER WITH A DETAILS RESTAURANT
     @Override
-    public void onBindViewHolder(@NonNull ListRestaurantsViewHolder viewHolder, int position,
-                                 @NonNull Restaurant restaurant) {
-        viewHolder.updateWithRestaurantDetails(restaurant, mGlide);
+    public void onBindViewHolder(ListRestaurantsViewHolder viewHolder, int position) {
+        Log.d(TAG, "onBindViewHolder: ");
+
+        viewHolder.updateWithRestaurantDetails(mListRestaurant.
+                get(getRestaurantIdentifier(position)), mGlide);
+    }
+
+    @Override
+    public int getItemCount() {
+        Log.d(TAG, "getItemCount: ");
+        Log.d(TAG, "getItemCount: mListRestauant size() = "+mListRestaurant.size());
+        return mListRestaurant.size();
     }
 
     // Returns the Restaurant Identifier of the current position
     public String getRestaurantIdentifier(int position){
-        return mOptions.getSnapshots().get(position).getIdentifier();
+        int positionInMap = 0;
+        String key = "not value";
+        for (String keyValue : mListRestaurant.keySet()){
+            if (position == positionInMap) {key = keyValue;break;}
+            positionInMap++;
+        }
+        return key;
     }
 }

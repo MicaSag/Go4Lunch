@@ -3,13 +3,10 @@ package com.android.sagot.go4lunch.Controllers.Base;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -22,10 +19,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import butterknife.ButterKnife;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by Michaël SAGOT on 15/08/2018.
@@ -71,21 +70,21 @@ public abstract class BaseActivity extends AppCompatActivity {
     // ---------------------------------------------------------------------------------------------
     //                                        VIEW MODEL ACCESS
     // ---------------------------------------------------------------------------------------------
-    // Generate a toast Message if error during Downloading
-    public void saveRestaurantListInModel(List<Restaurant> listRestaurant){
-        Log.d(TAG, "saveRestaurantList: ");
+    // Save current restaurant list in Model
+    public void saveRestaurantMapInModel(Map<String,Restaurant> listRestaurant){
+        Log.d(TAG, "saveRestaurantMapInModel: ");
 
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-        model.setRestaurants(listRestaurant);
+        model.setListRestaurant(listRestaurant);
     }
 
-    // Generate a toast Message if error during Downloading
-    public List<Restaurant> getRestaurantListOfTheModel(){
-        Log.d(TAG, "getRestaurantListOfTheModel: ");
+    // Get current restaurant list of the Model
+    public Map<String,Restaurant> getRestaurantMapOfTheModel(){
+        Log.d(TAG, "getRestaurantMapOfTheModel: ");
 
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
 
-        return model.getRestaurants();
+        return model.getListRestaurant();
     }
 
     // ---------------------------------------------------------------------------------------------

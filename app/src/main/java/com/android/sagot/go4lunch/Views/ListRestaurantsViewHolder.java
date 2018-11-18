@@ -47,7 +47,11 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
 
         this.mName.setText(restaurant.getName());
         this.mAddress.setText(restaurant.getAddress());
+
+        // Display OpeningTime
         this.mOpeningHours.setText(restaurant.getOpeningTime());
+
+
         this.mDistance.setText(restaurant.getDistance());
 
         // Display Number of Participants
@@ -55,7 +59,6 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
         this.mParticipants.setText(participants);
         // do not show participant information if the number of participants is null
         if (restaurant.getNbrParticipants() == 0) {
-            Log.d(TAG, "updateWithRestaurantDetails: restaurant : " + restaurant.getName() + " --> nbrParticipants (" + restaurant.getNbrParticipants() + ") = INSIBLE");
             mParticipantsSmiley.setVisibility(View.INVISIBLE);
             mParticipants.setVisibility(View.INVISIBLE);
         } else {

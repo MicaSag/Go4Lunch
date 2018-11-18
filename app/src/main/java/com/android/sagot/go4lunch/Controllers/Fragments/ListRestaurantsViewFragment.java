@@ -8,15 +8,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
+import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -68,6 +74,9 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         // Telling ButterKnife to bind all views in layout
         ButterKnife.bind(this, mListView);
 
+        // Enables listening of restaurants in FireBase
+        listenCurrentListRestaurant();
+
         // Configure RecyclerView
         this.configureRecyclerView();
 
@@ -75,6 +84,35 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         this.configureOnClickRecyclerView();
 
         return mListView;
+    }
+    /**
+     * Enables listening of restaurants in FireBase
+     */
+    public void listenCurrentListRestaurant() {
+        Log.d(TAG, "listenCurrentListRestaurant: ");
+
+        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
+        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Restaurant> restaurant = it.next();
+            RestaurantHelper
+                    .getRestaurantsCollection()
+                    .document(restaurant.getValue().getIdentifier())
+                    .addSnapshotListener((document, e) -> {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        Restaurant rest = document.toObject(Restaurant.class);
+                        Log.d(TAG, "onEvent: Id restaurant = " + rest.getIdentifier());
+                        //ou Log.d(TAG, "onEvent: Id restaurant = "+document.get("identifier"));
+
+                        getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
+
+                        // Update Recycler View
+                        mAdapter.notifyDataSetChanged();
+                    });
+        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                    CONFIGURATION
@@ -87,7 +125,9 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         Query query = RestaurantHelper.getAllRestaurant();
 
         // Create adapter passing the list of RestaurantDetails
-        this.mAdapter = new ListRestaurantsViewAdapter(generateOptionsForAdapter(query)
+        /*this.mAdapter = new ListRestaurantsViewAdapter(generateOptionsForAdapter(query)
+                , Glide.with(this));*/
+        this.mAdapter = new ListRestaurantsViewAdapter(getRestaurantMapOfTheModel()
                 , Glide.with(this));
 
         // Attach the adapter to the recycler view to populate items
@@ -112,9 +152,12 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         ItemClickSupport.addTo(mRecyclerView, R.layout.fragment_list_restaurants_view_item)
                 .setOnItemClickListener((recyclerView, position, v) -> {
 
-                    //Launch Restaurant Card Activity with placeDetails
-                    startRestaurantCardActivity(mAdapter.getRestaurantIdentifier(position));
+                    //Launch Restaurant Card Activity with Restaurant Details
+                    Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
+                            RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
+                            getRestaurantMapOfTheModel().get(mAdapter.getRestaurantIdentifier(position)));
                     });
+
     }
     // ---------------------------------------------------------------------------------------------
     //                                       UPDATE UI
