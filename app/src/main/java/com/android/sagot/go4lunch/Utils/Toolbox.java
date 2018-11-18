@@ -57,9 +57,15 @@ public class Toolbox {
         return lat+ "," + lon;
     }
 
-    // ---------------------------------------------------------------------------------------------
-    //                                    CALL ACTIVITY
-    // ---------------------------------------------------------------------------------------------
+    /**
+     * Formatting Location Coordinates in String
+     *
+     * @param  context   : context of the application
+     *         className : className of the activity called
+     *         key       : receiving key of the activity called
+     *         keyValue  : sent key content
+     * @return none
+     */
     public static void startActivity(Context context, Class className, String key, Object keyValue){
 
         // Create a intent for call RestaurantCardActivity

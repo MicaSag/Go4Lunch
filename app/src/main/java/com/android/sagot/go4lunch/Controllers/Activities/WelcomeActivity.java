@@ -122,10 +122,6 @@ public class WelcomeActivity extends BaseActivity
     // Declare Subscription
     protected Disposable mDisposable;
 
-    List<Restaurant> mListRestaurant;
-
-    int i;
-
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
     // ---------------------------------------------------------------------------------------------
@@ -160,7 +156,6 @@ public class WelcomeActivity extends BaseActivity
         this.configureDrawerLayout();
         this.configureNavigationView();
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
     // ---------------------------------------------------------------------------------------------
@@ -248,13 +243,12 @@ public class WelcomeActivity extends BaseActivity
         switch (id) {
             case R.id.activity_welcome_drawer_your_lunch:
                 // Get additional data from FireStore : restaurantIdentifier of the User choice
-                UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        User currentUser = documentSnapshot.toObject(User.class);
-                        Log.d(TAG, "onSuccess: currentUser.restoIdentifiant = "+currentUser.getRestaurantIdentifier());
+                UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
+                    User currentUser = documentSnapshot.toObject(User.class);
+                    if (currentUser.getRestaurantIdentifier() != null ) {
+                        // Go to restaurant card
                         goToRestaurantActivity(currentUser);
-                    }
+                    } else showSnackBar("No restaurant has been chosen yet");
                 });
             case R.id.activity_welcome_drawer_settings:
                 break;
@@ -269,6 +263,7 @@ public class WelcomeActivity extends BaseActivity
 
         return true;
     }
+    // Go To activity RestaurantCard
     public void goToRestaurantActivity(User user){
         Toolbox.startActivity(this, RestaurantCardActivity.class,
                 RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
