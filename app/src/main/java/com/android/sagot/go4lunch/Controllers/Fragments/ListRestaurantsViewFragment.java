@@ -155,7 +155,7 @@ public class ListRestaurantsViewFragment extends BaseFragment {
                     //Launch Restaurant Card Activity with Restaurant Details
                     Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
                             RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                            getRestaurantMapOfTheModel().get(mAdapter.getRestaurantIdentifier(position)));
+                            mAdapter.getRestaurantIdentifier(position));
                     });
 
     }

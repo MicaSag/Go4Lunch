@@ -76,6 +76,7 @@ public class RestaurantCardActivity extends BaseActivity {
 
     // --> Data retrieved from the caller
     // Declare a RestaurantDetails
+    private String mRestaurantIdentifier;
     private Restaurant mRestaurant;
     // Declare Current User data
     private User mUser;
@@ -109,19 +110,20 @@ public class RestaurantCardActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         // update Floating Action Button
-        updateFloatingActionButton();
+        //updateFloatingActionButton();
 
         // Obtain RestaurantDetails
-        getRestaurantDetails();
+        getRestaurantIdentifier();
+        getRestaurantInFireBase();
 
         // Enables listening of the number of stars
-        listenNbrLikes();
+        //listenNbrLikes();
 
         // Enables listening of the user Like
-        listenUserLike();
+        //listenUserLike();
 
         // Update UI
-        updateUI();
+        //updateUI();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS
@@ -129,49 +131,91 @@ public class RestaurantCardActivity extends BaseActivity {
     /**
      * Method for recovering data sent by the caller
      */
-    private void getRestaurantDetails(){
+    private void getRestaurantIdentifier(){
         Log.d(TAG, "getRestaurantDetails: ");
 
         // Recover intent of the Caller
         Intent intent = getIntent();
 
         // ==> Retrieves the details of the restaurant sent by Caller
-        String restaurant = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
-        mRestaurant = new Gson().fromJson(restaurant,Restaurant.class);
-        Log.d(TAG, "getRestaurantDetails: mRestaurant nb Like = "+mRestaurant.getNbrLikes());
+        mRestaurantIdentifier = intent.getStringExtra(KEY_DETAILS_RESTAURANT_CARD);
+        //Restaurant rest = new Gson().fromJson(restaurant,Restaurant.class);
+        //mRestaurantIdentifier = rest.getIdentifier();
     }
+
     /**
-     * Enables listening of the number of stars
+     * Search restaurant details in fireBase
      */
-    public void listenNbrLikes() {
-        Log.d(TAG, "listenNbrLikes: ");
+    public void getRestaurantInFireBase(){
+        Log.d(TAG, "getRestaurantDetailsInFireBase: ");
+
+        if (!mRestaurantIdentifier.equals("") ) {
+            Log.d(TAG, "getRestaurantDetailsInFireBase: mRestaurantIdentifier = "+mRestaurantIdentifier );
+            RestaurantHelper.getRestaurant(mRestaurantIdentifier).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "getRestaurant.onComplete: ");
+                        Log.d(TAG, "onComplete: mRestaurant.identifier IO = "+task.getResult().get("identifier"));
+                        Log.d(TAG, "onComplete: mRestaurant.name       IO = "+task.getResult().get("name"));
+                        mRestaurant = task.getResult().toObject(Restaurant.class);
+                        Log.d(TAG, "onComplete: mRestaurant.identifier = "+mRestaurant.getIdentifier());
+
+                        // update Floating Action Button
+                        updateFloatingActionButton();
+
+                        // Lets listen the Restaurant details contained in FireBase
+                        listenRestaurantContainedInFireBase();
+
+                        // Lets listen the User details contained in FireBase
+                        listenUserContainedInFireBase();
+
+                        // Update UI
+                        updateUI();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Lets listen the Restaurant details contained in FireBase
+     */
+    public void listenRestaurantContainedInFireBase() {
+        Log.d(TAG, "listenRestaurantContainedInFireBase: mRestaurantIdentifier = "+mRestaurantIdentifier);
         RestaurantHelper
                 .getRestaurantsCollection()
-                .document(mRestaurant.getIdentifier())
-                .addSnapshotListener((restaurant, e) -> {
-                    if (e != null) {
-                        Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                        return;
+                .document(mRestaurantIdentifier)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "listenRestaurantContainedInFireBase.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        mRestaurant = document.toObject(Restaurant.class);
+
+                        // Update Stars in UI
+                        updateUI_Stars();
                     }
-                    Log.d(TAG, "listenNbrLikes.onEvent: nbrLikes = " + restaurant.get("nbrLikes").toString());
-                    mRestaurant.setNbrLikes((long) restaurant.get("nbrLikes"));
-                    RestaurantCardActivity.this.updateUI_Stars();
                 });
     }
     /**
-     * Enables listening of the user like
+     * Lets listen the User details contained in FireBase
      */
-    public void listenUserLike() {
-        Log.d(TAG, "listenUserLike: ");
+    public void listenUserContainedInFireBase() {
+        Log.d(TAG, "listenUserContainedInFireBase: ");
 
         UserHelper
                 .getUsersCollection()
                 .document(getCurrentUser().getUid())
                 .addSnapshotListener((user, e) -> {
                     if (e != null) {
-                        Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                        Log.d(TAG, "listenUserContainedInFireBase.onEvent: Listen failed: " + e);
                         return;
                     }
+                    Log.d(TAG, "listenUserContainedInFireBase: IN");
                     mLikeButton.setColorFilter(getResources().getColor(R.color.colorPrimary));
                     User currentUser = user.toObject(User.class);
                     Map<String, String> restaurantLiked = currentUser.getListRestaurantLiked();
@@ -505,6 +549,8 @@ public class RestaurantCardActivity extends BaseActivity {
             mGlide = Glide.with(this);
             mGlide.load(mRestaurant.getPhotoUrl()).into(this.mImage);
         }
+
+        updateUI_Stars();
 
         // Display Workmates List
         displayWorkmatesList();

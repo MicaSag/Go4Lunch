@@ -164,7 +164,7 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         //Launch Restaurant Card Activity with restaurantIdentifier
         Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
                 RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                getRestaurantMapOfTheModel().get(marker.getTag()));
+                marker.getTag().toString());
     }
     // ---------------------------------------------------------------------------------------------
     //                                       METHODS

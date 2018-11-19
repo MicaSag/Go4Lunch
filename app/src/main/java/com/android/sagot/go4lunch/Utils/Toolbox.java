@@ -66,21 +66,13 @@ public class Toolbox {
      *         keyValue  : sent key content
      * @return none
      */
-    public static void startActivity(Context context, Class className, String key, Object keyValue){
+    public static void startActivity(Context context, Class className, String key, String keyValue){
 
         // Create a intent for call RestaurantCardActivity
         Intent intent = new Intent(context, className);
 
-        // Create a Gson Object
-        final Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .disableHtmlEscaping()
-                .create();
-        String json;
-
         // ==> Sends the Restaurant details
-        json = gson.toJson(keyValue);
-        intent.putExtra(key, json);
+        intent.putExtra(key,keyValue);
 
         // Call RestaurantCardActivity with 3 parameters
         context.startActivity(intent);

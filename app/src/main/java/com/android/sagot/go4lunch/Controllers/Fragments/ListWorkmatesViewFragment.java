@@ -149,7 +149,7 @@ public class ListWorkmatesViewFragment extends BaseFragment {
                         //Launch Restaurant Card Activity with restaurantIdentifier
                         Toolbox.startActivity(getActivity(),RestaurantCardActivity.class,
                                 RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                                getRestaurantMapOfTheModel().get(mAdapter.getRestaurantIdentifier(position)));
+                                mAdapter.getRestaurantIdentifier(position));
                     }
                 });
     }

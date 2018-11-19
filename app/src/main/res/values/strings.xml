@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
 
-    <!-- MAIN ACTIVITY -->
+    <!-- Main ACTIVITY -->
     <string name="main_activity_description">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="facebook_login">Sign in with Facebook</string>
     <string name="google_login">Sign in with Google</string>
@@ -13,6 +13,9 @@
     <string name="connection_succeed">Successful authentication !</string>
     <string name="button_login_text_logged">View Profile</string>
     <string name="button_login_text_not_logged">Connection</string>
+
+    <!-- Welcome ACTIVITY -->
+    <string name="restaurant_not_chosen">No restaurant has been chosen yet</string>
 
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>

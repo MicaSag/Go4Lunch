@@ -46,7 +46,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -248,7 +247,7 @@ public class WelcomeActivity extends BaseActivity
                     if (currentUser.getRestaurantIdentifier() != null ) {
                         // Go to restaurant card
                         goToRestaurantActivity(currentUser);
-                    } else showSnackBar("No restaurant has been chosen yet");
+                    } else showSnackBar(getString(R.string.restaurant_not_chosen));
                 });
             case R.id.activity_welcome_drawer_settings:
                 break;
@@ -267,7 +266,7 @@ public class WelcomeActivity extends BaseActivity
     public void goToRestaurantActivity(User user){
         Toolbox.startActivity(this, RestaurantCardActivity.class,
                 RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                getRestaurantMapOfTheModel().get(user.getRestaurantIdentifier()));
+                user.getRestaurantIdentifier());
     }
 
     @Override
@@ -556,22 +555,5 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment,"MapViewFragment")
                 .commit();
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                        ( OUT )
-    // ---------------------------------------------------------------------------------------------
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy: ");
-
-        //Unsubscribe the stream when the Activity is destroyed so as not to create a memory leaks
-        this.disposeWhenDestroy();
-        super.onDestroy();
-    }
-    //  Unsubscribe the stream when the Activity is destroyed so as not to create a memory leaks
-    private void disposeWhenDestroy(){
-        Log.d(TAG, "disposeWhenDestroy: ");
-
-        if (this.mDisposable != null && !this.mDisposable.isDisposed()) this.mDisposable.dispose();
     }
 }
