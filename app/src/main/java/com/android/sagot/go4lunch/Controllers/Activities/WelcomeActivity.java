@@ -46,6 +46,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -72,8 +75,7 @@ import io.reactivex.observers.DisposableObserver;
  **************************************************************************************************/
 
 public class WelcomeActivity extends BaseActivity
-                            implements  NavigationView.OnNavigationItemSelectedListener,
-                                        MapViewFragment.ShowSnackBarListener  {
+                            implements  NavigationView.OnNavigationItemSelectedListener {
     // For TRACES
     // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -250,6 +252,8 @@ public class WelcomeActivity extends BaseActivity
                     } else showSnackBar(getString(R.string.restaurant_not_chosen));
                 });
             case R.id.activity_welcome_drawer_settings:
+                if (Toolbox.isNetworkAvailable(this)) Log.d(TAG, "onNavigationItemSelected: Connection OK");
+                else Log.d(TAG, "onNavigationItemSelected: Connection KO");
                 break;
             case R.id.activity_welcome_drawer_logout:
                 this.signOutUserFromFireBase();
@@ -478,19 +482,22 @@ public class WelcomeActivity extends BaseActivity
         Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
         while(it.hasNext()){
             Map.Entry<String, Restaurant> restaurant = it.next();
+            Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
+                    +restaurant.getValue().getIdentifier());
             RestaurantHelper
                     .getRestaurantsCollection()
                     .document(restaurant.getValue().getIdentifier())
-                    .addSnapshotListener((document, e) -> {
-                        if (e != null) {
-                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                            return;
+                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                                return;
+                            }
+                            Restaurant rest = document.toObject(Restaurant.class);
+                            Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = "+rest.getIdentifier());
+                                    WelcomeActivity.this.getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
                         }
-                        Restaurant rest = document.toObject(Restaurant.class);
-                        Log.d(TAG, "onEvent: Id restaurant = "+ rest.getIdentifier());
-                        //ou Log.d(TAG, "onEvent: Id restaurant = "+document.get("identifier"));
-
-                        getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
                     });
         }
     }

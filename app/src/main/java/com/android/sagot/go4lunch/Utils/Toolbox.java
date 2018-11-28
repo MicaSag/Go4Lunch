@@ -3,6 +3,8 @@ package com.android.sagot.go4lunch.Utils;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -76,5 +78,31 @@ public class Toolbox {
 
         // Call RestaurantCardActivity with 3 parameters
         context.startActivity(intent);
+    }
+
+    /**
+     * Checking whether network is connected
+     * @param context Context to get {@link ConnectivityManager}
+     * @return true if Network is connected, else false
+     */
+    public static boolean isNetworkAvailable(Context context) {
+
+        try {
+            // Get ConnectivityManager
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                // Get ActiveNetworkInfo
+                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+                // see if a network connection is established and Wifi or Mobile connection
+                if (activeNetworkInfo != null &&
+                        activeNetworkInfo.isConnected())
+                    return true;
+
+        } catch (Exception e) {
+            Log.d(TAG, "isNetworkAvailable: KO");
+            return false;
+        }
+        Log.d(TAG, "isNetworkAvailable: KO");
+        return false;
     }
 }

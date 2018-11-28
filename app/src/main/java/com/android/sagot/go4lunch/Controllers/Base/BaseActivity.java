@@ -10,7 +10,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
@@ -19,12 +18,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import butterknife.ButterKnife;
+
+import static com.android.sagot.go4lunch.Utils.Toolbox.isNetworkAvailable;
 
 /**
  * Created by Michaël SAGOT on 15/08/2018.
@@ -176,9 +174,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         return new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(BaseActivity.this.getApplicationContext(),
-                        BaseActivity.this.getString(R.string.error_unknown_error),
-                        Toast.LENGTH_LONG).show();
+                String message;
+                if (isNetworkAvailable(getApplicationContext()))
+                     message = getString(R.string.common_not_network);
+                else message = getString(R.string.error_unknown_error);
+                showSnackBar(message);
             }
         };
     }

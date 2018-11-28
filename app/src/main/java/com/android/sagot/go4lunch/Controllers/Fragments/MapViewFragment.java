@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -62,14 +63,6 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
     // _ The geographical location where the device is currently located.
     // _ That is, the last-known location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
-
-    // ==> CallBack
-    // Interface for ShowSnakeBar
-    public interface ShowSnackBarListener {
-        void showSnackBar(String message);
-    }
-    // Interface Object for use CallBack
-    ShowSnackBarListener mListener;
 
     public MapViewFragment() {
         // Required empty public constructor
@@ -264,20 +257,6 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
             } catch (SecurityException e) {
                 Log.e("updateLocationUI %s", e.getMessage());
             }
-        }
-    }
-    /**
-     *  Method use for CallBacks to the Welcome Activity
-     */
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        // CallBack for ShowSnackBar
-        if (context instanceof ShowSnackBarListener) {
-            mListener = (ShowSnackBarListener) context;
-        } else {
-            throw new ClassCastException(context.toString()
-                    + " must implement showSnackBarListener");
         }
     }
 }

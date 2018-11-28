@@ -38,11 +38,8 @@ public class UserHelper {
         return UserHelper.getUsersCollection().document(uid).get();
     }
 
-    public static Task<QuerySnapshot> getAllUserInfos(){
-        return UserHelper.getUsersCollection().get();
-    }
     public static Query getAllUser(){
-        return UserHelper.getUsersCollection().orderBy("userName").limit(10);
+        return UserHelper.getUsersCollection().orderBy("userName");
     }
 
     // --- UPDATE ---

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
 
+    <!-- COMMON TEXT -->
+    <string name="common_not_network">Not Network Connection</string>
+
     <!-- Main ACTIVITY -->
     <string name="main_activity_description">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="facebook_login">Sign in with Facebook</string>
@@ -28,5 +31,11 @@
     <string name="bottom_navigation_menu_map_view">Map View</string>
     <string name="bottom_navigation_menu_list_view">List View</string>
     <string name="bottom_navigation_menu_workmates">Workmates</string>
+
+    <!-- NOTIFICATION SERVICE -->
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="default_notification_channel_name">"FireBase Channel"</string>
+    <string name="notification_title">"You have received a notification"</string>
+    <string name="notification_message_title">"Do not forget your lunch"</string>
 
 </resources>

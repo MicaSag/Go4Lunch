@@ -10,7 +10,7 @@ public class Restaurant {
     @Nullable private String mOpeningTime;  // Opening time of Restaurant
     @Nullable private String mDistance;     // Distance where the restaurant is from the current position
     @Nullable private long mNbrParticipants;// Number of participants
-    @Nullable private long mNbrLikes;        // Number of likes that the restaurant got
+    @Nullable private long mNbrLikes;       // Number of likes that the restaurant got
     @Nullable private String mPhotoUrl;     // URL of the Restaurant photo
     @Nullable private String mWebSiteUrl;   // URL of the Web site
     @Nullable private String mType;         // Type of the Restaurant
