@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Controllers.Activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -70,6 +71,12 @@ public class RestaurantCardActivity extends BaseActivity {
 
     // Create the key details restaurant
     public static final String KEY_DETAILS_RESTAURANT_CARD = "KEY_DETAILS_RESTAURANT_CARD";
+
+    // For use CALL_PHONE permission
+    // 1 _ Permission name
+    public static final String PERMISSION_CALL_PHONE = Manifest.permission.CALL_PHONE;
+    // 2 _ Request Code
+    public static final int RC_CALL_PHONE_PERMISSION = 1;
 
     // --> Data retrieved from the caller
     // Declare a RestaurantDetails

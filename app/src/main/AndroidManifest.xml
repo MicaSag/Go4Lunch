@@ -61,7 +61,7 @@
         <!-- A child of the Welcome Activity -->
         <activity
             android:name=".Controllers.Activities.WebViewActivity"
-            android:label="Restaurant Web Site"
+            android:label="@string/manifest_web_view_activity_label"
             android:parentActivityName=".Controllers.Activities.WelcomeActivity">
 
             <!-- Parent activity meta-data to support 4.0 and lower -->

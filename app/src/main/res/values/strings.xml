@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">Go4Lunch</string>
 
-    <!-- COMMON TEXT -->
+    <!-- Manifest -->
+    <string name="app_name" translatable="false">Go4Lunch</string>
+    <string name="manifest_web_view_activity_label">Restaurant Web Site</string>
+
+    <!-- Common TEXT -->
     <string name="common_not_network">Not Network Connection</string>
 
     <!-- Main ACTIVITY -->
@@ -19,23 +22,47 @@
 
     <!-- Welcome ACTIVITY -->
     <string name="restaurant_not_chosen">No restaurant has been chosen yet</string>
+    <!-- ... Bottom Navigation view -->
+    <string name="bottom_navigation_menu_map_view">Map View</string>
+    <string name="bottom_navigation_menu_list_view">List View</string>
+    <string name="bottom_navigation_menu_workmates">Workmates</string>
+    <string name="activity_welcome_title">l\'m Hungry!</string>
+
+    <!-- Restaurant Card ACTIVITY -->
+    <string name="activity_restaurant_card_name_of_the_restaurant">NAME OF THE RESTAURANT</string>
+    <string name="activity_restaurant_card_address_of_the_restaurant">Address of the restaurant</string>
+    <string name="activity_restaurant_card_call">CALL</string>
+    <string name="activity_restaurant_card_like">LIKE</string>
+    <string name="activity_restaurant_card_website">WEBSITE</string>
 
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="menu_drawer_your_lunch">YOUR LUNCH</string>
+    <string name="menu_drawer_settings">SETTINGS</string>
+    <string name="menu_drawer_logout">LOGOUT</string>
+    <string name="toolbar_search">Search</string>
     <!-- Used in NavigationHeader -->
     <string name="navigation_header_user_name">no user name found</string>
     <string name="navigation_header_user_email">no user email found</string>
-
-    <!-- BOTTOM NAVIGATION VIEW -->
-    <string name="bottom_navigation_menu_map_view">Map View</string>
-    <string name="bottom_navigation_menu_list_view">List View</string>
-    <string name="bottom_navigation_menu_workmates">Workmates</string>
+    <string name="activity_welcome_nav_header_user_name">User Name</string>
+    <string name="activity_welcome_nav_header_email">email</string>
 
     <!-- NOTIFICATION SERVICE -->
-    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="default_notification_channel_id">fcm_default_channel</string>
     <string name="default_notification_channel_name">"FireBase Channel"</string>
     <string name="notification_title">"You have received a notification"</string>
     <string name="notification_message_title">"Do not forget your lunch"</string>
+
+    <!-- List Restaurants RecyclerView -->
+    <string name="fragment_list_restaurants_view_item_restaurant_name">restaurant name</string>
+    <string name="fragment_list_restaurants_view_item_address">address</string>
+    <string name="fragment_list_restaurants_view_item_not_opening_hours">not opening hours</string>
+
+    <!-- List Workmates RecyclerView -->
+    <string name="fragment_list_workmates_view_item_workmates_hasn_t_decided_yet">Workmates hasn\'t decided yet</string>
+    <string name="workmates_list_text_1">is eating at (</string>
+    <string name="workmates_list_text_2">hasn\'t decided yet</string>
+    <string name="workmates_list_text_3">is joining</string>
 
 </resources>

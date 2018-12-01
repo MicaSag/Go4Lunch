@@ -4,6 +4,6 @@
         android:id="@+id/activity_main_menu_toolbar_search"
         android:icon="@drawable/baseline_search_white_24"
         app:showAsAction="ifRoom"
-        android:title="Search">
+        android:title="@string/toolbar_search">
     </item>
 </menu>

@@ -1,6 +1,7 @@
 package com.android.sagot.go4lunch.Views;
 
 import android.content.Context;
+import android.location.Location;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,10 +25,14 @@ public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaur
     // Declare Options<User>
     Map<String,Restaurant> mListRestaurant;
 
+    // Current Location
+    Location mLocation;
+
     // CONSTRUCTOR
-    public ListRestaurantsViewAdapter(Map<String,Restaurant> listRestaurant
+    public ListRestaurantsViewAdapter(Location location, Map<String,Restaurant> listRestaurant
                                             , RequestManager glide) {
         Log.d(TAG, "ListRestaurantsViewAdapter: ");
+        mLocation = location;
         mListRestaurant = listRestaurant;
         mGlide = glide;
     }
@@ -47,7 +52,7 @@ public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaur
     public void onBindViewHolder(ListRestaurantsViewHolder viewHolder, int position) {
         Log.d(TAG, "onBindViewHolder: ");
 
-        viewHolder.updateWithRestaurantDetails(mListRestaurant.
+        viewHolder.updateWithRestaurantDetails(mLocation, mListRestaurant.
                 get(getRestaurantIdentifier(position)), mGlide);
     }
 

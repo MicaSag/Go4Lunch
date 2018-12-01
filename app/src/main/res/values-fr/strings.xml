@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="manifest_web_view_activity_label">Site Web Resaurant</string>
+    <string name="common_not_network">Pas de connexion au réseau</string>
+    <string name="main_activity_description">Trouve un restaurant et invite tes collègues à déjeuner</string>
+    <string name="facebook_login">S\'inscrire avec Facebook</string>
+    <string name="google_login">S\'inscrire avec Google</string>
+    <string name="error_not_connected">Vous devez être connecté !</string>
+    <string name="error_authentication_canceled">Authentification supprimée</string>
+    <string name="error_no_internet">Aucune connexion internet !</string>
+    <string name="error_provider">Erreur de fournisseur</string>
+    <string name="error_unknown_error">Erreur inconnue</string>
+    <string name="connection_succeed">Succès lors de l\'authentification</string>
+    <string name="button_login_text_logged">Votre profil</string>
+    <string name="button_login_text_not_logged">Connexion</string>
+    <string name="restaurant_not_chosen">Aucun restaurant n\'a encore été choisi</string>
+    <string name="bottom_navigation_menu_map_view">Carte</string>
+    <string name="bottom_navigation_menu_list_view">Restaurants</string>
+    <string name="bottom_navigation_menu_workmates">Collègues</string>
+    <string name="activity_restaurant_card_name_of_the_restaurant">NOM DU RETSTAURANT</string>
+    <string name="activity_restaurant_card_address_of_the_restaurant">Adresse du restaurant</string>
+    <string name="activity_restaurant_card_call">APPELER</string>
+    <string name="activity_restaurant_card_like">AIMER</string>
+    <string name="activity_restaurant_card_website">SITE WEB</string>
+    <string name="navigation_drawer_open">Ouverture du menu drawer</string>
+    <string name="navigation_drawer_close">Fermeture du menu drawer</string>
+    <string name="navigation_header_user_name">Pas d\'utilisateur trouvé</string>
+    <string name="navigation_header_user_email">Pas d\'email trouvée</string>
+    <string name="activity_welcome_nav_header_user_name">Nom d\'utilisateur</string>
+    <string name="activity_welcome_nav_header_email">Email</string>
+    <string name="default_notification_channel_id" translatable="false">Canal FCM par défaut</string>
+    <string name="default_notification_channel_name">Canal Firebase</string>
+    <string name="notification_title">Vous avez reçu une notification</string>
+    <string name="notification_message_title">N\'oubliez pas votre déjeuner</string>
+    <string name="fragment_list_restaurants_view_item_restaurant_name">Nom du restaurant</string>
+    <string name="fragment_list_restaurants_view_item_address">Adresse</string>
+    <string name="fragment_list_restaurants_view_item_not_opening_hours">Heures d\'ouvertures</string>
+    <string name="fragment_list_workmates_view_item_workmates_hasn_t_decided_yet">Ce collègue de travail n\'a pas encore décidé où de déjeuner</string>
+    <string name="menu_drawer_your_lunch">VOTRE RESTO</string>
+    <string name="menu_drawer_settings">PARAMETRES</string>
+    <string name="menu_drawer_logout">DECONNEXION</string>
+    <string name="toolbar_search">Rechercher</string>
+    <string name="activity_welcome_title">J\'ai faim !</string>
+    <string name="workmates_list_text_1">" mange à ("</string>
+    <string name="workmates_list_text_2">" n'a pas encore décidé"</string>
+    <string name="workmates_list_text_3">" c'est inscrit"</string>
+</resources>

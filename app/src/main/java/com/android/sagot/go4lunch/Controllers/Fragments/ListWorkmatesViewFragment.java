@@ -122,7 +122,8 @@ public class ListWorkmatesViewFragment extends BaseFragment {
         // Create adapter passing the list of RestaurantDetails
         this.mAdapter = new ListWorkmatesViewAdapter(generateOptionsForAdapter(query)
                                                                 , Glide.with(this)
-                                                                ,mRestaurantIdentifier );
+                                                                ,mRestaurantIdentifier
+                                                                ,getActivity());
 
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);

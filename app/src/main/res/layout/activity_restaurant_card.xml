@@ -52,7 +52,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/card_align_margin"
                         android:textColor="@android:color/white"
-                        android:text="NAME OF THE RESTAURANT"/>
+                        android:text="@string/activity_restaurant_card_name_of_the_restaurant"/>
 
                     <!-- Star 1 -->
                     <ImageView
@@ -97,7 +97,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@android:color/white"
-                        android:text="Address of the restaurant"/>
+                        android:text="@string/activity_restaurant_card_address_of_the_restaurant"/>
 
                 </LinearLayout>
 
@@ -142,7 +142,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/top_margin"
                             android:layout_marginBottom="@dimen/top_margin"
-                            android:text="CALL"
+                            android:text="@string/activity_restaurant_card_call"
                             android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
@@ -168,7 +168,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/top_margin"
                             android:layout_marginBottom="@dimen/top_margin"
-                            android:text="LIKE"
+                            android:text="@string/activity_restaurant_card_like"
                             android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>
@@ -194,7 +194,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/top_margin"
                             android:layout_marginBottom="@dimen/top_margin"
-                            android:text="WEBSITE"
+                            android:text="@string/activity_restaurant_card_website"
                             android:textColor="@color/colorPrimary"/>
 
                 </LinearLayout>

@@ -1,5 +1,7 @@
 package com.android.sagot.go4lunch.Views;
 
+import android.arch.lifecycle.ViewModelProviders;
+import android.location.Location;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -7,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
@@ -42,7 +45,7 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithRestaurantDetails(Restaurant restaurant, RequestManager glide) {
+    public void updateWithRestaurantDetails(Location location, Restaurant restaurant, RequestManager glide) {
         Log.d(TAG, "updateWithPlaceDetails: ");
 
         this.mName.setText(restaurant.getName());
@@ -51,8 +54,14 @@ public class ListRestaurantsViewHolder extends RecyclerView.ViewHolder {
         // Display OpeningTime
         this.mOpeningHours.setText(restaurant.getOpeningTime());
 
-
-        this.mDistance.setText(restaurant.getDistance());
+        // Distance
+        float[] results = new float[1];
+        Location.distanceBetween(   location.getLatitude(),
+                                    location.getLongitude(),
+                                    Double.parseDouble(restaurant.getLat()) ,
+                                    Double.parseDouble(restaurant.getLng()), results);
+        int distance = (int)results[0];
+        this.mDistance.setText((Integer.toString(distance))+"m");
 
         // Display Number of Participants
         String participants = "(" + restaurant.getNbrParticipants() + ")";

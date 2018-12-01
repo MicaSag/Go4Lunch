@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Views;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -22,14 +23,19 @@ public class ListWorkmatesViewAdapter extends FirestoreRecyclerAdapter<User, Lis
     // Declare restaurant Identifier
     String mRestaurantIdentifier;
 
+    // Context of the caller
+    Context mContext;
+
     // CONSTRUCTOR
     public ListWorkmatesViewAdapter(@NonNull FirestoreRecyclerOptions<User> options
                                         , RequestManager glide
-                                        , String restaurantIdentifier) {
+                                        , String restaurantIdentifier
+                                        , Context context) {
         super(options);
         mOptions = options;
         mGlide = glide;
         mRestaurantIdentifier = restaurantIdentifier;
+        mContext = context;
     }
 
     @Override
@@ -42,7 +48,7 @@ public class ListWorkmatesViewAdapter extends FirestoreRecyclerAdapter<User, Lis
     // UPDATE VIEW HOLDER WITH A PARTICIPANT INFORMATION
     @Override
     public void onBindViewHolder(@NonNull ListWorkmatesViewHolder viewHolder, int position, @NonNull User user) {
-        viewHolder.updateWithParticipantDetails(user, mGlide, mRestaurantIdentifier);
+        viewHolder.updateWithParticipantDetails(user, mGlide, mRestaurantIdentifier, mContext);
     }
 
     // Returns the Restaurant Identifier of the current position

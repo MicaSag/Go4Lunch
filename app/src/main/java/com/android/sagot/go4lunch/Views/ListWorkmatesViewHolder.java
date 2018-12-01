@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Views;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -38,7 +39,10 @@ public class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
     }
 
     // Method to update the current item
-    public void updateWithParticipantDetails(User user, RequestManager glide, String restaurantIdentifier){
+    public void updateWithParticipantDetails(User user
+                                            , RequestManager glide
+                                            , String restaurantIdentifier
+                                            , Context context){
         Log.d(TAG, "updateWithParticipantDetails: ");
 
         // display details
@@ -51,26 +55,25 @@ public class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
             if (user.getRestaurantName() != null) {
                 mDetails.setTextAppearance(mItemView.getContext(), R.style.NormalBoldText);
                 details = user.getUserName()
-                        + " is eating at ("
+                        + context.getString(R.string.workmates_list_text_1)
                         + user.getRestaurantName()
                         + ")";
             } else {
                 // Otherwise we will display the name of the restaurant
                 mDetails.setTextAppearance(mItemView.getContext(), R.style.NormalItalicText);
                 details = user.getUserName()
-                        + " hasn't decided yet";
+                        + context.getString(R.string.workmates_list_text_2);
             }
         } else{
             // If restaurantIdentifier is not null, then this is the activity Restaurant Card that calls
             mDetails.setTextAppearance(mItemView.getContext(), R.style.NormalBoldText);
             details = user.getUserName()
-                    + " is joining";
+                    + context.getString(R.string.workmates_list_text_3);
         }
         mDetails.setText(details);
 
         glide.load(user.getUrlPicture())
                 .apply(RequestOptions.circleCropTransform())
                 .into(mPhoto);
-
     }
 }

@@ -37,22 +37,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     // For debugging Mode
     private static final String TAG = BaseActivity.class.getSimpleName();
 
-    // For use CALL_PHONE permission
-    // 1 _ Permission name
-    public static final String PERMISSION_CALL_PHONE = Manifest.permission.CALL_PHONE;
-    // 2 _ Request Code
-    public static final int RC_CALL_PHONE_PERMISSION = 1;
-
-
-    // For use LOCATION permissions
-    // 1 _ Permissions name
-    public static final String PERMISSION_ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-    public static final String PERMISSION_ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    // 2 _ Requests Code
-    public static final int RC_ACCESS_COARSE_LOCATION_PERMISSION = 2;
-    public static final int RC_ACCESS_FINE_LOCATION_PERMISSION = 3;
-
-
     // ---------------------------------------------------------------------------------------------
     //                                        ENTRY POINT
     // ---------------------------------------------------------------------------------------------
@@ -68,6 +52,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     // ---------------------------------------------------------------------------------------------
     //                                        VIEW MODEL ACCESS
     // ---------------------------------------------------------------------------------------------
+    // Get Model
+    public Go4LunchViewModel getModel(){
+        Log.d(TAG, "getModel: ");
+
+        return ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+    }
+
     // Save current restaurant list in Model
     public void saveRestaurantMapInModel(Map<String,Restaurant> listRestaurant){
         Log.d(TAG, "saveRestaurantMapInModel: ");
@@ -94,65 +85,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         Snackbar.make(getCoordinatorLayout(), message, Snackbar.LENGTH_LONG).show();
     }
-    // ---------------------------------------------------------------------------------------------
-    //                                        PERMISSIONS
-    // ---------------------------------------------------------------------------------------------
-    /**
-     * Check the permission corresponding to the 'requestCode' parameter
-     * If they aren't allowed, prompts the user for permission to use the request.
-     * The result of the permission request is handled by a callback,
-     * onRequestPermissionsResult.
-     */
-    /*rotected void getPermission(int requestCode) {
-        Log.d(TAG, "getCallPhonePermission: ");
-
-        // Request for unnecessary permission before version Android 6.0 (API level 23)
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            // Check if permissions are already authorized
-            switch (requestCode) {
-                // Case of permission CALL_PHONE
-                case CALL_PHONE_PERMISSION_REQUEST_CODE: {
-                    if (ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                        // Permissions Granted
-                        Log.d(TAG, "getCallPhonePermission: Permission already granted by User");
-                        mCallPhonePermissionGranted = true;
-                    } else {
-                        // Permissions not Granted
-                        Log.d(TAG, ">>-- Ask the user for Location Permission --<<");
-                        requestPermissions(
-                                new String[]{Manifest.permission.CALL_PHONE},
-                                CALL_PHONE_PERMISSION_REQUEST_CODE);
-                    }
-                }
-            }
-        }
-    }*/
-    /**
-     * Method that processes the response to a request for permission made
-     * by the function "requestPermissions(..)"
-     */
-    /*@Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult: ");
-
-        switch (requestCode) {
-            case CALL_PHONE_PERMISSION_REQUEST_CODE: {
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permissions Granted
-                    // Get the last know location of the phone
-                    Log.d(TAG, "onRequestPermissionsResult: Permission Granted by User :-)");
-                    mCallPhonePermissionGranted = true;
-                }
-                else{
-                    Log.d(TAG, "onRequestPermissionsResult: Permission not Granted by User :-(");
-                    mCallPhonePermissionGranted = false;
-                }
-            }
-        }
-    }*/
 
     // ---------------------------------------------------------------------------------------------
     //                                        PERMISSIONS

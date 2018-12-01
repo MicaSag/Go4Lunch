@@ -40,7 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="restaurant name"
+                    android:hint="@string/fragment_list_restaurants_view_item_restaurant_name"
                     android:textStyle="bold"/>
 
                 <!-- Second line -->
@@ -52,7 +52,7 @@
                      android:layout_weight="1"
                      android:maxLines="1"
                      android:ellipsize="end"
-                     android:hint="address"/>
+                     android:hint="@string/fragment_list_restaurants_view_item_address"/>
 
                 <!-- Third line -->
                 <!-- Opening hours -->
@@ -61,7 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="not opening hours"
+                    android:hint="@string/fragment_list_restaurants_view_item_not_opening_hours"
                     android:textStyle="italic"/>
 
             </LinearLayout>

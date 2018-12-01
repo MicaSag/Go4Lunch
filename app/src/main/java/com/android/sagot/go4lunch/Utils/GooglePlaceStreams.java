@@ -1,10 +1,14 @@
 package com.android.sagot.go4lunch.Utils;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
+import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Period;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetailsResult;
@@ -22,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
@@ -82,10 +88,10 @@ public class GooglePlaceStreams {
     }
 
     // Return Restaurants Details List near by search
-    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(String location, Context context) {
+    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(Location location) {
         Log.d(TAG, "streamFetchListRestaurantDetails: ");
 
-        return streamFetchListRestaurantId(location)
+        return streamFetchListRestaurantId(Toolbox.locationStringFromLocation(location))
                 .concatMap(new Function<List<String>, Observable<List<Restaurant>>>() {
                     @Override
                     public Observable<List<Restaurant>> apply(List<String> restaurantId) throws Exception {
@@ -158,7 +164,6 @@ public class GooglePlaceStreams {
                                                             }
                                                         }
 
-
                                                         // Restaurant Address
                                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Address");
                                                         restaurant.setAddress(result.getFormattedAddress());
@@ -205,6 +210,7 @@ public class GooglePlaceStreams {
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      OpeningTime = " + restaurant.getOpeningTime());
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Lat         = " + restaurant.getLat());
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = " + restaurant.getLng());
+                                                        Log.d(TAG, "streamFetchListRestaurantDetails:      Distance    = " + restaurant.getDistance());
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
 
                                                         // Get additional data from FireStore : restaurantIdentifier

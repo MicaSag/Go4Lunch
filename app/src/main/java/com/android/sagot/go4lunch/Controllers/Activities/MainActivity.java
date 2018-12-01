@@ -11,6 +11,7 @@ import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
+import com.crashlytics.android.Crashlytics;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;

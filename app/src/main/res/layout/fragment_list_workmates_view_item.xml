@@ -40,7 +40,7 @@
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:fontFamily="@font/arial"
-                android:hint="Henry hasn't decided yet"/>
+                android:hint="@string/fragment_list_workmates_view_item_workmates_hasn_t_decided_yet"/>
 
         </LinearLayout>
 

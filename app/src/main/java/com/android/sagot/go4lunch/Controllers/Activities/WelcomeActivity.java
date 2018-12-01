@@ -4,6 +4,7 @@ import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,10 +48,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.api.LogDescriptor;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,7 +79,8 @@ import io.reactivex.observers.DisposableObserver;
  **************************************************************************************************/
 
 public class WelcomeActivity extends BaseActivity
-                            implements  NavigationView.OnNavigationItemSelectedListener {
+                            implements  NavigationView.OnNavigationItemSelectedListener,
+        LocationListener {
     // For TRACES
     // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -163,8 +168,8 @@ public class WelcomeActivity extends BaseActivity
     protected void configureToolBar() {
         Log.d(TAG, "configureToolBar: ");
 
-        // Change the toolbar Tittle
-        setTitle("l'm Hungry!");
+        // Change the toolbar Title
+        setTitle(R.string.activity_welcome_title);
         // Sets the Toolbar
         setSupportActionBar(mToolbar);
     }
@@ -343,6 +348,9 @@ public class WelcomeActivity extends BaseActivity
                     mLastKnownLocation.setLatitude(mDefaultLocation.latitude);
                     mLastKnownLocation.setLongitude(mDefaultLocation.longitude);
 
+                    // Save Location in Model
+                    getModel().setCurrentLocation(mLastKnownLocation);
+
                     // Get List Restaurants Details
                     this.getListRestaurantsDetails();
                 }
@@ -378,7 +386,10 @@ public class WelcomeActivity extends BaseActivity
                         mLastKnownLocation.setLatitude(mDefaultLocation.latitude);
                         mLastKnownLocation.setLongitude(mDefaultLocation.longitude);
                     }
-                    // Get List restaurants Details ans save its in Model
+                    // Save Location in Model
+                    getModel().setCurrentLocation(mLastKnownLocation);
+
+                    // Get List restaurants Details and save its in Model
                     this.getListRestaurantsDetails();
                 }
             });
@@ -416,7 +427,7 @@ public class WelcomeActivity extends BaseActivity
                 +Toolbox.locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
         mDisposable = GooglePlaceStreams
-                .streamFetchListRestaurantDetails(Toolbox.locationStringFromLocation(mLastKnownLocation),this)
+                .streamFetchListRestaurantDetails(mLastKnownLocation)
                 .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                     @Override
                     public void onNext(List<Restaurant> listRestaurant) {
@@ -425,6 +436,7 @@ public class WelcomeActivity extends BaseActivity
                         // Load Restaurant List in ViewModel
                         Map<String,Restaurant> restos = new LinkedHashMap<>();
                         for (Restaurant restaurant : listRestaurant){
+                            Log.d(TAG, "onNext: Distance = "+restaurant.getDistance());
                             restos.put(restaurant.getIdentifier(),restaurant);
                         }
                         saveRestaurantMapInModel(restos);
@@ -562,5 +574,30 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment,"MapViewFragment")
                 .commit();
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                LOCATION IN REAL TIME
+    // ---------------------------------------------------------------------------------------------
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged: ");
+
+        getModel().setCurrentLocation(location);
+        ((ListRestaurantsViewFragment)mListRestaurantsViewFragment).updateUI();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 }

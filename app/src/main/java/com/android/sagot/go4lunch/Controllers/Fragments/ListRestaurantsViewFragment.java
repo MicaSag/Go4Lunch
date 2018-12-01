@@ -1,5 +1,7 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
+import android.arch.lifecycle.ViewModelProviders;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
+import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
@@ -121,26 +124,15 @@ public class ListRestaurantsViewFragment extends BaseFragment {
     private void configureRecyclerView(){
         Log.d(TAG, "configureRecyclerView: ");
 
-        // Create a FireStore Query
-        Query query = RestaurantHelper.getAllRestaurant();
-
-        // Create adapter passing the list of RestaurantDetails
-        /*this.mAdapter = new ListRestaurantsViewAdapter(generateOptionsForAdapter(query)
-                , Glide.with(this));*/
-        this.mAdapter = new ListRestaurantsViewAdapter(getRestaurantMapOfTheModel()
+        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        Location currentLocation = model.getCurrentLocation();
+        this.mAdapter = new ListRestaurantsViewAdapter(currentLocation, getRestaurantMapOfTheModel()
                 , Glide.with(this));
 
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);
         // Set layout manager to position the items
         this.mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-    }
-    //  options for RecyclerView from a Query
-    private FirestoreRecyclerOptions<Restaurant> generateOptionsForAdapter(Query query){
-        return new FirestoreRecyclerOptions.Builder<Restaurant>()
-                .setQuery(query, Restaurant.class)
-                .setLifecycleOwner(this)
-                .build();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
