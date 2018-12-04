@@ -2,15 +2,22 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -24,7 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +40,7 @@ import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragm
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.SavedPreferences;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
@@ -43,17 +51,23 @@ import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.api.LogDescriptor;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,8 +93,7 @@ import io.reactivex.observers.DisposableObserver;
  **************************************************************************************************/
 
 public class WelcomeActivity extends BaseActivity
-                            implements  NavigationView.OnNavigationItemSelectedListener,
-        LocationListener {
+        implements NavigationView.OnNavigationItemSelectedListener {
     // For TRACES
     // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -89,6 +102,7 @@ public class WelcomeActivity extends BaseActivity
     // --------------
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.activity_welcome_coordinator_layout) CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.activity_welcome_root_linear_layout) LinearLayout mRootLinearLayout;
     @BindView(R.id.activity_welcome_bottom_navigation) BottomNavigationView bottomNavigationView;
     @BindView(R.id.activity_welcome_drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
@@ -128,6 +142,9 @@ public class WelcomeActivity extends BaseActivity
     // Declare Subscription
     protected Disposable mDisposable;
 
+    // For use Place AutoComplete
+    private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 2;
+
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
     // ---------------------------------------------------------------------------------------------
@@ -152,6 +169,10 @@ public class WelcomeActivity extends BaseActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate: ");
+
+        // Place Autocomplete Configuration
+        //configurePlaceAutoComplete();
 
         // Get Location permission
         getLocationPermission();
@@ -161,6 +182,9 @@ public class WelcomeActivity extends BaseActivity
         this.configureToolBar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+
+        // Allows the management of the change of position when moving
+        this.configureLocationChangeRealTime();
     }
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
@@ -181,6 +205,64 @@ public class WelcomeActivity extends BaseActivity
         // With one search button
         getMenuInflater().inflate(R.menu.activity_welcome_menu_toolbar, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.toolbar_menu_search:
+                callPlaceAutoComplete();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                              PLACE AUTOCOMPLETE CONFIGURATION
+    // ---------------------------------------------------------------------------------------------
+    private void callPlaceAutoComplete() {
+        try {
+
+            AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                    .build();
+
+            Intent intent =
+                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                            .setFilter(typeFilter)
+                            .build(this);
+
+            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+        } catch (GooglePlayServicesRepairableException e) {
+            // TODO: Handle the error.
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // TODO: Handle the error.
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                    ON ACTIVITY RESULT
+    // ---------------------------------------------------------------------------------------------
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode
+                + "], resultCode = [" + resultCode + "], data = [" + data + "]");
+
+        // Result Returned by Place Auto Complete
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            Log.d(TAG, "onActivityResult: Place auto Complete RETURN");
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "onActivityResult: Place auto Complete RETURN : Result OK");
+                Place place = PlaceAutocomplete.getPlace(this, data);
+                Log.i(TAG, "Place: " + place.getName());
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Log.d(TAG, "onActivityResult: Place auto Complete RETURN : Result ERROR");
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                // TODO: Handle the error.
+                Log.i(TAG, status.getStatusMessage());
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                     NAVIGATION DRAWER
@@ -216,7 +298,7 @@ public class WelcomeActivity extends BaseActivity
         TextView userName = navigationHeader.findViewById(R.id.navigation_header_user_name);
         TextView userEmail = navigationHeader.findViewById(R.id.navigation_header_user_email);
 
-        if (this.getCurrentUser() != null){
+        if (this.getCurrentUser() != null) {
 
             //Get picture URL from FireBase
             if (this.getCurrentUser().getPhotoUrl() != null) {
@@ -247,19 +329,15 @@ public class WelcomeActivity extends BaseActivity
         int id = item.getItemId();
 
         switch (id) {
+            //==> Click on YOUR LUNCH
             case R.id.activity_welcome_drawer_your_lunch:
-                // Get additional data from FireStore : restaurantIdentifier of the User choice
-                UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
-                    User currentUser = documentSnapshot.toObject(User.class);
-                    if (currentUser.getRestaurantIdentifier() != null ) {
-                        // Go to restaurant card
-                        goToRestaurantActivity(currentUser);
-                    } else showSnackBar(getString(R.string.restaurant_not_chosen));
-                });
-            case R.id.activity_welcome_drawer_settings:
-                if (Toolbox.isNetworkAvailable(this)) Log.d(TAG, "onNavigationItemSelected: Connection OK");
-                else Log.d(TAG, "onNavigationItemSelected: Connection KO");
+                goToRestaurantActivity();
                 break;
+            //==> Click on SETTINGS
+            case R.id.activity_welcome_drawer_settings:
+                goToSettingsActivity();
+                break;
+            //==> Click on LOGOUT
             case R.id.activity_welcome_drawer_logout:
                 this.signOutUserFromFireBase();
                 break;
@@ -271,11 +349,43 @@ public class WelcomeActivity extends BaseActivity
 
         return true;
     }
-    // Go To activity RestaurantCard
-    public void goToRestaurantActivity(User user){
+
+    // GO TO Restaurant Card Activity
+    public void goToRestaurantActivity() {
+        Log.d(TAG, "goToRestaurantActivity: ");
+
+        // Get additional data from FireStore : restaurantIdentifier of the User choice
+        UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
+            User currentUser = documentSnapshot.toObject(User.class);
+            if (currentUser.getRestaurantIdentifier() != null) {
+                callRestaurantCardActivity(currentUser);
+            } else showSnackBar(getString(R.string.restaurant_not_chosen));
+        });
+    }
+
+    // CALL Restaurant Card activity
+    public void callRestaurantCardActivity(User currentUser){
+        Log.d(TAG, "callRestaurantCardActivity: ");
+
+        // Go to restaurant card
         Toolbox.startActivity(this, RestaurantCardActivity.class,
                 RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                user.getRestaurantIdentifier());
+                currentUser.getRestaurantIdentifier());
+    }
+
+    // GO TO Settings Activity
+    public void goToSettingsActivity() {
+        Log.d(TAG, "goToSettingsActivity: ");
+
+        callSettingsActivity();
+    }
+
+    // CALL Settings activity
+    public void callSettingsActivity(){
+        Log.d(TAG, "callSettingsActivity: ");
+
+        // Go to restaurant card
+        Toolbox.startActivity(this, SettingsActivity.class,null,null);
     }
 
     @Override
@@ -298,7 +408,7 @@ public class WelcomeActivity extends BaseActivity
     private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: ");
         // Request for unnecessary permission before version Android 6.0 (API level 23)
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             // Check if permissions are already authorized
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -322,6 +432,7 @@ public class WelcomeActivity extends BaseActivity
             }
         }
     }
+
     /**
      * Method that processes the response to a request for permission made
      * by the function "requestPermissions(..)"
@@ -339,8 +450,7 @@ public class WelcomeActivity extends BaseActivity
                     Log.d(TAG, "onRequestPermissionsResult: Permission Granted by User :-)");
                     mLocationPermissionGranted = true;
                     getLastKnownCurrentLocationDevice();
-                }
-                else{
+                } else {
                     Log.d(TAG, "onRequestPermissionsResult: Permission not Granted by User :-(");
                     mLocationPermissionGranted = false;
                     // The last know location will be the default position
@@ -360,6 +470,7 @@ public class WelcomeActivity extends BaseActivity
             }
         }
     }
+
     /**
      * Retrieves Coordinates of the best and most recent device location information if Exists
      */
@@ -374,12 +485,11 @@ public class WelcomeActivity extends BaseActivity
                 if (task.isSuccessful()) {
                     // Set the map's camera position to the current location of the device.
                     mLastKnownLocation = task.getResult();
-                    if( mLastKnownLocation != null ) {
+                    if (mLastKnownLocation != null) {
                         Log.d(TAG, "getLastKnownCurrentLocationDevice: getLastLocation EXIST");
                         Log.d(TAG, "getLastKnownCurrentLocationDevice: mLastKnownLocation.getLatitude()  = " + mLastKnownLocation.getLatitude());
                         Log.d(TAG, "getLastKnownCurrentLocationDevice: mLastKnownLocation.getLongitude() = " + mLastKnownLocation.getLongitude());
-                    }
-                    else {
+                    } else {
                         Log.d(TAG, "getLastKnownCurrentLocationDevice: getLastLocation NO EXIST");
                         // The last know location will be the default position
                         mLastKnownLocation = new Location("");
@@ -393,23 +503,25 @@ public class WelcomeActivity extends BaseActivity
                     this.getListRestaurantsDetails();
                 }
             });
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("getDeviceLocation %s", e.getMessage());
         }
     }
+
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
     //      FOR SIGN OUT REQUEST
     // -------------------------------
     // Create http requests (SignOut)
-    private void signOutUserFromFireBase(){
+    private void signOutUserFromFireBase() {
         AuthUI.getInstance()
                 .signOut(this)
                 .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
     }
+
     // Create OnCompleteListener called after tasks ended
-    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(){
+    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted() {
         return new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -417,6 +529,7 @@ public class WelcomeActivity extends BaseActivity
             }
         };
     }
+
     // ------------------------------
     //   FOR GOOGLE PLACES REQUEST
     // ------------------------------
@@ -424,23 +537,23 @@ public class WelcomeActivity extends BaseActivity
         Log.d(TAG, "getListRestaurantsDetails: ");
 
         Log.d(TAG, "getListRestaurantsDetails: mLastKnownLocation = "
-                +Toolbox.locationStringFromLocation(mLastKnownLocation));
+                + Toolbox.locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
         mDisposable = GooglePlaceStreams
-                .streamFetchListRestaurantDetails(mLastKnownLocation)
+                .streamFetchListRestaurantDetails(this, mLastKnownLocation)
                 .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                     @Override
                     public void onNext(List<Restaurant> listRestaurant) {
                         Log.d(TAG, "getListRestaurantsDetails : onNext: ");
 
                         // Load Restaurant List in ViewModel
-                        Map<String,Restaurant> restos = new LinkedHashMap<>();
-                        for (Restaurant restaurant : listRestaurant){
-                            Log.d(TAG, "onNext: Distance = "+restaurant.getDistance());
-                            restos.put(restaurant.getIdentifier(),restaurant);
+                        Map<String, Restaurant> restos = new LinkedHashMap<>();
+                        for (Restaurant restaurant : listRestaurant) {
+                            Log.d(TAG, "onNext: Distance = " + restaurant.getDistance());
+                            restos.put(restaurant.getIdentifier(), restaurant);
                         }
                         saveRestaurantMapInModel(restos);
-                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = "+getRestaurantMapOfTheModel().size());
+                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = " + getRestaurantMapOfTheModel().size());
 
                         // Listen Current Restaurant List
                         listenCurrentListRestaurant();
@@ -452,22 +565,24 @@ public class WelcomeActivity extends BaseActivity
                         // We can display and make the interface available
                         configureBottomView();
                     }
+
                     @Override
                     public void onError(Throwable e) {
                         // Display a toast message
                         updateUIWhenErrorHTTPRequest();
-                        Log.d(TAG, "getListRestaurantsDetails : onError: "+e);
+                        Log.d(TAG, "getListRestaurantsDetails : onError: " + e);
                     }
+
                     @Override
                     public void onComplete() {
-                        Log.d(TAG,"getListRestaurantsDetails : On Complete !!");
+                        Log.d(TAG, "getListRestaurantsDetails : On Complete !!");
 
                     }
                 });
     }
 
     // Generate a toast Message if error during Downloading
-    protected void updateUIWhenErrorHTTPRequest(){
+    protected void updateUIWhenErrorHTTPRequest() {
         Log.d(TAG, "updateUIWhenErrorHTTPRequest: ");
 
         Toast.makeText(this, "Error during Downloading", Toast.LENGTH_LONG).show();
@@ -478,12 +593,13 @@ public class WelcomeActivity extends BaseActivity
 
         Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
         Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             Map.Entry<String, Restaurant> e = it.next();
-            RestaurantHelper.updateRestaurantOpeningTime(e.getValue().getIdentifier(),e.getValue().getOpeningTime())
+            RestaurantHelper.updateRestaurantOpeningTime(e.getValue().getIdentifier(), e.getValue().getOpeningTime())
                     .addOnFailureListener(this.onFailureListener());
         }
     }
+
     /**
      * Enables listening of the number of stars
      */
@@ -492,10 +608,10 @@ public class WelcomeActivity extends BaseActivity
 
         Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
         Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             Map.Entry<String, Restaurant> restaurant = it.next();
             Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
-                    +restaurant.getValue().getIdentifier());
+                    + restaurant.getValue().getIdentifier());
             RestaurantHelper
                     .getRestaurantsCollection()
                     .document(restaurant.getValue().getIdentifier())
@@ -506,18 +622,21 @@ public class WelcomeActivity extends BaseActivity
                                 Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
                                 return;
                             }
-                            Restaurant rest = document.toObject(Restaurant.class);
-                            Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = "+rest.getIdentifier());
-                                    WelcomeActivity.this.getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
+                            if (document != null) {
+                                Restaurant rest = document.toObject(Restaurant.class);
+                                Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = " + rest.getIdentifier());
+                                WelcomeActivity.this.getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
+                            }
                         }
                     });
         }
     }
+
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
     // ---------------------------------------------------------------------------------------------
     // Configure the BottomNavigationView
-    private void configureBottomView(){
+    private void configureBottomView() {
         Log.d(TAG, "configureBottomView: ");
 
         // Configure the BottomNavigationView Listener
@@ -527,8 +646,9 @@ public class WelcomeActivity extends BaseActivity
         // Add three fragments used by the FragmentManager and activates only the Fragment MapViewFragment
         addFragmentsInFragmentManager();
     }
+
     // >> ACTIONS <-------
-    private Boolean updateMainFragment(Integer integer){
+    private Boolean updateMainFragment(Integer integer) {
         switch (integer) {
             case R.id.action_map_view:
                 // Hide the active fragment and activates the fragment mMapViewFragment
@@ -548,10 +668,11 @@ public class WelcomeActivity extends BaseActivity
         }
         return true;
     }
+
     // ---------------------------------------------------------------------------------------------
     //                                      FRAGMENTS
     // ---------------------------------------------------------------------------------------------
-    private void addFragmentsInFragmentManager(){
+    private void addFragmentsInFragmentManager() {
         Log.d(TAG, "addFragments: ");
 
         //Instantiate fragment used by BottomNavigationView
@@ -566,38 +687,69 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager = getSupportFragmentManager();
         // Add the three fragment in fragmentManager and leave active only the fragment MapViewFragment
         mFragmentManager.beginTransaction()
-                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListWorkmatesViewFragment,"ListWorkmatesViewFragment")
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListWorkmatesViewFragment, "ListWorkmatesViewFragment")
                 .hide(mListWorkmatesViewFragment).commit();
         mFragmentManager.beginTransaction()
-                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListRestaurantsViewFragment,"ListViewFragment")
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mListRestaurantsViewFragment, "ListViewFragment")
                 .hide(mListRestaurantsViewFragment).commit();
         mFragmentManager.beginTransaction()
-                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment,"MapViewFragment")
+                .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment, "MapViewFragment")
                 .commit();
     }
+
     // ---------------------------------------------------------------------------------------------
     //                                LOCATION IN REAL TIME
     // ---------------------------------------------------------------------------------------------
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: ");
+    private void configureLocationChangeRealTime() {
+        Log.d(TAG, "configureLocationChangeRealTime: ");
 
-        getModel().setCurrentLocation(location);
-        ((ListRestaurantsViewFragment)mListRestaurantsViewFragment).updateUI();
-    }
+        // The minimum time (in MilliSeconds) the system will wait until checking if the location changed
+        int minTime = 60000;
+        // The minimum distance (in meters) traveled until you will be notified
+        float minDistance = 15;
+        // Get the location manager from the system
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // Get the criteria you would like to use
+        Criteria criteria = new Criteria();
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setSpeedRequired(false);
+        // Get the best provider from the criteria specified, and false to say it can turn the provider on if it isn't already
+        String bestProvider = locationManager.getBestProvider(criteria, false);
+        // Request location updates
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                Log.d(TAG, "onLocationChanged: ");
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
+                if (location != null && mListRestaurantsViewFragment != null) {
+                    getModel().setCurrentLocation(location);
+                    ((ListRestaurantsViewFragment) mListRestaurantsViewFragment).updateUI();
+                }
+            }
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            @Override
+            public void onProviderEnabled(String provider) {}
+            @Override
+            public void onProviderDisabled(String provider) {}
+        };
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(bestProvider, minTime, minDistance, locationListener);
     }
 }

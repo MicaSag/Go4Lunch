@@ -3,6 +3,7 @@ package com.android.sagot.go4lunch.notifications;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -24,40 +25,42 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.messaging.FirebaseMessagingService;
-import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.ArrayList;
 
 import io.reactivex.annotations.NonNull;
 
-public class NotificationsService extends FirebaseMessagingService {
+public class NotificationsAlarmReceiver extends BroadcastReceiver {
 
     // For Debug
-    private static final String TAG = "NotificationsService";
+    private static final String TAG = "NotificationsAlarmRecei";
 
     private final int NOTIFICATION_ID = 004;
     private final String NOTIFICATION_TAG = "GO4LUNCH";
 
+    // Context
+    Context mContext;
+
+    // For Recover the Current User
     private FirebaseUser firebaseUser;
 
+    // For getWorkmatesLit
+    ArrayList<String> mMessage;
+    Restaurant mRestaurant;
+
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "onMessageReceived: ");
+    public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "onReceive: ");
+        mContext = context;
 
-        Log.d(TAG, "onMessageReceived: remoteMessage.getNotification() = "+remoteMessage.getNotification());
-
-        if (Toolbox.isNetworkAvailable(this)) {
+        // If not connection, not notification
+        if (Toolbox.isNetworkAvailable(mContext)) {
             firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
             if (firebaseUser != null) {
-                if (remoteMessage.getNotification() != null) {
-                    // Get message sent by FireBase
-                    String message = remoteMessage.getNotification().getBody();
-                    // Show message in console
-                    Log.e(TAG, "onMessageReceived: " + message);
-                    getWorkmatesList();
-                }
+
+                Log.d(TAG, "onReceive: ");
+                getWorkmatesList();
             }
         }
     }
@@ -77,15 +80,15 @@ public class NotificationsService extends FirebaseMessagingService {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> documentSnapshot) {
                             if (documentSnapshot.isSuccessful()) {
-                                Restaurant restaurant = documentSnapshot.getResult().toObject(Restaurant.class);
+                                mRestaurant = documentSnapshot.getResult().toObject(Restaurant.class);
 
-                                ArrayList<String> message = new ArrayList<>();
-                                message.add("We remind you that you have decided to have lunch");
-                                message.add("At : " + restaurant.getName());
-                                message.add("To the following address : ");
-                                message.add(restaurant.getAddress());
+                                mMessage = new ArrayList<>();
+                                mMessage.add(mContext.getString(R.string.notification_message_1));
+                                mMessage.add(mContext.getString(R.string.notification_message_2) + mRestaurant.getName());
+                                mMessage.add(mContext.getString(R.string.notification_message_3));
+                                mMessage.add(mRestaurant.getAddress());
                                 UserHelper.getAllUser()
-                                        .whereEqualTo("restaurantIdentifier", restaurant.getIdentifier())
+                                        .whereEqualTo("restaurantIdentifier", mRestaurant.getIdentifier())
                                         .get()
                                         .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                             @Override
@@ -103,11 +106,11 @@ public class NotificationsService extends FirebaseMessagingService {
                                                         workmatesNameList.add(user.getUserName());
                                                 }
                                                 if (workmatesNameList.size() > 0) {
-                                                    message.add("With :");
+                                                    mMessage.add(mContext.getString(R.string.notification_message_4));
                                                     for (String workmatesName : workmatesNameList)
-                                                        message.add(workmatesName);
+                                                        mMessage.add(workmatesName);
                                                 }
-                                                sendVisualNotification(message,restaurant.getIdentifier());
+                                                sendVisualNotification(mMessage,mRestaurant.getIdentifier());
                                             }
                                         });
                             }
@@ -117,45 +120,49 @@ public class NotificationsService extends FirebaseMessagingService {
             }
         });
     }
+/*
 
+ */
     private void sendVisualNotification(ArrayList<String> messageBody,String restaurantIdentifier) {
+        Log.d(TAG, "sendVisualNotification: ");
 
         // Create an Intent that will be shown when user will click on the Notification
-        Intent intent = new Intent(this, RestaurantCardActivity.class);
+        Intent intent = new Intent(mContext, RestaurantCardActivity.class);
 
         // ==> Sends the Restaurant details
         intent.putExtra(RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,restaurantIdentifier);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         // Create a Style for the Notification
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle(getString(R.string.notification_message_title));
+        inboxStyle.setBigContentTitle(mContext.getString(R.string.notification_message_title));
         for (String messageLine : messageBody){
             inboxStyle.addLine(messageLine);
         }
 
         // Create a Channel (Android 8)
-        String channelId = getString(R.string.default_notification_channel_id);
+        String channelId = mContext.getString(R.string.default_notification_channel_id);
 
         // Build a Notification object
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
+                new NotificationCompat.Builder(mContext, channelId)
                         .setSmallIcon(R.drawable.pic_logo_go4lunch_512x512)
                         .setBadgeIconType(R.drawable.pic_logo_go4lunch_512x512)
-                        .setContentTitle(getString(R.string.app_name))
-                        .setContentText(getString(R.string.notification_title))
+                        .setContentTitle(mContext.getString(R.string.app_name))
+                        .setContentText(mContext.getString(R.string.notification_title))
                         .setAutoCancel(true)
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                         .setContentIntent(pendingIntent)
                         .setStyle(inboxStyle);
 
         // Add the Notification to the Notification Manager and show it.
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager =
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Support Version >= Android 8
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence channelName = getString(R.string.default_notification_channel_name);
+            CharSequence channelName = mContext.getString(R.string.default_notification_channel_name);
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
             notificationManager.createNotificationChannel(mChannel);

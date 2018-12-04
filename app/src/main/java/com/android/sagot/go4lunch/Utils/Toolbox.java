@@ -60,7 +60,7 @@ public class Toolbox {
     }
 
     /**
-     * Formatting Location Coordinates in String
+     * Start an Activity
      *
      * @param  context   : context of the application
      *         className : className of the activity called
@@ -74,7 +74,7 @@ public class Toolbox {
         Intent intent = new Intent(context, className);
 
         // ==> Sends the Restaurant details
-        intent.putExtra(key,keyValue);
+        if (!(key == null)) intent.putExtra(key,keyValue);
 
         // Call RestaurantCardActivity with 3 parameters
         context.startActivity(intent);

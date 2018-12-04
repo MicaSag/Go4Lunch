@@ -1,7 +1,6 @@
 package com.android.sagot.go4lunch.Controllers.Base;
 
 
-import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;

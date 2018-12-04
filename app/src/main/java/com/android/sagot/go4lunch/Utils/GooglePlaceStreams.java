@@ -1,36 +1,23 @@
 package com.android.sagot.go4lunch.Utils;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.location.Location;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
-import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
-import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Period;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetailsResult;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -58,21 +45,25 @@ public class GooglePlaceStreams {
         Log.d(TAG, "streamFetchListRestaurantId: ");
 
         return streamFetchRestaurantsNearBySearch(location)
-                .concatMap((Function<PlaceNearBySearch, Observable<List<String>>>) placeNearBySearch -> {
+                .concatMap(new Function<PlaceNearBySearch, Observable<List<String>>>() {
+                    @Override
+                    public Observable<List<String>> apply(PlaceNearBySearch placeNearBySearch) throws Exception {
 
-                    //List of restaurants Id found
-                    List<String> listPlaceIdNearBySearch = new ArrayList<>();
+                        //List of restaurants Id found
+                        List<String> listPlaceIdNearBySearch = new ArrayList<>();
 
-                    Observable<List<String>> listPlacesId = Observable.fromArray(listPlaceIdNearBySearch);
+                        Observable<List<String>> listPlacesId = Observable.fromArray(listPlaceIdNearBySearch);
 
-                    if (placeNearBySearch.getResults().size() != 0) {
-                        for (PlaceNearBySearchResult result : placeNearBySearch.getResults()) {
-                            Log.d(TAG, "streamFetchListRestaurantId: placeId = "+result.getPlaceId());
-                            listPlaceIdNearBySearch.add(result.getPlaceId());
-                        }
-                    } else Log.d(TAG, "streamFetchListRestaurantId: placeNearBySearch.getResults().size() = null");
-                    //Observable from the restaurant Id list found
-                    return listPlacesId;
+                        if (placeNearBySearch.getResults().size() != 0) {
+                            for (PlaceNearBySearchResult result : placeNearBySearch.getResults()) {
+                                Log.d(TAG, "streamFetchListRestaurantId: placeId = " + result.getPlaceId());
+                                listPlaceIdNearBySearch.add(result.getPlaceId());
+                            }
+                        } else
+                            Log.d(TAG, "streamFetchListRestaurantId: placeNearBySearch.getResults().size() = null");
+                        //Observable from the restaurant Id list found
+                        return listPlacesId;
+                    }
                 });
     }
 
@@ -88,7 +79,7 @@ public class GooglePlaceStreams {
     }
 
     // Return Restaurants Details List near by search
-    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(Location location) {
+    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(Context context, Location location) {
         Log.d(TAG, "streamFetchListRestaurantDetails: ");
 
         return streamFetchListRestaurantId(Toolbox.locationStringFromLocation(location))
@@ -125,7 +116,7 @@ public class GooglePlaceStreams {
                                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : OpeningHours");
                                                         Log.d(TAG, "streamFetchListRestaurantDetails: Current_date = " + Toolbox.getCurrentDay());
                                                         // Restaurant is closed by default
-                                                        restaurant.setOpeningTime("Closed");
+                                                        restaurant.setOpeningTime(context.getString(R.string.list_restaurant_text_1));
                                                         Integer time = 0;
                                                         if (result.getOpeningHours() != null) {
                                                             for (Period period : result.getOpeningHours().getPeriods()) {
@@ -143,23 +134,24 @@ public class GooglePlaceStreams {
                                                                         }
                                                                     }
                                                                 } else {
-                                                                    restaurant.setOpeningTime("Open until 24/24");
+                                                                    restaurant.setOpeningTime(context.getString(R.string.notification_message_6));
                                                                     break;
                                                                 }
                                                             }
                                                             Log.d(TAG, "streamFetchListRestaurantDetails: setOpeningTime = " + restaurant.getOpeningTime());
                                                             Log.d(TAG, "streamFetchListRestaurantDetails: time = " + time);
-                                                            if (!restaurant.getOpeningTime().equals("Open until 24/24")) {
+                                                            if (!restaurant.getOpeningTime().equals(context.getString(R.string.notification_message_6))) {
                                                                 Log.d(TAG, "streamFetchListRestaurantDetails: Not 24/24");
                                                                 if (!time.equals(0)) {
                                                                     Log.d(TAG, "streamFetchListRestaurantDetails: ");
-                                                                    restaurant.setOpeningTime("Open until "
+                                                                    restaurant.setOpeningTime(context.getString(R.string.list_restaurant_text_3)
                                                                             + ((time > 999) ? (String.valueOf(time)).substring(0, 2)
                                                                             : (String.valueOf(time)).substring(0, 1))
                                                                             + "."
                                                                             + ((time > 999) ? (String.valueOf(time)).substring(2, 4)
                                                                             : (String.valueOf(time)).substring(1, 2))
-                                                                            + ((time > 1200) ? "pm" : "am"));
+                                                                            + ((time > 1200) ? context.getString(R.string.list_restaurant_text_4)
+                                                                            : context.getString(R.string.list_restaurant_text_5)));
                                                                 }
                                                             }
                                                         }
@@ -213,31 +205,15 @@ public class GooglePlaceStreams {
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Distance    = " + restaurant.getDistance());
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
 
-                                                        // Get additional data from FireStore : restaurantIdentifier
-                                                        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnCompleteListener(documentSnapshot -> {
 
-                                                            if (documentSnapshot.isSuccessful()) {
-
-                                                                Restaurant currentRestaurant = documentSnapshot.getResult().toObject(Restaurant.class);
-
-                                                                if (currentRestaurant == null) {
-                                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
-
-                                                                    RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
-                                                                        @Override
-                                                                        public void onFailure(@NonNull Exception e) {
-                                                                            Log.w(TAG, "createRestaurant failure.", e);
-                                                                        }
-                                                                    });
-                                                                } else {
-                                                                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
-                                                                }
-                                                            } else {
-                                                                Exception e = documentSnapshot.getException();
-                                                            }
-                                                        });
-
-                                                        return Observable.just(restaurant);
+                                                        return Observable.just(restaurant)
+                                                                .concatMap(new Function<Restaurant, Observable<Restaurant>>() {
+                                                                    @Override
+                                                                    public Observable<Restaurant> apply(Restaurant restaurant) throws Exception {
+                                                                        putRestaurantInFireBase(restaurant);
+                                                                        return Observable.just(restaurant);
+                                                                    }
+                                                                });
                                                     }
                                                 });
                                     }
@@ -246,5 +222,34 @@ public class GooglePlaceStreams {
                                 .toObservable();
                     }
                 });
+    }
+
+    public static Observable putRestaurantInFireBase(Restaurant restaurant) {
+        Log.d(TAG, "putRestaurantInFireBase: ");
+
+        // Get additional data from FireStore : restaurantIdentifier
+        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnCompleteListener(documentSnapshot -> {
+
+            if (documentSnapshot.isSuccessful()) {
+
+                Restaurant currentRestaurant = documentSnapshot.getResult().toObject(Restaurant.class);
+
+                if (currentRestaurant == null) {
+                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
+
+                    RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "createRestaurant failure.", e);
+                        }
+                    });
+                } else {
+                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
+                }
+            } else {
+                Exception e = documentSnapshot.getException();
+            }
+        });
+        return null;
     }
 }

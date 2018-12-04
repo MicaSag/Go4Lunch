@@ -2,16 +2,13 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 
 import android.content.Intent;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
-import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.api.UserHelper;
-import com.crashlytics.android.Crashlytics;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
@@ -56,7 +53,6 @@ public class MainActivity extends BaseActivity {
     protected View getCoordinatorLayout() {
         return mCoordinatorLayout;
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                          ACTIONS
     // ---------------------------------------------------------------------------------------------

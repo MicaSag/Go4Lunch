@@ -25,12 +25,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**************************************************************************************************
  *
@@ -216,22 +221,26 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
      * to enable marker color change in real time
      */
     public void listenNbrParticipantsForUpdateMarkers(Restaurant restaurant,Marker marker) {
+        Log.d(TAG, "listenNbrParticipantsForUpdateMarkers: ");
 
         RestaurantHelper
                 .getRestaurantsCollection()
                 .document(restaurant.getIdentifier())
-                .addSnapshotListener((restaurant1, e) -> {
-                    if (e != null) {
-                        Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                        return;
-                    }
-                    if (restaurant1 != null) {
-                        Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = " + restaurant1.get("identifier"));
-                        Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = " + restaurant1.get("nbrParticipants"));
-                        if (Integer.parseInt(restaurant1.get("nbrParticipants").toString()) == 0) {
-                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
-                        } else {
-                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot restaurant, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        if (restaurant != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: identifier Restaurant = " + restaurant.get("identifier"));
+                            Log.d(TAG, "fireStoreListener.onEvent: nbrParticipants = " + restaurant.get("nbrParticipants"));
+                            if (Integer.parseInt(restaurant.get("nbrParticipants").toString()) == 0) {
+                                marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange));
+                            } else {
+                                marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_green));
+                            }
                         }
                     }
                 });

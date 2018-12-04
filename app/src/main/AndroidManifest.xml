@@ -42,14 +42,13 @@
             android:theme="@style/AppTheme.Main"> <!-- Change color status Bar -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <!-- WELCOME Activity -->
-        <activity
-            android:name=".Controllers.Activities.WelcomeActivity">
-        </activity>
+        <activity android:name=".Controllers.Activities.WelcomeActivity"></activity>
 
         <!-- RESTAURANT CARD Activity -->
         <activity
@@ -70,16 +69,14 @@
                 android:value=".Controllers.Activities.WelcomeActivity" />
         </activity>
 
-        <!-- NOTIFICATION SERVICE -->
-        <service
-            android:name=".notifications.NotificationsService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
+        <!-- Notification Permission -->
+        <receiver
+            android:name=".notifications.NotificationsAlarmReceiver"
+            android:exported="true"/>
+
+        <activity android:name=".Controllers.Activities.SettingsActivity"></activity>
+
 
     </application>
-
-
 
 </manifest>

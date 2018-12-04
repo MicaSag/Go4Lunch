@@ -53,11 +53,21 @@
     <string name="default_notification_channel_name">"FireBase Channel"</string>
     <string name="notification_title">"You have received a notification"</string>
     <string name="notification_message_title">"Do not forget your lunch"</string>
+    <string name="notification_message_1">We remind you that you have decided to have lunch</string>
+    <string name="notification_message_2">At : </string>
+    <string name="notification_message_3">To the following address : </string>
+    <string name="notification_message_4">With :</string>
+    <string name="activity_settings_notification_label">Remember your lunch at 12h</string>
 
     <!-- List Restaurants RecyclerView -->
     <string name="fragment_list_restaurants_view_item_restaurant_name">restaurant name</string>
     <string name="fragment_list_restaurants_view_item_address">address</string>
     <string name="fragment_list_restaurants_view_item_not_opening_hours">not opening hours</string>
+    <string name="list_restaurant_text_1">Closed</string>
+    <string name="list_restaurant_text_3">Open until</string>
+    <string name="list_restaurant_text_4">pm</string>
+    <string name="list_restaurant_text_5">am</string>
+    <string name="notification_message_6">Open until 24/24</string>
 
     <!-- List Workmates RecyclerView -->
     <string name="fragment_list_workmates_view_item_workmates_hasn_t_decided_yet">Workmates hasn\'t decided yet</string>

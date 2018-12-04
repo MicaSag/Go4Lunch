@@ -17,16 +17,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- ROOT -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:id="@+id/activity_welcome_root_linear_layout">
 
             <!-- Toolbar Importation -->
-            <include
-                layout="@layout/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+            <include layout="@layout/toolbar"/>
 
             <!-- Body layout -->
             <RelativeLayout
