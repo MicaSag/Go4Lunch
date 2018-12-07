@@ -25,7 +25,7 @@
     <dimen name="nav_header_height">230dp</dimen>
     <dimen name="nav_header_text_size">12sp</dimen>
 
-    <!-- RESTAURANT CARD ACTIVITY DIMENS -->
+    <!-- Restaurant Card Activity dimens -->
     <dimen name="card_align_margin">3dip</dimen>
     <dimen name="card_top_margin">4dip</dimen>
     <dimen name="card_start_margin">10dip</dimen>
@@ -37,5 +37,13 @@
     <dimen name="recycler_image_height">75dip</dimen>
     <dimen name="recycler_image_margin">5dip</dimen>
     <dimen name="recycler_text_margin">10dp</dimen>
+
+    <!-- Settings Activity dimens -->
+    <dimen name="margin_top">10dp</dimen>
+    <dimen name="margin_start">10dp</dimen>
+    <dimen name="text_margin">20dp</dimen>
+    <dimen name="search_query_margin">10dp</dimen>
+    <dimen name="button_margin_top">30dp</dimen>
+    <dimen name="button_margin">16dp</dimen>
 
 </resources>

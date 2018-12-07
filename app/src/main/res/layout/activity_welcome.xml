@@ -27,31 +27,39 @@
             <!-- Toolbar Importation -->
             <include layout="@layout/toolbar"/>
 
-            <!-- Body layout -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <FrameLayout
-                    android:id="@+id/activity_welcome_frame_layout_bottom_navigation"
+                <!-- Body layout -->
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_above="@id/activity_welcome_bottom_navigation"/>
+                    android:layout_height="match_parent">
 
-                <android.support.design.widget.BottomNavigationView
-                    android:id="@+id/activity_welcome_bottom_navigation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@android:color/white"
-                    app:itemIconTint="@drawable/bottom_navigation_colors"
-                    app:itemTextColor="@drawable/bottom_navigation_colors"
-                    app:menu="@menu/bottom_navigation_menu"
-                    android:layout_alignParentBottom="true" />
+                    <FrameLayout
+                        android:id="@+id/activity_welcome_frame_layout_bottom_navigation"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_above="@id/activity_welcome_bottom_navigation"/>
 
-            </RelativeLayout>
+                    <android.support.design.widget.BottomNavigationView
+                        android:id="@+id/activity_welcome_bottom_navigation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:background="@android:color/white"
+                        app:itemIconTint="@drawable/bottom_navigation_colors"
+                        app:itemTextColor="@drawable/bottom_navigation_colors"
+                        app:menu="@menu/bottom_navigation_menu"
+                        android:layout_alignParentBottom="true" />
+
+                </RelativeLayout>
 
         </LinearLayout>
+
+        <!-- Progress BAr for Wait Loading -->
+        <ProgressBar
+            android:id="@+id/activity_welcome_progress_bar"
+            android:layout_width="80dip"
+            android:layout_height="80dip"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
     </android.support.design.widget.CoordinatorLayout>
 

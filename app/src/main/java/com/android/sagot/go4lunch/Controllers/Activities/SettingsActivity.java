@@ -9,43 +9,57 @@ import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
+import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.notifications.NotificationsAlarmReceiver;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.OnCheckedChanged;
+import butterknife.OnTouch;
 
 public class SettingsActivity extends BaseActivity {
 
     // For Debug
     private static final String TAG = "SettingsActivity";
 
-    // For Defined SharedPreferences of the application
-    // -------------------------------------------------
-    SharedPreferences mSharedPreferences;
-    // Create the key saving of the preferences of the application
-    public static final String SHARED_PREF_NOTIFICATION_STATUS = "SHARED_PREF_NOTIFICATION_STATUS";
+    // For Retrieve SharedPreferences of the Activity
+    // -----------------------------------------------
+    // Create the key data for retrieve preferences of the Activity
+    public static final int SETTINGS_ACTIVITY_RC = 300;
+    public static final String SHARED_PREF_SETTINGS_ACTIVITY = "SHARED_PREF_SETTINGS_ACTIVITY";
+    private Preferences_SettingsActivity mPreferences_SettingsActivity;
 
     // Adding @BindView in order to indicate to ButterKnife to get & serialise it
     @BindView(R.id.activity_settings_coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.activity_settings_switch) Switch mSwitch;
+    @BindView(R.id.activity_settings_notification) Switch mNotificationSwitch;
+    @BindView(R.id.activity_settings_radius_search) EditText mRadiusSearchEditText;
+    @BindView(R.id.activity_settings_button) Button mButton;
 
     // Creating an intent to execute our broadcast
     private PendingIntent mPendingIntent;
     // Creating alarmManager
     private AlarmManager mAlarmManager;
 
-    // Notification Status
-    private boolean mNotificationChecked;
+    // For Switch manage
+    private boolean mNotificationStatus;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -85,6 +99,9 @@ public class SettingsActivity extends BaseActivity {
 
         //Configuring The AlarmManager
         this.configureAlarmManager();
+
+        //Manage Distance Edit Text
+        manageDistanceEditText();
     }
     // ---------------------------------------------------------------------------------------------
     //                                   SHARED PREFERENCES
@@ -92,41 +109,44 @@ public class SettingsActivity extends BaseActivity {
     // >> SHARED PREFERENCES RETRIEVE <-------
     private void retrieveSharedPreferences() {
         Log.d(TAG, "retrievesPreferences: ");
-        // READ SharedPreferences
-        mSharedPreferences = getPreferences(MODE_PRIVATE);
 
-        // TEST == >>> Allows to erase all the preferences ( Useful for the test phase )
-        //Log.i("MOOD","CLEAR COMMIT PREFERENCES");
-        //mSharedPreferences.edit().clear().commit();
-
+        // Get back Intent send to parameter by the MainActivity
+        Intent intent = getIntent();
+        String sharedPreferences = intent.getStringExtra(SHARED_PREF_SETTINGS_ACTIVITY);
+        Log.d(TAG, "retrieveSharedPreferences: sharedPreferences = "+sharedPreferences);
+        // Restoring the preferences with a Gson Object
+        Gson gson = new Gson();
+        mPreferences_SettingsActivity = gson.fromJson(  sharedPreferences,
+                                                        Preferences_SettingsActivity.class);
+        Log.d(TAG, "retrieveSharedPreferences: searchRadius = "+mPreferences_SettingsActivity.getSearchRadius());
+        Log.d(TAG, "retrieveSharedPreferences: notification = "+mPreferences_SettingsActivity.isNotificationStatus());
         // Retrieve Notification Status
-        Log.d(TAG, "retrievesPreferences: notificationStatus Restoration");
-        Boolean notificationChecked = mSharedPreferences
-                .getBoolean(SHARED_PREF_NOTIFICATION_STATUS,false);
-        Log.d(TAG, "retrievesPreferences: notificationChecked = "+notificationChecked);
-        // Retrieve the notification status of the SharedPreferences
-        // And check it in UI
-        getAndCheckNotificationStatus(notificationChecked);
+        getAndCheckNotificationStatus();
+
+        // Retrieve Radius search
+        getAndCheckRadiusSearch();
     }
     // Retrieve the notification status of the SharedPreferences
     // And check it in UI
-    private void getAndCheckNotificationStatus(Boolean notificationChecked){
+    private void getAndCheckNotificationStatus(){
         Log.d(TAG, "getAndCheckNotificationStatus: ");
 
-        mNotificationChecked = notificationChecked;
-        mSwitch.setChecked(mNotificationChecked);
+        // Retrieve Notification Status
+        mNotificationStatus = mPreferences_SettingsActivity.isNotificationStatus();
+        Log.d(TAG, "getAndCheckNotificationStatus: notification = "+mNotificationStatus);
+        // Check it in UI
+        mNotificationSwitch.setChecked(mNotificationStatus);
     }
+    // Retrieve the Radius Search of the SharedPreferences
+    // And check it in UI
+    private void getAndCheckRadiusSearch(){
+        Log.d(TAG, "getAndCheckRadiusSearch: ");
 
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause: ");
-
-        // Add the Notification Status in shared Preferences
-        mSharedPreferences.edit()
-                .putBoolean(SHARED_PREF_NOTIFICATION_STATUS, mNotificationChecked).apply();
-        super.onPause();
+        // Retrieve Radius Search
+        String radiusSearch = mPreferences_SettingsActivity.getSearchRadius();
+        // Check it in UI
+        mRadiusSearchEditText.setText(radiusSearch);
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
     // ---------------------------------------------------------------------------------------------
@@ -141,21 +161,55 @@ public class SettingsActivity extends BaseActivity {
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
     // ---------------------------------------------------------------------------------------------
-    // ---------------
-    // ACTION SWITCH
-    // ---------------
-    @OnCheckedChanged(R.id.activity_settings_switch)
+    // ---------------------------
+    // ACTION Switch Notification
+    // ---------------------------
+    @OnCheckedChanged(R.id.activity_settings_notification)
     public void OnCheckedChanged(CompoundButton cb, boolean isChecked){
-        Log.d(TAG, "OnCheckedChanged: isChecked = "+isChecked);
-        Log.d(TAG, "OnCheckedChanged: isChecked Before = "+mNotificationChecked);
+        Log.d(TAG, "OnCheckedChanged: ");
+        Log.d(TAG, "OnCheckedChanged: isChecked        = "+isChecked);
+        Log.d(TAG, "OnCheckedChanged: isChecked Before = "+mNotificationStatus);
 
         // If check switch and old state is not checked
-        if (isChecked && !mNotificationChecked) this.startAlarm();
-        if (!isChecked && mNotificationChecked) this.stopAlarm();
+        if (isChecked && !mNotificationStatus)
+            Snackbar.make(mCoordinatorLayout,"Notifications set !",Snackbar.LENGTH_LONG).show();
+        if (!isChecked && mNotificationStatus)
+            Snackbar.make(mCoordinatorLayout,"Notifications canceled !",Snackbar.LENGTH_LONG).show();
 
-        mNotificationChecked = isChecked;
+        mNotificationStatus = isChecked;
 
-        Log.d(TAG, "OnCheckedChanged: isChecked After = " +mNotificationChecked);
+        Log.d(TAG, "OnCheckedChanged: isChecked After  = " +mNotificationStatus);
+    }
+    // --------------------------
+    // ACTION Distance Edit Text
+    // --------------------------
+    private void manageDistanceEditText() {
+        Log.d(TAG, "manageDistanceEditText: ");
+
+        //The distance entered must be between 1 and 1500 meters
+        mRadiusSearchEditText.setFilters(new InputFilter[]{new Toolbox.MinMaxFilter("1", "1500")});
+    }
+    // -------------------------
+    // ACTION Validation Button
+    // -------------------------
+    @OnTouch(R.id.activity_settings_button)
+    public boolean onTouchValidateButton(View v, MotionEvent event) {
+
+        // If check or not checked Switch Notification
+        if (mPreferences_SettingsActivity.isNotificationStatus()) this.startAlarm();
+        if (!mPreferences_SettingsActivity.isNotificationStatus()) this.stopAlarm();
+
+        // Return to the Welcome Activity
+        Gson gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
+        Intent intent = new Intent();
+        mPreferences_SettingsActivity.setNotificationStatus(mNotificationStatus);
+        mPreferences_SettingsActivity.setSearchRadius(mRadiusSearchEditText.getText().toString());
+        Log.d(TAG, "onTouchValidateButton: notification = "+mPreferences_SettingsActivity.isNotificationStatus());
+        Log.d(TAG, "onTouchValidateButton: searchRadius = "+mPreferences_SettingsActivity.getSearchRadius());
+        intent.putExtra(SHARED_PREF_SETTINGS_ACTIVITY, gson.toJson(mPreferences_SettingsActivity));
+        setResult(RESULT_OK, intent);
+        finish();
+        return false;
     }
     // ---------------------------------------------------------------------------------------------
     //                                     NOTIFICATION
@@ -198,7 +252,6 @@ public class SettingsActivity extends BaseActivity {
                 nextNotification(),          // First start at 12:00
                 mAlarmManager.INTERVAL_DAY,  // Will trigger every day
                 mPendingIntent);
-        Snackbar.make(mCoordinatorLayout,"Notifications set !",Snackbar.LENGTH_LONG).show();
     }
     // Stop Alarm
     private void stopAlarm() {
@@ -206,6 +259,9 @@ public class SettingsActivity extends BaseActivity {
 
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         manager.cancel(mPendingIntent);
-        Snackbar.make(mCoordinatorLayout,"Notifications canceled !",Snackbar.LENGTH_LONG).show();
     }
+    // ---------------------------------------------------------------------------------------------
+    //                                        ( OUT )
+    // ---------------------------------------------------------------------------------------------
+
 }

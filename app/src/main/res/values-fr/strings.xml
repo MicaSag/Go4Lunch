@@ -3,8 +3,8 @@
     <string name="manifest_web_view_activity_label">Site Web Resaurant</string>
     <string name="common_not_network">Pas de connexion au réseau</string>
     <string name="main_activity_description">Trouve un restaurant et invite tes collègues à déjeuner</string>
-    <string name="facebook_login">S\'inscrire avec Facebook</string>
-    <string name="google_login">S\'inscrire avec Google</string>
+    <string name="facebook_login">Connection avec Facebook</string>
+    <string name="google_login">Connection avec Google</string>
     <string name="error_not_connected">Vous devez être connecté !</string>
     <string name="error_authentication_canceled">Authentification supprimée</string>
     <string name="error_no_internet">Aucune connexion internet !</string>
@@ -54,4 +54,9 @@
     <string name="list_restaurant_text_5">" du matin"</string>
     <string name="notification_message_6">Ouvert 24/24</string>
     <string name="activity_settings_notification_label">Rappel de votre déjeuner à 12h</string>
+    <string name="settings_activity_search_radius_text_2">mètres</string>
+    <string name="settings_activity_search_radius_text_1">"Périmètre de recherche ( 1 à 1500 ) : "</string>
+    <string name="welcome_activity_download_progress">RECHERCHE DES RESTAURANTS...</string>
+    <string name="welcome_activity_download_finish">RECHERCHE TERMINEE.</string>
+    <string name="settings_activity_validation_text_button">Validation</string>
 </resources>

@@ -22,6 +22,11 @@
 
     <!-- Welcome ACTIVITY -->
     <string name="restaurant_not_chosen">No restaurant has been chosen yet</string>
+    <string name="settings_activity_validation_text_button">Validation</string>
+    <string name="settings_activity_search_radius_text_2">meters</string>
+    <string name="settings_activity_search_radius_text_1">"Search Radius ( 1 at 1500 ) : "</string>
+    <string name="welcome_activity_download_progress">SEARCH RESTAURANTS...</string>
+    <string name="welcome_activity_download_finish">FINISHED SEARCH.</string>
     <!-- ... Bottom Navigation view -->
     <string name="bottom_navigation_menu_map_view">Map View</string>
     <string name="bottom_navigation_menu_list_view">List View</string>
@@ -64,7 +69,7 @@
     <string name="fragment_list_restaurants_view_item_address">address</string>
     <string name="fragment_list_restaurants_view_item_not_opening_hours">not opening hours</string>
     <string name="list_restaurant_text_1">Closed</string>
-    <string name="list_restaurant_text_3">Open until</string>
+    <string name="list_restaurant_text_3">Open until </string>
     <string name="list_restaurant_text_4">pm</string>
     <string name="list_restaurant_text_5">am</string>
     <string name="notification_message_6">Open until 24/24</string>

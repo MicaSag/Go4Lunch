@@ -12,11 +12,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,11 +41,12 @@ import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragm
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.SavedPreferences;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
+import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
+import com.android.sagot.go4lunch.Utils.ManageRestaurantList;
 import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
@@ -62,6 +64,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -73,6 +76,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
@@ -93,7 +97,8 @@ import io.reactivex.observers.DisposableObserver;
  **************************************************************************************************/
 
 public class WelcomeActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements  NavigationView.OnNavigationItemSelectedListener,
+                    ManageRestaurantList.Listeners{
     // For TRACES
     // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -106,7 +111,15 @@ public class WelcomeActivity extends BaseActivity
     @BindView(R.id.activity_welcome_bottom_navigation) BottomNavigationView bottomNavigationView;
     @BindView(R.id.activity_welcome_drawer_layout) DrawerLayout mDrawerLayout;
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
+    @BindView(R.id.activity_welcome_progress_bar) ProgressBar mProgressBar;
     @BindView(R.id.toolbar) Toolbar mToolbar;
+
+    // For Defined SharedPreferences of the application
+    // -------------------------------------------------
+    SharedPreferences mSharedPreferences;
+    // Create variables for use preferences Settings Activity
+    private String mPreferences_SettingsActivity_String;
+    private Preferences_SettingsActivity mPreferences_SettingsActivity;
 
     // For configuration Bottom Navigation View
     // -----------------------------------------
@@ -171,6 +184,9 @@ public class WelcomeActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
+        // Retrieve SharedPreferences
+        retrieveSharedPreferences();
+
         // Place Autocomplete Configuration
         //configurePlaceAutoComplete();
 
@@ -185,6 +201,56 @@ public class WelcomeActivity extends BaseActivity
 
         // Allows the management of the change of position when moving
         this.configureLocationChangeRealTime();
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                   SHARED PREFERENCES
+    // ---------------------------------------------------------------------------------------------
+    // >> SHARED PREFERENCES RETRIEVE <-------
+    private void retrieveSharedPreferences() {
+        Log.d(TAG, "retrieveSharedPreferences: ");
+        // READ SharedPreferences
+        mSharedPreferences = getPreferences(MODE_PRIVATE);
+
+        // TEST == >>> Allows to erase all the preferences ( Useful for the test phase )
+        //Log.i("MOOD","CLEAR COMMIT PREFERENCES");
+        //mSharedPreferences.edit().clear().commit();
+
+        // Retrieve Settings Activity Preferences
+        getPreferencesSettingsActivity();
+    }
+    // Retrieve Settings Activity Preferences
+    private void getPreferencesSettingsActivity(){
+        Log.d(TAG, "getPreferencesSettingsActivity: ");
+
+        mPreferences_SettingsActivity_String = mSharedPreferences
+                .getString(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY,null);
+
+        Gson gson = new Gson();
+        // If
+        if (mPreferences_SettingsActivity_String != null) {
+            Log.d(TAG, "retrievesPreferencesSettings: Restoration");
+            mPreferences_SettingsActivity = gson.fromJson(mPreferences_SettingsActivity_String,
+                    Preferences_SettingsActivity.class);
+        }else{
+            Log.d(TAG, "retrievesPreferencesSettings: First call of the App, No pref saved");
+            mPreferences_SettingsActivity = new Preferences_SettingsActivity();
+        }
+        // If search Radius not exist, then it will be 500 by default
+        if (mPreferences_SettingsActivity.getSearchRadius() == null)
+            mPreferences_SettingsActivity.setSearchRadius("500");
+
+        gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
+        mPreferences_SettingsActivity_String = gson.toJson(mPreferences_SettingsActivity);
+    }
+    // >> SHARED PREFERENCES SAVE <-------
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+
+        // Save Settings Activity Preferences
+        mSharedPreferences.edit().putString(SettingsActivity
+                .SHARED_PREF_SETTINGS_ACTIVITY, mPreferences_SettingsActivity_String).apply();
     }
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
@@ -261,6 +327,17 @@ public class WelcomeActivity extends BaseActivity
 
             } else if (resultCode == RESULT_CANCELED) {
                 // The user canceled the operation.
+            }
+        }
+        // Result Returned by Settings Activity
+        if (requestCode == SettingsActivity.SETTINGS_ACTIVITY_RC) {
+            Log.d(TAG, "onActivityResult: Settings Activity RETURN");
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result OK");
+                mPreferences_SettingsActivity_String
+                        = data.getStringExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY);
+            } else {
+                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result KO");
             }
         }
     }
@@ -384,8 +461,11 @@ public class WelcomeActivity extends BaseActivity
     public void callSettingsActivity(){
         Log.d(TAG, "callSettingsActivity: ");
 
-        // Go to restaurant card
-        Toolbox.startActivity(this, SettingsActivity.class,null,null);
+        // GO TO Settings Activity
+        Intent intent = new Intent(WelcomeActivity.this,SettingsActivity.class);
+        intent.putExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY,
+                                            mPreferences_SettingsActivity_String);
+        startActivityForResult(intent,SettingsActivity.SETTINGS_ACTIVITY_RC);
     }
 
     @Override
@@ -432,7 +512,6 @@ public class WelcomeActivity extends BaseActivity
             }
         }
     }
-
     /**
      * Method that processes the response to a request for permission made
      * by the function "requestPermissions(..)"
@@ -470,7 +549,6 @@ public class WelcomeActivity extends BaseActivity
             }
         }
     }
-
     /**
      * Retrieves Coordinates of the best and most recent device location information if Exists
      */
@@ -507,7 +585,6 @@ public class WelcomeActivity extends BaseActivity
             Log.e("getDeviceLocation %s", e.getMessage());
         }
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
@@ -529,7 +606,6 @@ public class WelcomeActivity extends BaseActivity
             }
         };
     }
-
     // ------------------------------
     //   FOR GOOGLE PLACES REQUEST
     // ------------------------------
@@ -540,7 +616,8 @@ public class WelcomeActivity extends BaseActivity
                 + Toolbox.locationStringFromLocation(mLastKnownLocation));
         // Execute the stream subscribing to Observable defined inside GooglePlaceStreams
         mDisposable = GooglePlaceStreams
-                .streamFetchListRestaurantDetails(this, mLastKnownLocation)
+                .streamFetchListRestaurantDetails(this, mLastKnownLocation,
+                                                    mPreferences_SettingsActivity.getSearchRadius())
                 .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                     @Override
                     public void onNext(List<Restaurant> listRestaurant) {
@@ -553,17 +630,11 @@ public class WelcomeActivity extends BaseActivity
                             restos.put(restaurant.getIdentifier(), restaurant);
                         }
                         saveRestaurantMapInModel(restos);
-                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = " + getRestaurantMapOfTheModel().size());
+                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = "
+                                + getRestaurantMapOfTheModel().size());
 
-                        // Listen Current Restaurant List
-                        listenCurrentListRestaurant();
-
-                        // Save current Opening Hours in FireBase
-                        saveOpeningHoursInFireBase();
-
-                        // We have recovered all the data necessary for the display
-                        // We can display and make the interface available
-                        configureBottomView();
+                        // Manage restaurant List
+                        startManageRestaurantList();
                     }
 
                     @Override
@@ -587,34 +658,84 @@ public class WelcomeActivity extends BaseActivity
 
         Toast.makeText(this, "Error during Downloading", Toast.LENGTH_LONG).show();
     }
+    // ---------------------------------------------------------------------------------------------
+    //                         ASYNC TASK : MANAGE RESTAURANT LIST
+    // ---------------------------------------------------------------------------------------------
+    // 3 - We create and start our AsyncTask
+    private void startManageRestaurantList() {
+        Log.d(TAG, "startAsyncTask: ");
 
-    // Save current Opening Hours in FireBase
-    protected void saveOpeningHoursInFireBase() {
-
-        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
-        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Restaurant> e = it.next();
-            RestaurantHelper.updateRestaurantOpeningTime(e.getValue().getIdentifier(), e.getValue().getOpeningTime())
-                    .addOnFailureListener(this.onFailureListener());
-        }
+        new ManageRestaurantList(this).execute();
     }
 
-    /**
-     * Enables listening of the number of stars
-     */
-    public void listenCurrentListRestaurant() {
-        Log.d(TAG, "listenCurrentListRestaurant: ");
+    // Override methods of callback
+    @Override
+    public void onPreExecute() {
+        Log.d(TAG, "onPreExecute: ");
+        // We update our UI before task (starting ProgressBar)
+        this.updateUIBeforeTask();
+    }
+    @Override
+    public void doInBackground() {
+        Log.d(TAG, "doInBackground: ");
 
         Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
         Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+
         while (it.hasNext()) {
             Map.Entry<String, Restaurant> restaurant = it.next();
             Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
                     + restaurant.getValue().getIdentifier());
+
+            try {
+                Task<DocumentSnapshot> task = RestaurantHelper.getRestaurant(restaurant.getValue().getIdentifier());
+
+                //DocumentSnapshot documentSnapshot = Tasks.await(task, 500, TimeUnit.MILLISECONDS);
+                DocumentSnapshot documentSnapshot = Tasks.await(task);
+
+                Restaurant fireBaseRestaurant = documentSnapshot.toObject(Restaurant.class);
+
+                if (fireBaseRestaurant == null) {
+                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
+                    Task<Void> restaurantTask = RestaurantHelper.createRestaurant(restaurant.getValue());
+
+                    Tasks.await(restaurantTask);
+                }
+
+                // Listening the restaurant
+                listenCurrentRestaurant(restaurant.getValue());
+
+            } catch (ExecutionException e) {
+                Log.d(TAG, "putRestaurantInFireBase:ExecutionException = " + e);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "putRestaurantInFireBase:InterruptedException = " + e);
+            //} catch (TimeoutException e) {
+            //    Log.d(TAG, "putRestaurantInFireBase:TimeoutException = " + e);
+            }
+        }
+    }
+    @Override
+    public void onPostExecute(Long taskEnd) {
+        Log.d(TAG, "onPostExecute: ");
+        // We update our UI before task (stopping ProgressBar)
+        this.updateUIAfterTask(taskEnd);
+        //  We update our UI before task (stopping ProgressBar)
+        // We have recovered all the data necessary for the display
+        // We can display and make the interface available
+        configureBottomView();
+    }
+    /**
+     * Enables listening of the current restaurant
+     */
+    public void listenCurrentRestaurant(Restaurant restaurant) {
+        Log.d(TAG, "listenCurrentListRestaurant: ");
+
+
+            Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
+                    + restaurant.getIdentifier());
             RestaurantHelper
                     .getRestaurantsCollection()
-                    .document(restaurant.getValue().getIdentifier())
+                    .document(restaurant.getIdentifier())
                     .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
@@ -629,9 +750,25 @@ public class WelcomeActivity extends BaseActivity
                             }
                         }
                     });
-        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                     UPDATE UI
+    // ---------------------------------------------------------------------------------------------
+
+    public void updateUIBeforeTask(){
+        Log.d(TAG, "updateUIBeforeTask: ");
+
+        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_progress,Snackbar.LENGTH_LONG).show();
+        mProgressBar.setVisibility(View.VISIBLE);
     }
 
+    public void updateUIAfterTask(Long taskEnd){
+        Log.d(TAG, "updateUIAfterTask: ");
+        Log.d(TAG, "Task is finally finished at : "+taskEnd+" !");
+
+        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_finish,Snackbar.LENGTH_LONG).show();
+        mProgressBar.setVisibility(View.GONE);
+    }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
     // ---------------------------------------------------------------------------------------------
@@ -668,7 +805,6 @@ public class WelcomeActivity extends BaseActivity
         }
         return true;
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                      FRAGMENTS
     // ---------------------------------------------------------------------------------------------
@@ -696,7 +832,6 @@ public class WelcomeActivity extends BaseActivity
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment, "MapViewFragment")
                 .commit();
     }
-
     // ---------------------------------------------------------------------------------------------
     //                                LOCATION IN REAL TIME
     // ---------------------------------------------------------------------------------------------

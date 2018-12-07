@@ -17,14 +17,60 @@
             android:layout_height="wrap_content"/>
 
         <Switch
-            android:id="@+id/activity_settings_switch"
+            android:id="@+id/activity_settings_notification"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/bottom_margin"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:layout_marginEnd="@dimen/bottom_margin"
             android:layout_marginTop="@dimen/bottom_margin"
             android:text="@string/activity_settings_notification_label" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/bottom_margin"
+                android:textSize="16sp"
+                android:text="@string/settings_activity_search_radius_text_1"/>
+
+            <EditText
+                android:id="@+id/activity_settings_radius_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:inputType="numberDecimal"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:layout_marginStart="@dimen/bottom_margin"
+                android:textSize="16sp"
+                android:text="@string/settings_activity_search_radius_text_2"/>
+        </LinearLayout>
+
+        <!-- VALIDATE Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/activity_settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:textColor="@android:color/white"
+                android:layout_marginStart="@dimen/button_margin"
+                android:layout_marginEnd="@dimen/button_margin"
+                android:layout_marginTop="@dimen/button_margin_top"
+                android:text="@string/settings_activity_validation_text_button">
+            </Button>
+        </LinearLayout>
 
     </LinearLayout>
 

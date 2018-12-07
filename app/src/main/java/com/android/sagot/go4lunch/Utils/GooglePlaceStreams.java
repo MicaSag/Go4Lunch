@@ -2,7 +2,6 @@ package com.android.sagot.go4lunch.Utils;
 
 import android.content.Context;
 import android.location.Location;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Period;
@@ -12,8 +11,6 @@ import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.Pl
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearchResult;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
-import com.android.sagot.go4lunch.api.RestaurantHelper;
-import com.google.android.gms.tasks.OnFailureListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,22 +26,22 @@ public class GooglePlaceStreams {
     private static final String TAG = GooglePlaceStreams.class.getSimpleName();
 
     // Google Place NearBySearch STREAM
-    public static Observable<PlaceNearBySearch> streamFetchRestaurantsNearBySearch(String location){
-        Log.d(TAG, "streamFetchRestaurantsNearBySearch: ");
+    public static Observable<PlaceNearBySearch> streamFetchRestaurantsNearBySearch(String location, String radiusSearch){
+        Log.d(TAG, "streamFetchRestaurantsNearBySearch() called with: location = [" + location + "], radiusSearch = [" + radiusSearch + "]");
 
         GooglePlaceService googlePlaceService = GooglePlaceService.retrofit.create(GooglePlaceService.class);
 
-        return googlePlaceService.getPlaceNearBySearch(location)
+        return googlePlaceService.getPlaceNearBySearch(location,radiusSearch)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);
     }
 
     // Return a PlaceId List
-    public static Observable<List<String>> streamFetchListRestaurantId(String location){
+    public static Observable<List<String>> streamFetchListRestaurantId(String location, String radiusSearch){
         Log.d(TAG, "streamFetchListRestaurantId: ");
 
-        return streamFetchRestaurantsNearBySearch(location)
+        return streamFetchRestaurantsNearBySearch(location, radiusSearch)
                 .concatMap(new Function<PlaceNearBySearch, Observable<List<String>>>() {
                     @Override
                     public Observable<List<String>> apply(PlaceNearBySearch placeNearBySearch) throws Exception {
@@ -79,10 +76,10 @@ public class GooglePlaceStreams {
     }
 
     // Return Restaurants Details List near by search
-    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(Context context, Location location) {
+    public static Observable<List<Restaurant>> streamFetchListRestaurantDetails(Context context, Location location, String radiusSearch) {
         Log.d(TAG, "streamFetchListRestaurantDetails: ");
 
-        return streamFetchListRestaurantId(Toolbox.locationStringFromLocation(location))
+        return streamFetchListRestaurantId(Toolbox.locationStringFromLocation(location),radiusSearch)
                 .concatMap(new Function<List<String>, Observable<List<Restaurant>>>() {
                     @Override
                     public Observable<List<Restaurant>> apply(List<String> restaurantId) throws Exception {
@@ -205,15 +202,7 @@ public class GooglePlaceStreams {
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Distance    = " + restaurant.getDistance());
                                                         Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
 
-
-                                                        return Observable.just(restaurant)
-                                                                .concatMap(new Function<Restaurant, Observable<Restaurant>>() {
-                                                                    @Override
-                                                                    public Observable<Restaurant> apply(Restaurant restaurant) throws Exception {
-                                                                        putRestaurantInFireBase(restaurant);
-                                                                        return Observable.just(restaurant);
-                                                                    }
-                                                                });
+                                                        return Observable.just(restaurant);
                                                     }
                                                 });
                                     }
@@ -222,34 +211,5 @@ public class GooglePlaceStreams {
                                 .toObservable();
                     }
                 });
-    }
-
-    public static Observable putRestaurantInFireBase(Restaurant restaurant) {
-        Log.d(TAG, "putRestaurantInFireBase: ");
-
-        // Get additional data from FireStore : restaurantIdentifier
-        RestaurantHelper.getRestaurant(restaurant.getIdentifier()).addOnCompleteListener(documentSnapshot -> {
-
-            if (documentSnapshot.isSuccessful()) {
-
-                Restaurant currentRestaurant = documentSnapshot.getResult().toObject(Restaurant.class);
-
-                if (currentRestaurant == null) {
-                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
-
-                    RestaurantHelper.createRestaurant(restaurant).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "createRestaurant failure.", e);
-                        }
-                    });
-                } else {
-                    Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant exist in FireBase Database");
-                }
-            } else {
-                Exception e = documentSnapshot.getException();
-            }
-        });
-        return null;
     }
 }
