@@ -1,3 +1,8 @@
 /build
-values/facebook_authentication.xml
-values/google_maps_api.xml
+
+# Facebook Key
+facebook_authentication.xml
+
+#Google services Key
+google_maps_api.xml
+google-services.json
