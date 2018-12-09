@@ -20,7 +20,7 @@ public interface GooglePlaceService {
     String maxWidth = "2304";
 
     // Place NearBySearch
-    @GET("nearbysearch/json?key="+key+"&type="+type)
+    @GET("nearbysearch/json?key="+key+"&type="+type+"&openNow")
     Observable<PlaceNearBySearch> getPlaceNearBySearch(@Query("location") String location,
                                                        @Query("radius") String radiusSearch);
 

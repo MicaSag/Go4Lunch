@@ -49,7 +49,7 @@
     <string name="notification_message_4">"Avec : "</string>
     <string name="notification_message_1">Nous vous rappelons que vous avez décidé de déjeuner</string>
     <string name="list_restaurant_text_1">Fermé</string>
-    <string name="list_restaurant_text_3">Ouvert jusqu\'à </string>
+    <string name="list_restaurant_text_3">Ouvert jusqu\'à  </string>
     <string name="list_restaurant_text_4">" du soir"</string>
     <string name="list_restaurant_text_5">" du matin"</string>
     <string name="notification_message_6">Ouvert 24/24</string>

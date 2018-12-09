@@ -77,6 +77,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nullable;
 
@@ -727,7 +729,7 @@ public class WelcomeActivity extends BaseActivity
     /**
      * Enables listening of the current restaurant
      */
-    public void listenCurrentRestaurant(Restaurant restaurant) {
+    private void listenCurrentRestaurant(Restaurant restaurant) {
         Log.d(TAG, "listenCurrentListRestaurant: ");
 
 
@@ -755,14 +757,14 @@ public class WelcomeActivity extends BaseActivity
     //                                     UPDATE UI
     // ---------------------------------------------------------------------------------------------
 
-    public void updateUIBeforeTask(){
+    private void updateUIBeforeTask(){
         Log.d(TAG, "updateUIBeforeTask: ");
 
         Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_progress,Snackbar.LENGTH_LONG).show();
         mProgressBar.setVisibility(View.VISIBLE);
     }
 
-    public void updateUIAfterTask(Long taskEnd){
+    private void updateUIAfterTask(Long taskEnd){
         Log.d(TAG, "updateUIAfterTask: ");
         Log.d(TAG, "Task is finally finished at : "+taskEnd+" !");
 
