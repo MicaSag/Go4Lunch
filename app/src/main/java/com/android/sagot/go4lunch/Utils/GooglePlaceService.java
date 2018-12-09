@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Utils;
 
+import com.android.sagot.go4lunch.BuildConfig;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
 import com.google.gson.GsonBuilder;
@@ -14,13 +15,12 @@ import retrofit2.http.Query;
 public interface GooglePlaceService {
 
     // Constant parameters
-    String key      = "AIzaSyC8l-LPDTEqpJxWbJ-VbUgdUoj8TdXlcK4";
+    String key      = BuildConfig.google_maps_api;
     String type     = "restaurant";
-    String radius   = "694";
     String maxWidth = "2304";
 
     // Place NearBySearch
-    @GET("nearbysearch/json?key="+key+"&type="+type+"&openNow")
+    @GET("nearbysearch/json?key="+key+"&type="+type+"&opennow=true")
     Observable<PlaceNearBySearch> getPlaceNearBySearch(@Query("location") String location,
                                                        @Query("radius") String radiusSearch);
 

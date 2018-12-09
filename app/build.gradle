@@ -13,9 +13,25 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        def Properties properties = new Properties()
+        properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // Place Api
+            buildConfigField("String", "google_maps_api", properties.getProperty("GoogleMapsApiKey", ""))
+
+            // Creates a placeholder property to use in the manifest.
+            manifestPlaceholders = [google_maps_api: properties.getProperty("GoogleMapsApiKey", "")]
+        }
+        debug {
+            // Place Api
+            buildConfigField("String", "google_maps_api", properties.getProperty("GoogleMapsApiKey", ""))
+
+            // Creates a placeholder property to use in the manifest.
+            manifestPlaceholders = [google_maps_api: properties.getProperty("GoogleMapsApiKey", "")]
         }
     }
     compileOptions {
