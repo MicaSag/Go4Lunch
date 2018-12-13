@@ -69,6 +69,12 @@ public class MainActivity extends BaseActivity {
         this.startGoogleSignInActivity();
     }
 
+    @OnClick(R.id.main_activity_twitter_login_button)
+    public void onClickTwitterLoginButton() {
+        Log.d(TAG, "onClickTwitterLoginButton: ");
+        this.startTwitterSignInActivity();
+    }
+
     // ---------------------------------------------------------------------------------------------
     //                                        AUTHENTICATION
     // ---------------------------------------------------------------------------------------------
@@ -105,6 +111,22 @@ public class MainActivity extends BaseActivity {
                 RC_SIGN_IN);
     }
 
+    // Launch Twitter Sign-In
+    private void startTwitterSignInActivity(){
+        Log.d(TAG, "startSignInActivity: ");
+
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setTheme(R.style.LoginTheme)
+                        .setAvailableProviders(
+                                Arrays.asList( new AuthUI.IdpConfig.TwitterBuilder().build())) // TWITTER
+                        .setIsSmartLockEnabled(false, true) // Email list possible
+                        .setLogo(R.drawable.pic_logo_restaurant_400x400)
+                        .build(),
+                RC_SIGN_IN);
+    }
+
     // Method that retrieves the result of the authentication
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -121,6 +143,8 @@ public class MainActivity extends BaseActivity {
 
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
+        Log.d(TAG, "handleResponseAfterSignIn: requestCode = "+requestCode);
+        Log.d(TAG, "handleResponseAfterSignIn: resultCode  = "+resultCode);
         if (requestCode == RC_SIGN_IN) {   // = 100
             if (resultCode == RESULT_OK) { // SUCCESS = -1
                 // CREATE user in FireStore

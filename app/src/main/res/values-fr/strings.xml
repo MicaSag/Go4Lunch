@@ -4,6 +4,7 @@
     <string name="common_not_network">Pas de connexion au réseau</string>
     <string name="main_activity_description">Trouve un restaurant et invite tes collègues à déjeuner</string>
     <string name="facebook_login">Connection avec Facebook</string>
+    <string name="twitter_login">Connection avec Twitter</string>
     <string name="google_login">Connection avec Google</string>
     <string name="error_not_connected">Vous devez être connecté !</string>
     <string name="error_authentication_canceled">Authentification supprimée</string>
@@ -56,7 +57,7 @@
     <string name="activity_settings_notification_label">Rappel de votre déjeuner à 12h</string>
     <string name="settings_activity_search_radius_text_2">mètres</string>
     <string name="settings_activity_search_radius_text_1">"Périmètre de recherche ( 1 à 1500 ) : "</string>
-    <string name="welcome_activity_download_progress">RECHERCHE DES RESTAURANTS...</string>
-    <string name="welcome_activity_download_finish">RECHERCHE TERMINEE.</string>
+    <string name="welcome_activity_download_progress">Recherche des restaurants...</string>
+    <string name="welcome_activity_download_finish">Recherche terminée.</string>
     <string name="settings_activity_validation_text_button">Validation</string>
 </resources>

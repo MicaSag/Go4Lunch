@@ -10,6 +10,7 @@
     <!-- Main ACTIVITY -->
     <string name="main_activity_description">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="facebook_login">Sign in with Facebook</string>
+    <string name="twitter_login">Sign in with Twitter</string>
     <string name="google_login">Sign in with Google</string>
     <string name="error_not_connected">You need to log in !</string>
     <string name="error_authentication_canceled">Authentication canceled&#8230;</string>
@@ -25,8 +26,8 @@
     <string name="settings_activity_validation_text_button">Validation</string>
     <string name="settings_activity_search_radius_text_2">meters</string>
     <string name="settings_activity_search_radius_text_1">"Search Radius ( 1 at 1500 ) : "</string>
-    <string name="welcome_activity_download_progress">SEARCH RESTAURANTS...</string>
-    <string name="welcome_activity_download_finish">FINISHED SEARCH.</string>
+    <string name="welcome_activity_download_progress">Searching Restaurants...</string>
+    <string name="welcome_activity_download_finish">Search Complete.</string>
     <!-- ... Bottom Navigation view -->
     <string name="bottom_navigation_menu_map_view">Map View</string>
     <string name="bottom_navigation_menu_list_view">List View</string>
@@ -76,8 +77,8 @@
 
     <!-- List Workmates RecyclerView -->
     <string name="fragment_list_workmates_view_item_workmates_hasn_t_decided_yet">Workmates hasn\'t decided yet</string>
-    <string name="workmates_list_text_1">is eating at (</string>
-    <string name="workmates_list_text_2">hasn\'t decided yet</string>
-    <string name="workmates_list_text_3">is joining</string>
+    <string name="workmates_list_text_1">" is eating at ("</string>
+    <string name="workmates_list_text_2"> hasn\'t decided yet</string>
+    <string name="workmates_list_text_3"> is joining</string>
 
 </resources>

@@ -62,6 +62,7 @@ import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -70,6 +71,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -77,8 +79,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nullable;
 
@@ -186,11 +186,11 @@ public class WelcomeActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
+        // starting ProgressBar
+        this.startingProgressBar();
+
         // Retrieve SharedPreferences
         retrieveSharedPreferences();
-
-        // Place Autocomplete Configuration
-        //configurePlaceAutoComplete();
 
         // Get Location permission
         getLocationPermission();
@@ -291,18 +291,27 @@ public class WelcomeActivity extends BaseActivity
         try {
 
             AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
                     .build();
+
+            Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+            Location location = model.getCurrentLocation();
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+
+            LatLng ll = new LatLng(lat,lng);
+
+            LatLngBounds boundsBias = new LatLngBounds.Builder().
+                    include(SphericalUtil.computeOffset(ll,1200 , 0)).build();
 
             Intent intent =
                     new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
                             .setFilter(typeFilter)
+                            .setBoundsBias(boundsBias)
                             .build(this);
 
             startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-        } catch (GooglePlayServicesRepairableException e) {
-            // TODO: Handle the error.
-        } catch (GooglePlayServicesNotAvailableException e) {
+        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
             // TODO: Handle the error.
         }
     }
@@ -674,8 +683,6 @@ public class WelcomeActivity extends BaseActivity
     @Override
     public void onPreExecute() {
         Log.d(TAG, "onPreExecute: ");
-        // We update our UI before task (starting ProgressBar)
-        this.updateUIBeforeTask();
     }
     @Override
     public void doInBackground() {
@@ -719,8 +726,8 @@ public class WelcomeActivity extends BaseActivity
     @Override
     public void onPostExecute(Long taskEnd) {
         Log.d(TAG, "onPostExecute: ");
-        // We update our UI before task (stopping ProgressBar)
-        this.updateUIAfterTask(taskEnd);
+        // stopping ProgressBar
+        this.stopProgressBar();
         //  We update our UI before task (stopping ProgressBar)
         // We have recovered all the data necessary for the display
         // We can display and make the interface available
@@ -757,16 +764,15 @@ public class WelcomeActivity extends BaseActivity
     //                                     UPDATE UI
     // ---------------------------------------------------------------------------------------------
 
-    private void updateUIBeforeTask(){
-        Log.d(TAG, "updateUIBeforeTask: ");
+    private void startingProgressBar(){
+        Log.d(TAG, "startingProgressBar: ");
 
         Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_progress,Snackbar.LENGTH_LONG).show();
         mProgressBar.setVisibility(View.VISIBLE);
     }
 
-    private void updateUIAfterTask(Long taskEnd){
-        Log.d(TAG, "updateUIAfterTask: ");
-        Log.d(TAG, "Task is finally finished at : "+taskEnd+" !");
+    private void stopProgressBar(){
+        Log.d(TAG, "stopProgressBar: ");
 
         Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_finish,Snackbar.LENGTH_LONG).show();
         mProgressBar.setVisibility(View.GONE);

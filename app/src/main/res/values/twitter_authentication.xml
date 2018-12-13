@@ -1,0 +1,5 @@
+<resources>
+    <!-- Twitter consumer key and secret -->
+    <string name="twitter_consumer_key" translatable="false">FOtA1X3dfWm64Jf8GIjMfeRN0</string>
+    <string name="twitter_consumer_secret" translatable="false">UaYwX7bIdFBFU6MmzENAsSUKz1VQKs4RchP5TaSwrmwSBRzENZ</string>
+</resources>

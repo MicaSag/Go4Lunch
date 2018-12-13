@@ -1,6 +1,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'                    // For Crashlytics installation
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file("local.properties").newDataInputStream())
+def GOOGLE_MAPS_API_KEY = properties.getProperty("GoogleMapsApiKey")
+
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -11,28 +16,20 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // Google Maps Api Key
+        // --> For source
+        buildConfigField ( "String", "google_maps_api", '"'+GOOGLE_MAPS_API_KEY+'"' )
+        // --> For Manifest
+        manifestPlaceholders = [googleMapsApiKey: properties.getProperty("GoogleMapsApiKey")]
     }
     buildTypes {
-        def Properties properties = new Properties()
-        properties.load(project.rootProject.file("local.properties").newDataInputStream())
 
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            // Place Api
-            buildConfigField("String", "google_maps_api", properties.getProperty("GoogleMapsApiKey", ""))
-
-            // Creates a placeholder property to use in the manifest.
-            manifestPlaceholders = [google_maps_api: properties.getProperty("GoogleMapsApiKey", "")]
         }
-        debug {
-            // Place Api
-            buildConfigField("String", "google_maps_api", properties.getProperty("GoogleMapsApiKey", ""))
 
-            // Creates a placeholder property to use in the manifest.
-            manifestPlaceholders = [google_maps_api: properties.getProperty("GoogleMapsApiKey", "")]
-        }
     }
     compileOptions {
         targetCompatibility 1.8
@@ -73,7 +70,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
 
     // FireBase Integration
-    implementation 'com.google.firebase:firebase-core:16.0.4' // For FireBase Integration
+    implementation 'com.google.firebase:firebase-core:16.0.6' // For FireBase Integration
     implementation 'com.firebaseui:firebase-ui-auth:4.2.1'    // For FireBase UI Authentication
     implementation 'com.firebaseui:firebase-ui-database:4.2.1' // For FireBase with UI Auth
     implementation 'com.firebaseui:firebase-ui-firestore:4.2.1' // For use FireStore
@@ -82,6 +79,14 @@ dependencies {
 
     // FaceBook Authentication
     implementation 'com.facebook.android:facebook-android-sdk:4.38.1'
+
+    //TWITTER LOGIN SUPPORT
+    // Add the Twitter Core Kit//
+    implementation 'com.facebook.android:facebook-android-sdk:4.x'
+
+    // Required only if Twitter login support is required
+    // Find the latest Twitter SDK releases here: https://goo.gl/E5wZvQ
+    implementation 'com.twitter.sdk.android:twitter-core:3.3.0'
 
     // Add Api Google Play Service : Map
     implementation 'com.google.android.gms:play-services-maps:16.0.0'
@@ -108,6 +113,9 @@ dependencies {
     implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true
     }
+
+    // Google Maps Utils
+    implementation 'com.google.maps.android:android-maps-utils:0.5+'
 }
 
 apply plugin: 'com.google.gms.google-services' // For FireBase Integration

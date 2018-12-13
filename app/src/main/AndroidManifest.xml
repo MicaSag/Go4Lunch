@@ -24,10 +24,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Gogole Maps Api Key -->
+        <!-- Google Maps Api Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${google_maps_api}" />
+            android:value="${googleMapsApiKey}"/>
 
         <!-- MAIN Activity -->
         <activity

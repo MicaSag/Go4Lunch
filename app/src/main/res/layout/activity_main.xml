@@ -60,6 +60,21 @@
                 android:gravity="center"
                 android:orientation="vertical">
 
+                <!-- BUTTON TWITTER LOGIN -->
+                <Button
+                    android:id="@+id/main_activity_twitter_login_button"
+                    style="@style/FirebaseUI.Button.AccountChooser.TwitterButton"
+                    android:background="@drawable/button_twitter_radius_primary_color"
+                    android:layout_marginStart="@dimen/start_margin"
+                    android:layout_marginEnd="@dimen/end_margin"
+                    android:layout_marginBottom="@dimen/bottom_margin"
+                    android:drawableLeft="@drawable/ic_twitter_32x32"
+                    android:text="@string/twitter_login"
+                    android:textAlignment="center"
+                    android:textStyle="normal"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_size_button" />
+
                 <!-- BUTTON FACEBOOK LOGIN -->
                 <Button
                     android:id="@+id/main_activity_facebook_login_button"
@@ -68,7 +83,7 @@
                     android:layout_marginStart="@dimen/start_margin"
                     android:layout_marginEnd="@dimen/end_margin"
                     android:layout_marginBottom="@dimen/bottom_margin"
-                    android:drawableLeft="@drawable/ic_facebook"
+                    android:drawableLeft="@drawable/ic_facebook_32x32"
                     android:text="@string/facebook_login"
                     android:textAlignment="center"
                     android:textStyle="normal"
