@@ -70,7 +70,7 @@
     <string name="fragment_list_restaurants_view_item_address">address</string>
     <string name="fragment_list_restaurants_view_item_not_opening_hours">not opening hours</string>
     <string name="list_restaurant_text_1">Closed</string>
-    <string name="list_restaurant_text_3">Open until </string>
+    <string name="list_restaurant_text_3">"Open until "</string>
     <string name="list_restaurant_text_4">pm</string>
     <string name="list_restaurant_text_5">am</string>
     <string name="notification_message_6">Open until 24/24</string>

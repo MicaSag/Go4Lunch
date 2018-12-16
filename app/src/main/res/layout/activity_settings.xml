@@ -72,6 +72,21 @@
             </Button>
         </LinearLayout>
 
+        <!-- DELETE BUTTON -->
+        <Button
+            android:id="@+id/activity_settings_delete_account_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/start_margin"
+            android:layout_marginEnd="@dimen/end_margin"
+            android:layout_marginBottom="@dimen/bottom_margin"
+            android:text="DELETE ACCOUNT"
+            android:textAlignment="center"
+            android:textStyle="normal"
+            android:background="@android:color/holo_red_dark"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_size_button" />
+
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

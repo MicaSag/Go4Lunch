@@ -9,8 +9,7 @@ import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.android.sagot.go4lunch.R;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -137,5 +136,66 @@ public class Toolbox {
         private boolean isInRange(int a, int b, int c) {
             return b > a ? c >= a && c <= b : c >= b && c <= a;
         }
+    }
+
+    /**
+     * Formatting time
+     * @param
+     * @return time in format am or pm
+     */
+    public static String formatTime (Context context, Integer time) {
+
+        return ((time > 999) ? (String.valueOf(time)).substring(0, 2)
+                : (String.valueOf(time)).substring(0, 1))
+                + "."
+                + ((time > 999) ? (String.valueOf(time)).substring(2, 4)
+                : (String.valueOf(time)).substring(1, 2))
+                + ((time > 1200) ? context.getString(R.string.list_restaurant_text_4)
+                : context.getString(R.string.list_restaurant_text_5));
+    }
+
+    /**
+     * Formatting Place Photo URL
+     * @param
+     * @return Url Place Photo
+     */
+    public static String formatPlacePhotoUrl(String maxWidth, String photoReference, String key){
+
+    return "https://maps.googleapis.com/maps/api/place/photo?"
+                + "maxwidth=" + maxWidth
+                + "&photoreference=" + photoReference
+                + "&key=" + key;
+    }
+
+    /**
+     * @since 1.0
+     * Return date in format string JJ/MM/AA
+     * @param date
+     *          String starting with a date in the format SSAAMMJJ
+     * @return String Date in format JJ/MM/AA
+     */
+    public static String dateReformat(String date){
+
+        String JJ = date.substring(6,8);            // Day
+        String MM = date.substring(4,6);            // Month
+        String AA = date.substring(2,4);            // Year
+
+        return JJ+"/"+MM+"/"+AA;                    // JJ/MM/AA
+    }
+
+    /**
+     * @since 1.0
+     * Return date in format string SSAAMMJJ
+     * @param date
+     *          String starting with a date in the format begin SSAA-MM-JJ...
+     * @return String Date in format SSAAMMJJ
+     */
+    public static String dateReformatSSAAMMJJ(String date){
+
+        String SSAA = date.substring(0,4);           // Year
+        String MM = date.substring(5,7);             // Month
+        String JJ = date.substring(8,10);            // Day
+
+        return SSAA+MM+JJ;
     }
 }

@@ -25,6 +25,8 @@ import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsA
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.notifications.NotificationsAlarmReceiver;
+import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -52,6 +54,10 @@ public class SettingsActivity extends BaseActivity {
     @BindView(R.id.activity_settings_notification) Switch mNotificationSwitch;
     @BindView(R.id.activity_settings_radius_search) EditText mRadiusSearchEditText;
     @BindView(R.id.activity_settings_button) Button mButton;
+
+    // Identify each Http Request
+    private static final int SIGN_OUT_TASK = 10;
+    private static final int DELETE_USER_TASK = 20;
 
     // Creating an intent to execute our broadcast
     private PendingIntent mPendingIntent;
@@ -210,6 +216,50 @@ public class SettingsActivity extends BaseActivity {
         setResult(RESULT_OK, intent);
         finish();
         return false;
+    }
+    // -----------------------------
+    // ACTION Delete Account Button
+    // -----------------------------
+    @OnTouch(R.id.activity_settings_delete_account_button)
+    public boolean onTouchDeleteAccountButton(View v, MotionEvent event) {
+        deleteUserFromFirebase();
+        return false;
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                    REST REQUESTS
+    // ---------------------------------------------------------------------------------------------
+    // Create http requests (SignOut & Delete)
+
+    private void signOutUserFromFirebase(){
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(SIGN_OUT_TASK));
+    }
+
+    private void deleteUserFromFirebase(){
+        if (this.getCurrentUser() != null) {
+            AuthUI.getInstance()
+                    .delete(this)
+                    .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(DELETE_USER_TASK));
+        }
+    }
+    // Create OnCompleteListener called after tasks ended
+    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin){
+        return new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                switch (origin){
+                    case SIGN_OUT_TASK:
+                        finish();
+                        break;
+                    case DELETE_USER_TASK:
+                        finish();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
     }
     // ---------------------------------------------------------------------------------------------
     //                                     NOTIFICATION

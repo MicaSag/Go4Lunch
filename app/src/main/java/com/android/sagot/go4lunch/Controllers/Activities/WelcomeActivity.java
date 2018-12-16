@@ -200,9 +200,6 @@ public class WelcomeActivity extends BaseActivity
         this.configureToolBar();
         this.configureDrawerLayout();
         this.configureNavigationView();
-
-        // Allows the management of the change of position when moving
-        this.configureLocationChangeRealTime();
     }
     // ---------------------------------------------------------------------------------------------
     //                                   SHARED PREFERENCES
@@ -839,60 +836,5 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment, "MapViewFragment")
                 .commit();
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                LOCATION IN REAL TIME
-    // ---------------------------------------------------------------------------------------------
-    private void configureLocationChangeRealTime() {
-        Log.d(TAG, "configureLocationChangeRealTime: ");
-
-        // The minimum time (in MilliSeconds) the system will wait until checking if the location changed
-        int minTime = 60000;
-        // The minimum distance (in meters) traveled until you will be notified
-        float minDistance = 15;
-        // Get the location manager from the system
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Get the criteria you would like to use
-        Criteria criteria = new Criteria();
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setSpeedRequired(false);
-        // Get the best provider from the criteria specified, and false to say it can turn the provider on if it isn't already
-        String bestProvider = locationManager.getBestProvider(criteria, false);
-        // Request location updates
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.d(TAG, "onLocationChanged: ");
-
-                if (location != null && mListRestaurantsViewFragment != null) {
-                    getModel().setCurrentLocation(location);
-                    ((ListRestaurantsViewFragment) mListRestaurantsViewFragment).updateUI();
-                }
-            }
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-            @Override
-            public void onProviderEnabled(String provider) {}
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(bestProvider, minTime, minDistance, locationListener);
     }
 }

@@ -43,6 +43,9 @@
         <!-- WELCOME Activity -->
         <activity android:name=".Controllers.Activities.WelcomeActivity"></activity>
 
+        <!-- SETTINGS Activity -->
+        <activity android:name=".Controllers.Activities.SettingsActivity"></activity>
+
         <!-- RESTAURANT CARD Activity -->
         <activity
             android:name=".Controllers.Activities.RestaurantCardActivity"
@@ -66,9 +69,6 @@
         <receiver
             android:name=".notifications.NotificationsAlarmReceiver"
             android:exported="true"/>
-
-        <activity android:name=".Controllers.Activities.SettingsActivity"></activity>
-
 
     </application>
 

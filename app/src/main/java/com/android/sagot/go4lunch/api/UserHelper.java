@@ -38,6 +38,10 @@ public class UserHelper {
         return UserHelper.getUsersCollection().document(uid).get();
     }
 
+    public static Query getUserByName(String name){
+        return UserHelper.getUsersCollection().whereEqualTo("userName",name);
+    }
+
     public static Query getAllUser(){
         return UserHelper.getUsersCollection().orderBy("userName");
     }
