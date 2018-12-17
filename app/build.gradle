@@ -43,11 +43,6 @@ tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file("local.properties").newDataInputStream())
-def GOOGLE_MAPS_API_KEY = properties.getProperty("GoogleMapsApiKey")
-
-
 android {
     buildToolsVersion "28.0.3"
     compileSdkVersion 28
@@ -60,11 +55,17 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        // Google Maps Api Key
-        // --> For source
-        buildConfigField ( "String", "google_maps_api", '"'+GOOGLE_MAPS_API_KEY+'"' )
-        // --> For Manifest
-        manifestPlaceholders = [googleMapsApiKey: properties.getProperty("GoogleMapsApiKey")]
+        task noForTrevisC {
+            Properties properties = new Properties()
+            properties.load(project.rootProject.file("local.properties").newDataInputStream())
+            def GOOGLE_MAPS_API_KEY = properties.getProperty("GoogleMapsApiKey")
+
+            // Google Maps Api Key
+            // --> For source
+            buildConfigField("String", "google_maps_api", '"' + GOOGLE_MAPS_API_KEY + '"')
+            // --> For Manifest
+            manifestPlaceholders = [googleMapsApiKey: properties.getProperty("GoogleMapsApiKey")]
+        }
     }
     buildTypes {
 
