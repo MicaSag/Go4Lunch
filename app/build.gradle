@@ -1,5 +1,47 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'                    // For Crashlytics installation
+apply plugin: 'jacoco'                       //continuous integration with travis-ci and jacoco
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+
+    reports {
+        xml.enabled = true
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+
+    def fileFilter = ['**/R.class',
+                      '**/R$*.class',
+                      '**/BuildConfig.*',
+                      '**/Manifest*.*',
+                      '**/*Test*.*',
+                      'android/**/*.*',
+                      '**/data/models/*']
+
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
+
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories = files([mainSrc])
+    classDirectories = files([debugTree])
+    executionData = fileTree(dir: "$buildDir", includes: [
+            "jacoco/testDebugUnitTest.exec",
+            "outputs/code-coverage/connected/*coverage.ec"
+    ])
+
+    // Always regenerate report
+    outputs.upToDateWhen { false }
+}
+
+jacoco {
+    toolVersion = "0.8.1"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+// For Unit Test
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file("local.properties").newDataInputStream())
@@ -29,8 +71,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-
+        // continuous integration with travis-ci and Jacoco
+        debug {
+            testCoverageEnabled true
+        }
     }
+
     compileOptions {
         targetCompatibility 1.8
         sourceCompatibility 1.8
