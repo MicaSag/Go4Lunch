@@ -70,7 +70,7 @@ before_script:
 #Executes instrumentation tests located in src/androidTests/
 script:
   #Instrumentation Tests
-  - ./gradlew connectedCheck 
+  - ./gradlew -x noForTrevisC connectedCheck
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
