@@ -60,7 +60,7 @@ before_install:
 before_script:
   - chmod +x gradlew
   #Unit Tests
-  - ./gradlew build jacocoTestReport assembleAndroidTest
+  - ./gradlew build -x noForTrevisC jacocoTestReport assembleAndroidTest
   #Emulator
   - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a
   - emulator -avd test -no-skin -no-audio -no-window &
@@ -70,7 +70,7 @@ before_script:
 #Executes instrumentation tests located in src/androidTests/
 script:
   #Instrumentation Tests
-  - ./gradlew -x noForTrevisC connectedCheck
+  - ./gradlew connectedCheck
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
