@@ -49,6 +49,7 @@ def GOOGLE_MAPS_API_KEY = properties.getProperty("GoogleMapsApiKey")
 
 
 android {
+    buildToolsVersion "28.0.3"
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.android.sagot.go4lunch"

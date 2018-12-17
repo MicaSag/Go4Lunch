@@ -2,6 +2,7 @@ package com.android.sagot.go4lunch.Utils;
 
 import android.content.Context;
 import android.location.Location;
+import android.net.Uri;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Period;
@@ -14,6 +15,7 @@ import com.android.sagot.go4lunch.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -160,8 +162,13 @@ public class GooglePlaceStreams {
                                         if (result.getPhotos() != null) {
                                             restaurant.setPhotoUrl(Toolbox.formatPlacePhotoUrl(GooglePlaceService.maxWidth,
                                                     result.getPhotos().get(0).getPhotoReference(),GooglePlaceService.key));
-                                        } else
-                                            restaurant.setPhotoUrl("http://www.bsmc.net.au/wp-content/uploads/No-image-available.jpg");
+                                        } else {
+                                            String language = Locale.getDefault().getLanguage();
+                                            //Uri myURI = Uri.parse("android.resource://com.example.project/" + R.drawable.pic_logo_go4lunch_512x512);
+                                            //Log.d(TAG, "streamFetchListRestaurantDetails: Uri.tostring() = "+myURI.toString());
+                                            if (language.equals("en")) restaurant.setPhotoUrl("http://www.bsmc.net.au/wp-content/uploads/No-image-available.jpg");
+                                            else restaurant.setPhotoUrl("https://vignette.wikia.nocookie.net/mco/images/a/aa/Photo_non_disponible.png/revision/latest?cb=20130305181126&path-prefix=fr");
+                                        }
 
                                         // Web Site URL
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Web Site");
