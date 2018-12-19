@@ -50,7 +50,7 @@
     <string name="notification_message_4">"Avec : "</string>
     <string name="notification_message_1">Nous vous rappelons que vous avez décidé de déjeuner</string>
     <string name="list_restaurant_text_1">Fermé</string>
-    <string name="list_restaurant_text_3">Ouvert jusqu\'à  </string>
+    <string name="list_restaurant_text_3">Ouvert jusqu\'à </string>
     <string name="list_restaurant_text_4">" du soir"</string>
     <string name="list_restaurant_text_5">" du matin"</string>
     <string name="notification_message_6">Ouvert 24/24</string>
@@ -60,4 +60,5 @@
     <string name="welcome_activity_download_progress">Recherche des restaurants...</string>
     <string name="welcome_activity_download_finish">Recherche terminée.</string>
     <string name="settings_activity_validation_text_button">Validation</string>
+    <string name="settings_activity_delete_account">SUPPRIMER VOTRE COMPTE</string>
 </resources>

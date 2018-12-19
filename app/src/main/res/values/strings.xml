@@ -21,13 +21,17 @@
     <string name="button_login_text_logged">View Profile</string>
     <string name="button_login_text_not_logged">Connection</string>
 
-    <!-- Welcome ACTIVITY -->
+    <!-- Settings ACTIVITY -->
     <string name="restaurant_not_chosen">No restaurant has been chosen yet</string>
     <string name="settings_activity_validation_text_button">Validation</string>
     <string name="settings_activity_search_radius_text_2">meters</string>
     <string name="settings_activity_search_radius_text_1">"Search Radius ( 1 at 1500 ) : "</string>
+    <string name="settings_activity_delete_account">DELETE ACCOUNT</string>
+
+    <!-- Welcome ACTIVITY -->
     <string name="welcome_activity_download_progress">Searching Restaurants...</string>
     <string name="welcome_activity_download_finish">Search Complete.</string>
+
     <!-- ... Bottom Navigation view -->
     <string name="bottom_navigation_menu_map_view">Map View</string>
     <string name="bottom_navigation_menu_list_view">List View</string>

@@ -6,7 +6,6 @@ import android.location.Location;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  *  ViewModel of the WelcomeActivity
@@ -19,9 +18,7 @@ public class Go4LunchViewModel extends ViewModel {
     // For save the status of the location permission granted
     private boolean mLocationPermissionGranted;
     // For save Restaurants List
-    private Map<String,Restaurant> mListRestaurant = new LinkedHashMap<>();
-
-
+    private LinkedHashMap<String,Restaurant> mMapRestaurant = new LinkedHashMap<>();
 
     //--- GETTER
     public boolean isLocationPermissionGranted() {
@@ -36,15 +33,14 @@ public class Go4LunchViewModel extends ViewModel {
         return mCurrentLocation;
     }
 
-    public Map<String,Restaurant> getListRestaurant() {
-        return mListRestaurant;
+    public LinkedHashMap<String,Restaurant> getMapRestaurant() {
+        return mMapRestaurant;
     }
 
 
-
     //--- SETTER
-    public void setListRestaurant(Map<String,Restaurant> listRestaurant) {
-        mListRestaurant = listRestaurant;
+    public void setMapRestaurant(LinkedHashMap<String,Restaurant> mapRestaurant) {
+        mMapRestaurant = mapRestaurant;
     }
 
     public void setCurrentLocation(Location mCurrentLocation) {

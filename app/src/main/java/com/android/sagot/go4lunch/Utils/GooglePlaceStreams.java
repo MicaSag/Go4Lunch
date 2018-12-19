@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Period;
+import com.android.sagot.go4lunch.Models.GooglePlaceStreams.Common.Photo;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetails;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceDetails.PlaceDetailsResult;
 import com.android.sagot.go4lunch.Models.GooglePlaceStreams.PlaceNearBySearch.PlaceNearBySearch;
@@ -164,11 +165,18 @@ public class GooglePlaceStreams {
                                                     result.getPhotos().get(0).getPhotoReference(),GooglePlaceService.key));
                                         } else {
                                             String language = Locale.getDefault().getLanguage();
-                                            //Uri myURI = Uri.parse("android.resource://com.example.project/" + R.drawable.pic_logo_go4lunch_512x512);
-                                            //Log.d(TAG, "streamFetchListRestaurantDetails: Uri.tostring() = "+myURI.toString());
                                             if (language.equals("en")) restaurant.setPhotoUrl("http://www.bsmc.net.au/wp-content/uploads/No-image-available.jpg");
                                             else restaurant.setPhotoUrl("https://vignette.wikia.nocookie.net/mco/images/a/aa/Photo_non_disponible.png/revision/latest?cb=20130305181126&path-prefix=fr");
                                         }
+
+                                        // Distance
+                                        float[] results = new float[1];
+                                        Location.distanceBetween(   location.getLatitude(),
+                                                                    location.getLongitude(),
+                                                                    Double.parseDouble(restaurant.getLat()) ,
+                                                                    Double.parseDouble(restaurant.getLng()), results);
+                                        int distance = (int)results[0];
+                                        restaurant.setDistance(distance);
 
                                         // Web Site URL
                                         Log.d(TAG, "streamFetchListRestaurantDetails: STEP : Web Site");
@@ -190,6 +198,7 @@ public class GooglePlaceStreams {
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Lng         = " + restaurant.getLng());
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      Distance    = " + restaurant.getDistance());
                                         Log.d(TAG, "streamFetchListRestaurantDetails:      web site    = " + restaurant.getWebSiteUrl());
+                                        Log.d(TAG, "streamFetchListRestaurantDetails:      PhotoUrl    = " + restaurant.getPhotoUrl());
 
                                         return Observable.just(restaurant);
                                     });

@@ -11,6 +11,9 @@ public class Preferences_SettingsActivity {
     // Search Radius ( UI Search Radius EditText )
     private String mSearchRadius;
 
+    // Status of notification ( UI Notification Switch )
+    private String mSortChoice;
+
 
     // GETTER
     public boolean isNotificationStatus() {
@@ -22,13 +25,21 @@ public class Preferences_SettingsActivity {
     }
 
 
+    public String getSortChoice() {
+        return mSortChoice;
+    }
+
     // SETTER
     public void setNotificationStatus(boolean notificationStatus) {
         this.mNotificationStatus = notificationStatus;
     }
 
-
     public void setSearchRadius(String mSearchRadius) {
         this.mSearchRadius = mSearchRadius;
     }
+
+    public void setSortChoice(String mSortChoice) {
+        this.mSortChoice = mSortChoice;
+    }
 }
+

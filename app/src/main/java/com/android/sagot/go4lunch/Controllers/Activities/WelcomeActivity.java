@@ -2,14 +2,10 @@ package com.android.sagot.go4lunch.Controllers.Activities;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,7 +13,6 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -45,8 +40,8 @@ import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
 import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
+import com.android.sagot.go4lunch.Utils.Go4LunchAsyncTask;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
-import com.android.sagot.go4lunch.Utils.ManageRestaurantList;
 import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
@@ -67,12 +62,12 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.maps.android.SphericalUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -100,7 +95,7 @@ import io.reactivex.observers.DisposableObserver;
 
 public class WelcomeActivity extends BaseActivity
         implements  NavigationView.OnNavigationItemSelectedListener,
-                    ManageRestaurantList.Listeners{
+                    Go4LunchAsyncTask.Listeners{
     // For TRACES
     // -----------
     private static final String TAG = WelcomeActivity.class.getSimpleName();
@@ -225,7 +220,7 @@ public class WelcomeActivity extends BaseActivity
                 .getString(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY,null);
 
         Gson gson = new Gson();
-        // If
+        // If preferences not null
         if (mPreferences_SettingsActivity_String != null) {
             Log.d(TAG, "retrievesPreferencesSettings: Restoration");
             mPreferences_SettingsActivity = gson.fromJson(mPreferences_SettingsActivity_String,
@@ -237,6 +232,10 @@ public class WelcomeActivity extends BaseActivity
         // If search Radius not exist, then it will be 500 by default
         if (mPreferences_SettingsActivity.getSearchRadius() == null)
             mPreferences_SettingsActivity.setSearchRadius("500");
+
+        // If sort Choice not exist, then he choice of sort is by default by name
+        if (mPreferences_SettingsActivity.getSortChoice() == null)
+            mPreferences_SettingsActivity.setSortChoice("name");
 
         gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
         mPreferences_SettingsActivity_String = gson.toJson(mPreferences_SettingsActivity);
@@ -342,11 +341,62 @@ public class WelcomeActivity extends BaseActivity
             Log.d(TAG, "onActivityResult: Settings Activity RETURN");
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result OK");
+
+                // retrieve the parameters back
                 mPreferences_SettingsActivity_String
                         = data.getStringExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY);
+                // Restoring the preferences with a Gson Object
+                Gson gson = new Gson();
+                mPreferences_SettingsActivity = gson.fromJson( mPreferences_SettingsActivity_String,
+                        Preferences_SettingsActivity.class);
+
+                // If the current user is not logged in then we close the Welcome activity
+                if (!isCurrentUserLogged()) finish();
+
+                // Manage sort parameters
+                manageSort();
+
+                // Refresh List restaurant Fragment
+                ((ListRestaurantsViewFragment)mListRestaurantsViewFragment).updateUI();
+
             } else {
                 Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result KO");
             }
+        }
+    }
+    private void manageSort(){
+
+        // Retrieves the list of restaurants in the model
+        LinkedHashMap<String, Restaurant> mapRestaurant = getRestaurantMapOfTheModel();
+        // Copy the list of restaurants recovered from the model in an ArrayList
+        // to facilitate the sorting of it
+        ArrayList<Restaurant> arrayRestaurant = new ArrayList<>(mapRestaurant.values());
+
+        // if sort Choice = name
+        if (mPreferences_SettingsActivity.getSortChoice().equals("name")){
+            // Sort arrayRestaurant By name
+            Collections.sort(arrayRestaurant, Restaurant.RestaurantNameComparator);
+        }
+        // if sort Choice = distance
+        if (mPreferences_SettingsActivity.getSortChoice().equals("distance")){
+            // Sort arrayRestaurant By distance
+            Collections.sort(arrayRestaurant, Restaurant.RestaurantDistanceComparator);
+        }
+        // if sort Choice = nbLiked
+        if (mPreferences_SettingsActivity.getSortChoice().equals("nbLikes")){
+            // Sort arrayRestaurant By likes
+            Collections.sort(arrayRestaurant, Restaurant.RestaurantNbrLikesComparator);
+        }
+        // if sort Choice = distance
+        if (mPreferences_SettingsActivity.getSortChoice().equals("nbParticipants")){
+            // Sort arrayRestaurant By participants
+            Collections.sort(arrayRestaurant, Restaurant.RestaurantNbrParticipantsComparator);
+        }
+
+        // Update Map Restaurant
+        mapRestaurant.clear();
+        for (Restaurant restaurant : arrayRestaurant) {
+            mapRestaurant.put(restaurant.getIdentifier(), restaurant);
         }
     }
     // ---------------------------------------------------------------------------------------------
@@ -607,12 +657,7 @@ public class WelcomeActivity extends BaseActivity
 
     // Create OnCompleteListener called after tasks ended
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted() {
-        return new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                finish();
-            }
-        };
+        return aVoid -> finish();
     }
     // ------------------------------
     //   FOR GOOGLE PLACES REQUEST
@@ -631,18 +676,8 @@ public class WelcomeActivity extends BaseActivity
                     public void onNext(List<Restaurant> listRestaurant) {
                         Log.d(TAG, "getListRestaurantsDetails : onNext: ");
 
-                        // Load Restaurant List in ViewModel
-                        Map<String, Restaurant> restos = new LinkedHashMap<>();
-                        for (Restaurant restaurant : listRestaurant) {
-                            Log.d(TAG, "onNext: Distance = " + restaurant.getDistance());
-                            restos.put(restaurant.getIdentifier(), restaurant);
-                        }
-                        saveRestaurantMapInModel(restos);
-                        Log.d(TAG, "onNext: getRestaurantMapOfTheModel().size()  = "
-                                + getRestaurantMapOfTheModel().size());
-
                         // Manage restaurant List
-                        startManageRestaurantList();
+                        startManageRestaurantList(listRestaurant);
                     }
 
                     @Override
@@ -655,11 +690,9 @@ public class WelcomeActivity extends BaseActivity
                     @Override
                     public void onComplete() {
                         Log.d(TAG, "getListRestaurantsDetails : On Complete !!");
-
                     }
                 });
     }
-
     // Generate a toast Message if error during Downloading
     protected void updateUIWhenErrorHTTPRequest() {
         Log.d(TAG, "updateUIWhenErrorHTTPRequest: ");
@@ -669,11 +702,21 @@ public class WelcomeActivity extends BaseActivity
     // ---------------------------------------------------------------------------------------------
     //                         ASYNC TASK : MANAGE RESTAURANT LIST
     // ---------------------------------------------------------------------------------------------
-    // 3 - We create and start our AsyncTask
-    private void startManageRestaurantList() {
-        Log.d(TAG, "startAsyncTask: ");
+    // We create and start our AsyncTask
+    private void startManageRestaurantList(List<Restaurant> listRestaurant) {
+        Log.d(TAG, "startManageRestaurantList: ");
 
-        new ManageRestaurantList(this).execute();
+        // Save Restaurant List in the Model
+        Map<String, Restaurant> mapRestaurant = getRestaurantMapOfTheModel();
+        for (Restaurant restaurant : listRestaurant) {
+            mapRestaurant.put(restaurant.getIdentifier(), restaurant);
+        }
+
+        // We do the following actions in an AsyncTask
+        // a _ Insert restaurant in FireBase if it does not exist yet
+        // b _ Listen to each restaurant in the list thanks to an Async Task
+        // c _ Sort Restaurant List by Name
+        new Go4LunchAsyncTask(this).execute();
     }
 
     // Override methods of callback
@@ -685,8 +728,8 @@ public class WelcomeActivity extends BaseActivity
     public void doInBackground() {
         Log.d(TAG, "doInBackground: ");
 
-        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
-        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        Set<Map.Entry<String, Restaurant>> setMapRestaurant = getRestaurantMapOfTheModel().entrySet();
+        Iterator<Map.Entry<String, Restaurant>> it = setMapRestaurant.iterator();
 
         while (it.hasNext()) {
             Map.Entry<String, Restaurant> restaurant = it.next();
@@ -701,31 +744,35 @@ public class WelcomeActivity extends BaseActivity
 
                 Restaurant fireBaseRestaurant = documentSnapshot.toObject(Restaurant.class);
 
+                // If the restaurant is not yet in FireBase then we add it
                 if (fireBaseRestaurant == null) {
                     Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
-                    Task<Void> restaurantTask = RestaurantHelper.createRestaurant(restaurant.getValue());
 
+                    Task<Void> restaurantTask = RestaurantHelper.createRestaurant(restaurant.getValue());
                     Tasks.await(restaurantTask);
                 }
 
-                // Listening the restaurant
+                // We listen to the restaurant
                 listenCurrentRestaurant(restaurant.getValue());
 
             } catch (ExecutionException e) {
                 Log.d(TAG, "putRestaurantInFireBase:ExecutionException = " + e);
             } catch (InterruptedException e) {
                 Log.d(TAG, "putRestaurantInFireBase:InterruptedException = " + e);
-            //} catch (TimeoutException e) {
-            //    Log.d(TAG, "putRestaurantInFireBase:TimeoutException = " + e);
+                //} catch (TimeoutException e) {
+                //    Log.d(TAG, "putRestaurantInFireBase:TimeoutException = " + e);
             }
         }
+
+        // Sort restaurant List
+        manageSort();
     }
     @Override
     public void onPostExecute(Long taskEnd) {
         Log.d(TAG, "onPostExecute: ");
         // stopping ProgressBar
         this.stopProgressBar();
-        //  We update our UI before task (stopping ProgressBar)
+        // We update our UI before task (stopping ProgressBar)
         // We have recovered all the data necessary for the display
         // We can display and make the interface available
         configureBottomView();
@@ -742,18 +789,16 @@ public class WelcomeActivity extends BaseActivity
             RestaurantHelper
                     .getRestaurantsCollection()
                     .document(restaurant.getIdentifier())
-                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable DocumentSnapshot document, @Nullable FirebaseFirestoreException e) {
-                            if (e != null) {
-                                Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                                return;
-                            }
-                            if (document != null) {
-                                Restaurant rest = document.toObject(Restaurant.class);
-                                Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = " + rest.getIdentifier());
-                                WelcomeActivity.this.getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
-                            }
+                    .addSnapshotListener((document, e) -> {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        if (document != null) {
+                            Restaurant rest = document.toObject(Restaurant.class);
+                            Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = " + rest.getIdentifier());
+                            // Update restaurant in the restaurant List LinkedHashMap
+                            getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
                         }
                     });
     }

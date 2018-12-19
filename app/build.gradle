@@ -129,7 +129,7 @@ dependencies {
 
     //TWITTER LOGIN SUPPORT
     // Add the Twitter Core Kit//
-    implementation 'com.facebook.android:facebook-android-sdk:4.x'
+    implementation 'com.facebook.android:facebook-android-sdk:4.38.1'
 
     // Required only if Twitter login support is required
     // Find the latest Twitter SDK releases here: https://goo.gl/E5wZvQ

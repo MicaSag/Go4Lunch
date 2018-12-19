@@ -18,12 +18,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.Toolbox;
+import com.android.sagot.go4lunch.api.UserHelper;
 import com.android.sagot.go4lunch.notifications.NotificationsAlarmReceiver;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,6 +57,10 @@ public class SettingsActivity extends BaseActivity {
     @BindView(R.id.activity_settings_notification) Switch mNotificationSwitch;
     @BindView(R.id.activity_settings_radius_search) EditText mRadiusSearchEditText;
     @BindView(R.id.activity_settings_button) Button mButton;
+    @BindView(R.id.activity_settings_radio_button_sort_by_name) RadioButton mNameRadioButton;
+    @BindView(R.id.activity_settings_radio_button_sort_by_distance) RadioButton mDistanceRadioButton;
+    @BindView(R.id.activity_settings_radio_button_sort_by_nbr_likes) RadioButton mNbLikesRadioButton;
+    @BindView(R.id.activity_settings_radio_button_sort_by_nbr_participants) RadioButton mNbParticipantsRadioButton;
 
     // Identify each Http Request
     private static final int SIGN_OUT_TASK = 10;
@@ -126,11 +133,15 @@ public class SettingsActivity extends BaseActivity {
                                                         Preferences_SettingsActivity.class);
         Log.d(TAG, "retrieveSharedPreferences: searchRadius = "+mPreferences_SettingsActivity.getSearchRadius());
         Log.d(TAG, "retrieveSharedPreferences: notification = "+mPreferences_SettingsActivity.isNotificationStatus());
+        Log.d(TAG, "retrieveSharedPreferences: sortChoice   = "+mPreferences_SettingsActivity.getSortChoice());
         // Retrieve Notification Status
         getAndCheckNotificationStatus();
 
         // Retrieve Radius search
         getAndCheckRadiusSearch();
+
+        // Retrieve SortChoice
+        getAndCheckSortChoice();
     }
     // Retrieve the notification status of the SharedPreferences
     // And check it in UI
@@ -152,6 +163,21 @@ public class SettingsActivity extends BaseActivity {
         String radiusSearch = mPreferences_SettingsActivity.getSearchRadius();
         // Check it in UI
         mRadiusSearchEditText.setText(radiusSearch);
+    }
+    // Retrieve the Sort Choice of the SharedPreferences
+    // And check it in UI
+    private void getAndCheckSortChoice(){
+        Log.d(TAG, "getAndCheckSortChoice: ");
+
+        // Retrieve Radius Search
+        String sortChoice = mPreferences_SettingsActivity.getSortChoice();
+        // Check it in UI
+        switch (sortChoice){
+            case "name"             : mNameRadioButton.setChecked(true);break;
+            case "distance"         : mDistanceRadioButton.setChecked(true);break;
+            case "nbLikes"          : mNbLikesRadioButton.setChecked(true);break;
+            case "nbParticipants"   : mNbParticipantsRadioButton.setChecked(true);break;
+        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                     TOOLBAR
@@ -217,6 +243,37 @@ public class SettingsActivity extends BaseActivity {
         finish();
         return false;
     }
+    // --------------------------
+    // ACTION Sort Radio Buttons
+    // --------------------------
+    @OnCheckedChanged({ R.id.activity_settings_radio_button_sort_by_name,
+                        R.id.activity_settings_radio_button_sort_by_distance,
+                        R.id.activity_settings_radio_button_sort_by_nbr_likes,
+                        R.id.activity_settings_radio_button_sort_by_nbr_participants})
+    public void onRadioButtonSortCheckChanged(CompoundButton button, boolean checked) {
+        Log.d(TAG, "onRadioButtonSortCheckChanged: ");
+
+        Log.d(TAG, "onRadioButtonSortCheckChanged: button  = "+button.getId());
+        Log.d(TAG, "onRadioButtonSortCheckChanged: checked = "+checked);
+        switch (button.getId()){
+            case R.id.activity_settings_radio_button_sort_by_name:
+                Log.d(TAG, "onRadioButtonSortCheckChanged: NAME");
+                if (checked) mPreferences_SettingsActivity.setSortChoice("name");
+                    break;
+            case R.id.activity_settings_radio_button_sort_by_distance:
+                Log.d(TAG, "onRadioButtonSortCheckChanged: DISTANCE");
+                if (checked) mPreferences_SettingsActivity.setSortChoice("distance");
+                    break;
+            case R.id.activity_settings_radio_button_sort_by_nbr_likes:
+                Log.d(TAG, "onRadioButtonSortCheckChanged: LIKES");
+                if (checked) mPreferences_SettingsActivity.setSortChoice("nbLikes");
+                    break;
+            case R.id.activity_settings_radio_button_sort_by_nbr_participants:
+                Log.d(TAG, "onRadioButtonSortCheckChanged: PARTICIPANTS");
+                if (checked) mPreferences_SettingsActivity.setSortChoice("nbParticipants");
+                    break;
+        }
+    }
     // -----------------------------
     // ACTION Delete Account Button
     // -----------------------------
@@ -229,15 +286,13 @@ public class SettingsActivity extends BaseActivity {
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
     // Create http requests (SignOut & Delete)
-
-    private void signOutUserFromFirebase(){
-        AuthUI.getInstance()
-                .signOut(this)
-                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(SIGN_OUT_TASK));
-    }
-
     private void deleteUserFromFirebase(){
         if (this.getCurrentUser() != null) {
+
+            // Delete User in FireBase Database
+            UserHelper.deleteUser(getCurrentUser().getUid());
+
+            // Delete User in Authentication
             AuthUI.getInstance()
                     .delete(this)
                     .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(DELETE_USER_TASK));
@@ -248,16 +303,7 @@ public class SettingsActivity extends BaseActivity {
         return new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                switch (origin){
-                    case SIGN_OUT_TASK:
                         finish();
-                        break;
-                    case DELETE_USER_TASK:
-                        finish();
-                        break;
-                    default:
-                        break;
-                }
             }
         };
     }

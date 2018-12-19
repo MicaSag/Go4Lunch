@@ -2,15 +2,17 @@ package com.android.sagot.go4lunch.Models.firestore;
 
 import android.support.annotation.Nullable;
 
+import java.util.Comparator;
+
 public class Restaurant {
 
     private String mIdentifier;             // Restaurant Identifier
     private String mName;                   // Name of the Restaurant
     @Nullable private String mAddress;      // Address of Restaurant
     @Nullable private String mOpeningTime;  // Opening time of Restaurant
-    @Nullable private String mDistance;     // Distance where the restaurant is from the current position
-    @Nullable private long mNbrParticipants;// Number of participants
-    @Nullable private long mNbrLikes;       // Number of likes that the restaurant got
+    @Nullable private int mDistance;        // Distance where the restaurant is from the current position
+    @Nullable private int mNbrParticipants; // Number of participants
+    @Nullable private int mNbrLikes;        // Number of likes that the restaurant got
     @Nullable private String mPhotoUrl;     // URL of the Restaurant photo
     @Nullable private String mWebSiteUrl;   // URL of the Web site
     @Nullable private String mType;         // Type of the Restaurant
@@ -23,7 +25,7 @@ public class Restaurant {
 
     //
     public Restaurant(String identifier, String name, @Nullable String address, @Nullable String openingTime,
-                      @Nullable String distance, @Nullable long nbrParticipants, @Nullable long nbrLikes,
+                      @Nullable int distance, @Nullable int nbrParticipants, @Nullable int nbrLikes,
                       @Nullable String photoUrl, @Nullable String webSiteUrl, @Nullable String type,
                       @Nullable String lat, @Nullable String lng, @Nullable String phone) {
         mIdentifier = identifier;
@@ -62,17 +64,17 @@ public class Restaurant {
     }
 
     @Nullable
-    public String getDistance() {
+    public int getDistance() {
         return mDistance;
     }
 
     @Nullable
-    public long getNbrParticipants() {
+    public int getNbrParticipants() {
         return mNbrParticipants;
     }
 
     @Nullable
-    public long getNbrLikes() {
+    public int getNbrLikes() {
         return mNbrLikes;
     }
 
@@ -124,15 +126,13 @@ public class Restaurant {
         mOpeningTime = openingTime;
     }
 
-    public void setDistance(@Nullable String distance) {
+    public void setDistance(@Nullable int distance) {
         mDistance = distance;
     }
 
-    public void setNbrParticipants(@Nullable long nbrParticipants) {
-        mNbrParticipants = nbrParticipants;
-    }
+    public void setNbrParticipants(@Nullable int nbrParticipants) {mNbrParticipants = nbrParticipants; }
 
-    public void setNbrLikes(@Nullable long nbrLikes) {
+    public void setNbrLikes(@Nullable int nbrLikes) {
         mNbrLikes = nbrLikes;
     }
 
@@ -159,4 +159,60 @@ public class Restaurant {
     public void setPhone(@Nullable String phone) {
         mPhone = phone;
     }
+
+    /*Comparator for sorting the list by Restaurant Name*/
+    public static Comparator<Restaurant> RestaurantNameComparator = new Comparator<Restaurant>() {
+
+        public int compare(Restaurant r1, Restaurant r2) {
+            String RestaurantName1 = r1.getName().toUpperCase();
+            String RestaurantName2 = r2.getName().toUpperCase();
+
+            //ascending order
+            return RestaurantName1.compareTo(RestaurantName2);
+
+            //descending order
+            //return RestaurantName2.compareTo(RestaurantName1);
+        }};
+
+    /*Comparator for sorting the list by Restaurant distance*/
+    public static Comparator<Restaurant> RestaurantDistanceComparator = new Comparator<Restaurant>() {
+
+        public int compare(Restaurant r1, Restaurant r2) {
+            Integer RestaurantDistance1 = r1.getDistance();
+            Integer RestaurantDistance2 = r2.getDistance();
+
+            //ascending order
+            return RestaurantDistance1.compareTo(RestaurantDistance2);
+
+            //descending order
+            //return RestaurantName2.compareTo(RestaurantName1);
+        }};
+
+    /*Comparator for sorting the list by Restaurant NbrLikes*/
+    public static Comparator<Restaurant> RestaurantNbrLikesComparator = new Comparator<Restaurant>() {
+
+        public int compare(Restaurant r1, Restaurant r2) {
+            Integer RestaurantNbrLikes1 = r1.getNbrLikes();
+            Integer RestaurantNbrLikes2 = r2.getNbrLikes();
+
+            //ascending order
+            //return RestaurantNbrLikes1.compareTo(RestaurantNbrLikes2);
+
+            //descending order
+            return RestaurantNbrLikes2.compareTo(RestaurantNbrLikes1);
+        }};
+
+    /*Comparator for sorting the list by Restaurant NbrParticipants*/
+    public static Comparator<Restaurant> RestaurantNbrParticipantsComparator = new Comparator<Restaurant>() {
+
+        public int compare(Restaurant r1, Restaurant r2) {
+            Integer RestaurantNbrParticipants1 = r1.getNbrParticipants();
+            Integer RestaurantNbrParticipants2 = r2.getNbrParticipants();
+
+            //ascending order
+            //return RestaurantNbrParticipants1.compareTo(RestaurantNbrParticipants2);
+
+            //descending order
+            return RestaurantNbrParticipants2.compareTo(RestaurantNbrParticipants1);
+        }};
 }

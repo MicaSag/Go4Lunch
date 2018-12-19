@@ -36,6 +36,6 @@ public abstract class BaseFragment extends Fragment {
 
         Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
 
-        return model.getListRestaurant();
+        return model.getMapRestaurant();
     }
 }
