@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import butterknife.ButterKnife;
@@ -59,20 +60,20 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     // Save current restaurant list in Model
-    public void saveRestaurantMapInModel(Map<String,Restaurant> listRestaurant){
+    public void saveRestaurantMapInModel(LinkedHashMap<String,Restaurant> listRestaurant){
         Log.d(TAG, "saveRestaurantMapInModel: ");
 
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-        model.setListRestaurant(listRestaurant);
+        model.setMapRestaurant(listRestaurant);
     }
 
     // Get current restaurant list of the Model
-    public Map<String,Restaurant> getRestaurantMapOfTheModel(){
+    public LinkedHashMap<String,Restaurant> getRestaurantMapOfTheModel(){
         Log.d(TAG, "getRestaurantMapOfTheModel: ");
 
         Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
 
-        return model.getListRestaurant();
+        return model.getMapRestaurant();
     }
 
     // ---------------------------------------------------------------------------------------------
