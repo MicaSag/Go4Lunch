@@ -1,7 +1,5 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
-import android.arch.lifecycle.ViewModelProviders;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,8 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
+import com.android.sagot.go4lunch.Controllers.Activities.WelcomeActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
-import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
@@ -20,11 +19,9 @@ import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.bumptech.glide.Glide;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,7 +79,7 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         listenCurrentListRestaurant();
 
         // Configure RecyclerView
-        this.configureRecyclerView();
+        this.configureRecyclerView(getFilteredMapAdapterRestaurantOfTheModel());
 
         // Calling the method that configuring click on RecyclerView
         this.configureOnClickRecyclerView();
@@ -95,26 +92,43 @@ public class ListRestaurantsViewFragment extends BaseFragment {
     public void listenCurrentListRestaurant() {
         Log.d(TAG, "listenCurrentListRestaurant: ");
 
-        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
-        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        Set<Map.Entry<String, AdapterRestaurant>> setListAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
+        Iterator<Map.Entry<String, AdapterRestaurant>> it = setListAdapterRestaurant.iterator();
         while(it.hasNext()){
-            Map.Entry<String, Restaurant> restaurant = it.next();
+            Map.Entry<String, AdapterRestaurant> adapterRestaurant = it.next();
             RestaurantHelper
                     .getRestaurantsCollection()
-                    .document(restaurant.getValue().getIdentifier())
+                    .document(adapterRestaurant.getValue().getRestaurant().getIdentifier())
                     .addSnapshotListener((document, e) -> {
                         if (e != null) {
                             Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
                             return;
                         }
-                        Restaurant rest = document.toObject(Restaurant.class);
-                        Log.d(TAG, "onEvent: Id restaurant = " + rest.getIdentifier());
-                        //ou Log.d(TAG, "onEvent: Id restaurant = "+document.get("identifier"));
+                        if (document != null) {
+                            Restaurant restaurant = document.toObject(Restaurant.class);
 
-                        getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
+                            AdapterRestaurant adRestaurant
+                                    = new AdapterRestaurant(restaurant,
+                                                            getCompleteMapAdapterRestaurantOfTheModel()
+                                            .get(restaurant.getIdentifier()).getMarker());
+                            Log.d(TAG, "onEvent: Id restaurant = "
+                                    + adRestaurant.getRestaurant().getIdentifier());
+                            Log.d(TAG, "onEvent: Name restaurant = "
+                                    + adRestaurant.getRestaurant().getName());
 
-                        // Update Recycler View
-                        mAdapter.notifyDataSetChanged();
+                            // Update CompleteMapAdapterRestaurantOfTheModel
+                            getCompleteMapAdapterRestaurantOfTheModel()
+                                    .put(adRestaurant.getRestaurant().getIdentifier(),
+                                            adRestaurant);
+
+                            // FOR ListRestaurants Recycler View
+                            getFilteredMapAdapterRestaurantOfTheModel()
+                                    .put(adRestaurant.getRestaurant().getIdentifier(),
+                                            adRestaurant);
+                            // Update ListRestaurantsViewAdapter
+                            if (mAdapter != null)
+                            mAdapter.notifyDataSetChanged();
+                        }
                     });
         }
     }
@@ -122,13 +136,12 @@ public class ListRestaurantsViewFragment extends BaseFragment {
     //                                    CONFIGURATION
     // ---------------------------------------------------------------------------------------------
     // Configure RecyclerView, Adapter, LayoutManager & glue it together
-    private void configureRecyclerView(){
+    private void configureRecyclerView(LinkedHashMap<String,AdapterRestaurant> mapAdapterRestaurant){
         Log.d(TAG, "configureRecyclerView: ");
 
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
-        Location currentLocation = model.getCurrentLocation();
-        this.mAdapter = new ListRestaurantsViewAdapter(currentLocation, getRestaurantMapOfTheModel()
-                , Glide.with(this));
+        this.mAdapter = new ListRestaurantsViewAdapter( getCurrentLocationOfTheModel(),
+                                                        mapAdapterRestaurant,
+                                                        Glide.with(this));
 
         // Attach the adapter to the recycler view to populate items
         this.mRecyclerView.setAdapter(this.mAdapter);

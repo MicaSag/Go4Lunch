@@ -85,4 +85,7 @@
     <string name="workmates_list_text_2"> hasn\'t decided yet</string>
     <string name="workmates_list_text_3"> is joining</string>
 
+    <!-- AutoComplete Search a Restaurant -->
+    <string name="autocomplete_hint_search_a_restaurant">Search a Restaurant</string>
+
 </resources>

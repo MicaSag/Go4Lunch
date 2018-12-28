@@ -3,8 +3,6 @@ package com.android.sagot.go4lunch.Models;
 import android.arch.lifecycle.ViewModel;
 import android.location.Location;
 
-import com.android.sagot.go4lunch.Models.firestore.Restaurant;
-
 import java.util.LinkedHashMap;
 
 /**
@@ -17,8 +15,12 @@ public class Go4LunchViewModel extends ViewModel {
     private Location mCurrentLocation;
     // For save the status of the location permission granted
     private boolean mLocationPermissionGranted;
-    // For save Restaurants List
-    private LinkedHashMap<String,Restaurant> mMapRestaurant = new LinkedHashMap<>();
+    // For save the list of restaurants found
+    private LinkedHashMap<String,AdapterRestaurant> mCompleteMapAdapterRestaurant = new LinkedHashMap<>();
+
+    // For save the list of restaurants found
+    // and allow its management in the application ( sorting, filter )
+    private LinkedHashMap<String,AdapterRestaurant> mFilteredMapAdapterRestaurant = new LinkedHashMap<>();
 
     //--- GETTER
     public boolean isLocationPermissionGranted() {
@@ -33,17 +35,24 @@ public class Go4LunchViewModel extends ViewModel {
         return mCurrentLocation;
     }
 
-    public LinkedHashMap<String,Restaurant> getMapRestaurant() {
-        return mMapRestaurant;
+    public LinkedHashMap<String,AdapterRestaurant> getCompleteMapAdapterRestaurant() {
+        return mCompleteMapAdapterRestaurant;
     }
 
+    public LinkedHashMap<String, AdapterRestaurant> getFilteredMapAdapterRestaurant() {
+        return mFilteredMapAdapterRestaurant;
+    }
 
     //--- SETTER
-    public void setMapRestaurant(LinkedHashMap<String,Restaurant> mapRestaurant) {
-        mMapRestaurant = mapRestaurant;
-    }
-
     public void setCurrentLocation(Location mCurrentLocation) {
         this.mCurrentLocation = mCurrentLocation;
+    }
+
+    public void setCompleteMapAdapterRestaurant(LinkedHashMap<String, AdapterRestaurant> mCompleteMapAdapterRestaurant) {
+        this.mCompleteMapAdapterRestaurant = mCompleteMapAdapterRestaurant;
+    }
+
+    public void setFilteredMapAdapterRestaurant(LinkedHashMap<String, AdapterRestaurant> mFilteredMapAdapterRestaurant) {
+        this.mFilteredMapAdapterRestaurant = mFilteredMapAdapterRestaurant;
     }
 }

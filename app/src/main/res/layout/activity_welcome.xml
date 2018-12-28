@@ -24,8 +24,14 @@
             android:orientation="vertical"
             android:id="@+id/activity_welcome_root_linear_layout">
 
-            <!-- Toolbar Importation -->
-            <include layout="@layout/toolbar"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <!-- Toolbar Importation -->
+                <include layout="@layout/toolbar"/>
+                <!-- AutoComplete layout -->
+                <include layout="@layout/autocomplete_restaurant_search" />
+            </RelativeLayout>
 
                 <!-- Body layout -->
                 <RelativeLayout

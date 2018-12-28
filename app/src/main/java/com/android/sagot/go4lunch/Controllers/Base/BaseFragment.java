@@ -1,21 +1,14 @@
 package com.android.sagot.go4lunch.Controllers.Base;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
-import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
-import com.android.sagot.go4lunch.Models.firestore.Restaurant;
-import com.android.sagot.go4lunch.R;
-import com.google.android.gms.tasks.OnFailureListener;
 
-import java.util.Map;
-
-import static com.android.sagot.go4lunch.Utils.Toolbox.isNetworkAvailable;
+import java.util.LinkedHashMap;
 
 
 public abstract class BaseFragment extends Fragment {
@@ -28,14 +21,47 @@ public abstract class BaseFragment extends Fragment {
 
 
     // ---------------------------------------------------------------------------------------------
-    //                                        VIEW MODEL ACCESS
+    //                                     VIEW MODEL ACCESS
     // ---------------------------------------------------------------------------------------------
-    // Get current restaurant list of the Model
-    public Map<String,Restaurant> getRestaurantMapOfTheModel(){
-        Log.d(TAG, "getRestaurantMapOfTheModel: ");
+    // Get Model
+    public Go4LunchViewModel getModel(){
+        Log.d(TAG, "getModel: ");
 
-        Go4LunchViewModel model = ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+        return ViewModelProviders.of(getActivity()).get(Go4LunchViewModel.class);
+    }
 
-        return model.getMapRestaurant();
+    // Get the current Complete restaurant list of the model
+    public LinkedHashMap<String,AdapterRestaurant> getCompleteMapAdapterRestaurantOfTheModel(){
+        Log.d(TAG, "getCompleteMapAdapterRestaurantOfTheModel: ");
+
+        return getModel().getCompleteMapAdapterRestaurant();
+    }
+
+    // Set the current Complete restaurant list of the model
+    public void setCompleteMapAdapterRestaurantInModel(LinkedHashMap<String,AdapterRestaurant> completeMapAdapterRestaurant){
+        Log.d(TAG, "setCompleteMapAdapterRestaurantInModel: ");
+
+        getModel().setCompleteMapAdapterRestaurant(completeMapAdapterRestaurant);
+    }
+
+    // Get the current filtered restaurant list of the model
+    public LinkedHashMap<String,AdapterRestaurant> getFilteredMapAdapterRestaurantOfTheModel(){
+        Log.d(TAG, "getFilteredMapAdapterRestaurantOfTheModel: ");
+
+        return getModel().getFilteredMapAdapterRestaurant();
+    }
+
+    // Set the current filtered restaurant list of the model
+    public void setFilteredMapAdapterRestaurantInModel(LinkedHashMap<String,AdapterRestaurant> filteredMapAdapterRestaurant){
+        Log.d(TAG, "setFilteredMapAdapterRestaurantInModel: ");
+
+        getModel().setFilteredMapAdapterRestaurant(filteredMapAdapterRestaurant);
+    }
+
+    // Get Current Location of the Model
+    public Location getCurrentLocationOfTheModel(){
+        Log.d(TAG, "getCurrentLocationOfTheModel: ");
+
+        return getModel().getCurrentLocation();
     }
 }

@@ -1,7 +1,6 @@
 package com.android.sagot.go4lunch.Controllers.Fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +10,7 @@ import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.R;
@@ -21,13 +21,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -62,10 +58,10 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
     private GoogleMap mMap;
 
     // ==> For update UI Location
-    private static final float DEFAULT_ZOOM = 16f;
+    private static final float DEFAULT_ZOOM = 13f;
 
     // Restaurants List
-    Map<String,Restaurant> mListRestaurants;
+    Map<String,AdapterRestaurant> mListAdapterRestaurants;
 
     //==> For use Api Google Play Service : Location
     // _ The geographical location where the device is currently located.
@@ -113,7 +109,7 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         View rootView = inflater.inflate(R.layout.fragment_map_view, container, false);
 
         // Load Restaurant List of the ViewModel
-        mListRestaurants = getRestaurantMapOfTheModel();
+        mListAdapterRestaurants = getCompleteMapAdapterRestaurantOfTheModel();
 
         // Configure the Maps Service of Google
         configurePlayServiceMaps();
@@ -152,7 +148,7 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
         showCurrentLocation();
 
         // Display Restaurants Markers and activate Listen on the participants number
-        DisplayAndListensMarkers();
+        displayAndListensMarkers();
     }
     // ---------------------------------------------------------------------------------------------
     //                                       ACTIONS
@@ -188,29 +184,37 @@ public class MapViewFragment extends BaseFragment implements OnMapReadyCallback,
      * Creating restaurant markers on the map and activating for each of them
      * a listener to change the number of participants in order to change their color in real time
      */
-    protected void DisplayAndListensMarkers() {
+    public void displayAndListensMarkers() {
         Log.d(TAG, "fireStoreListener: ");
+        mMap.clear();
 
-        Set<Map.Entry<String, Restaurant>> setListRestaurant = getRestaurantMapOfTheModel().entrySet();
-        Iterator<Map.Entry<String, Restaurant>> it = setListRestaurant.iterator();
+        Log.d(TAG, "displayAndListensMarkers: mapAdapterRestaurant.size() = "+getCompleteMapAdapterRestaurantOfTheModel().size());
+        Set<Map.Entry<String, AdapterRestaurant>> setListAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
+        Iterator<Map.Entry<String, AdapterRestaurant>> it = setListAdapterRestaurant.iterator();
         while(it.hasNext()){
-            Map.Entry<String, Restaurant> restaurant = it.next();
+            Map.Entry<String, AdapterRestaurant> adapterRestaurant = it.next();
 
-            Log.d(TAG, "fireStoreListener: identifier Restaurant = "+restaurant.getValue().getIdentifier());
+            Log.d(TAG, "fireStoreListener: identifier adapterRestaurant = "
+                    +adapterRestaurant.getValue().getRestaurant().getIdentifier());
 
             // Declare a Marker for current Restaurant
             Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(restaurant.getValue().getLat()),
-                                    Double.parseDouble(restaurant.getValue().getLng())
+                    .position(new LatLng(Double.parseDouble(adapterRestaurant.getValue().getRestaurant().getLat()),
+                                    Double.parseDouble(adapterRestaurant.getValue().getRestaurant().getLng())
                             )
                     )
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_restaurant_marker_orange))
-                    .title(restaurant.getValue().getName())
+                    .title(adapterRestaurant.getValue().getRestaurant().getName())
             );
-            marker.setTag(restaurant.getValue().getIdentifier());
+            marker.setTag(adapterRestaurant.getValue().getRestaurant().getIdentifier());
 
-            listenNbrParticipantsForUpdateMarkers(restaurant.getValue(),marker);
-       }
+            // Save Marker reference in MapAdapterRestaurant in the Model
+            //getMapAdapterRestaurantOfTheModel().get(adapterRestaurant.getKey()).setMarker(marker);
+            adapterRestaurant.getValue().setMarker(marker);
+
+            // Listen Nbr Participants
+            listenNbrParticipantsForUpdateMarkers(adapterRestaurant.getValue().getRestaurant(),marker);
+        }
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(mLastKnownLocation.getLatitude(),

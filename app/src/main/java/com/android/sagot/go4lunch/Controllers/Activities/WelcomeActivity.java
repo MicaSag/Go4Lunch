@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,9 +26,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,7 @@ import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListRestaurantsViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.ListWorkmatesViewFragment;
 import com.android.sagot.go4lunch.Controllers.Fragments.MapViewFragment;
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.Models.Go4LunchViewModel;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
 import com.android.sagot.go4lunch.Models.firestore.User;
@@ -43,28 +47,21 @@ import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.Go4LunchAsyncTask;
 import com.android.sagot.go4lunch.Utils.GooglePlaceStreams;
 import com.android.sagot.go4lunch.Utils.Toolbox;
+import com.android.sagot.go4lunch.Views.AutoCompleteSearchAdapter;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.android.sagot.go4lunch.api.UserHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +107,8 @@ public class WelcomeActivity extends BaseActivity
     @BindView(R.id.activity_welcome_nav_view) NavigationView mNavigationView;
     @BindView(R.id.activity_welcome_progress_bar) ProgressBar mProgressBar;
     @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.autocomplete_layout) RelativeLayout mAutocompleteLayout;
+    @BindView(R.id.autocomplete_restaurant_search) AutoCompleteTextView mAutocompleteSearch;
 
     // For Defined SharedPreferences of the application
     // -------------------------------------------------
@@ -153,7 +152,9 @@ public class WelcomeActivity extends BaseActivity
     protected Disposable mDisposable;
 
     // For use Place AutoComplete
-    private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 2;
+    AutoCompleteSearchAdapter mRestaurantAdapter;
+    //Auto Complete Restaurants List
+    ArrayList<AdapterRestaurant> mAutoCompleteRestaurantList;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -161,23 +162,20 @@ public class WelcomeActivity extends BaseActivity
     // BASE METHOD Implementation
     // Get the activity layout
     // CALLED BY BASE METHOD 'onCreate(...)'
-    @Override
-    protected int getActivityLayout() {
+    @Override protected int getActivityLayout() {
         return R.layout.activity_welcome;
     }
 
     // BASE METHOD Implementation
     // Get the coordinator layout
     // CALLED BY BASE METHOD
-    @Override
-    protected View getCoordinatorLayout() {
+    @Override protected View getCoordinatorLayout() {
         return mCoordinatorLayout;
     }
     // ---------------------------------------------------------------------------------------------
     //                                      ENTRY POINT
     // ---------------------------------------------------------------------------------------------
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: ");
 
@@ -189,12 +187,6 @@ public class WelcomeActivity extends BaseActivity
 
         // Get Location permission
         getLocationPermission();
-
-        // NAVIGATION DRAWER
-        // Configure all views of the Navigation Drawer
-        this.configureToolBar();
-        this.configureDrawerLayout();
-        this.configureNavigationView();
     }
     // ---------------------------------------------------------------------------------------------
     //                                   SHARED PREFERENCES
@@ -206,7 +198,7 @@ public class WelcomeActivity extends BaseActivity
         mSharedPreferences = getPreferences(MODE_PRIVATE);
 
         // TEST == >>> Allows to erase all the preferences ( Useful for the test phase )
-        //Log.i("MOOD","CLEAR COMMIT PREFERENCES");
+        //Log.i(TAG,"CLEAR COMMIT PREFERENCES");
         //mSharedPreferences.edit().clear().commit();
 
         // Retrieve Settings Activity Preferences
@@ -241,8 +233,7 @@ public class WelcomeActivity extends BaseActivity
         mPreferences_SettingsActivity_String = gson.toJson(mPreferences_SettingsActivity);
     }
     // >> SHARED PREFERENCES SAVE <-------
-    @Override
-    protected void onPause() {
+    @Override protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause: ");
 
@@ -262,8 +253,7 @@ public class WelcomeActivity extends BaseActivity
         setSupportActionBar(mToolbar);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(TAG, "onCreateOptionsMenu: ");
         //Inflate the toolbar  and add it to the Toolbar
         // With one search button
@@ -271,71 +261,57 @@ public class WelcomeActivity extends BaseActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
             case R.id.toolbar_menu_search:
-                callPlaceAutoComplete();
+
+                Log.d(TAG, "onOptionsItemSelected: = "+mActiveFragment.getTag());
+                // Autocompletion is only available for Map and ListRestaurant fragments
+                if (    mActiveFragment.getTag().equals("ListViewFragment") ||
+                        mActiveFragment.getTag().equals("MapViewFragment")) {
+
+                    // Configure AutoComplete Area
+                    configureAutoCompleteArea();
+                    // Displays the autocompletion area
+                    mAutocompleteLayout.setVisibility(View.VISIBLE);
+                }
         }
         return super.onOptionsItemSelected(item);
     }
     // ---------------------------------------------------------------------------------------------
     //                              PLACE AUTOCOMPLETE CONFIGURATION
     // ---------------------------------------------------------------------------------------------
-    private void callPlaceAutoComplete() {
-        try {
+    private void configureAutoCompleteArea() {
+        Log.d(TAG, "configureAutoCompleteArea: ");
 
-            AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_NONE)
-                    .build();
+        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel();
+        // Copy the list of restaurants recovered from the model in an ArrayList
+        // to facilitate the sorting of it
+        mAutoCompleteRestaurantList = new ArrayList<>(mapAdapterRestaurant.values());
 
-            Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-            Location location = model.getCurrentLocation();
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
+        mRestaurantAdapter = new AutoCompleteSearchAdapter(this,
+                                                            mAutoCompleteRestaurantList);
+        mAutocompleteSearch.setThreshold(1);//will start working from first character
+        mAutocompleteSearch.setAdapter(mRestaurantAdapter);//setting the adapter data into the AutoCompleteTextView
+        mAutocompleteSearch.setTextColor(Color.BLUE);
+    }
 
-            LatLng ll = new LatLng(lat,lng);
-
-            LatLngBounds boundsBias = new LatLngBounds.Builder().
-                    include(SphericalUtil.computeOffset(ll,1200 , 0)).build();
-
-            Intent intent =
-                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                            .setFilter(typeFilter)
-                            .setBoundsBias(boundsBias)
-                            .build(this);
-
-            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-            // TODO: Handle the error.
+    private void closeAutocompleteSearch() {
+        // Close search AutoComplete
+        if (this.mAutocompleteLayout.getVisibility() == View.VISIBLE) {
+            mAutocompleteSearch.setText("");                // Reset the autocompletion zone
+            Toolbox.hideKeyboardFrom(this);         // Hide Keyboard
+            mAutocompleteLayout.setVisibility(View.GONE);   // Hide AutoCompletion Layout
         }
     }
     // ---------------------------------------------------------------------------------------------
     //                                    ON ACTIVITY RESULT
     // ---------------------------------------------------------------------------------------------
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode
                 + "], resultCode = [" + resultCode + "], data = [" + data + "]");
 
-        // Result Returned by Place Auto Complete
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
-            Log.d(TAG, "onActivityResult: Place auto Complete RETURN");
-            if (resultCode == RESULT_OK) {
-                Log.d(TAG, "onActivityResult: Place auto Complete RETURN : Result OK");
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                Log.i(TAG, "Place: " + place.getName());
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Log.d(TAG, "onActivityResult: Place auto Complete RETURN : Result ERROR");
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
-                Log.i(TAG, status.getStatusMessage());
-
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
-            }
-        }
         // Result Returned by Settings Activity
         if (requestCode == SettingsActivity.SETTINGS_ACTIVITY_RC) {
             Log.d(TAG, "onActivityResult: Settings Activity RETURN");
@@ -365,38 +341,41 @@ public class WelcomeActivity extends BaseActivity
         }
     }
     private void manageSort(){
+        Log.d(TAG, "manageSort: ");
 
         // Retrieves the list of restaurants in the model
-        LinkedHashMap<String, Restaurant> mapRestaurant = getRestaurantMapOfTheModel();
+        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel();
+
         // Copy the list of restaurants recovered from the model in an ArrayList
         // to facilitate the sorting of it
-        ArrayList<Restaurant> arrayRestaurant = new ArrayList<>(mapRestaurant.values());
+        ArrayList<AdapterRestaurant> arrayAdapterRestaurant = new ArrayList<>(mapAdapterRestaurant.values());
 
         // if sort Choice = name
         if (mPreferences_SettingsActivity.getSortChoice().equals("name")){
             // Sort arrayRestaurant By name
-            Collections.sort(arrayRestaurant, Restaurant.RestaurantNameComparator);
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNameComparator);
         }
         // if sort Choice = distance
         if (mPreferences_SettingsActivity.getSortChoice().equals("distance")){
             // Sort arrayRestaurant By distance
-            Collections.sort(arrayRestaurant, Restaurant.RestaurantDistanceComparator);
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantDistanceComparator);
         }
         // if sort Choice = nbLiked
         if (mPreferences_SettingsActivity.getSortChoice().equals("nbLikes")){
             // Sort arrayRestaurant By likes
-            Collections.sort(arrayRestaurant, Restaurant.RestaurantNbrLikesComparator);
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrLikesComparator);
         }
         // if sort Choice = distance
         if (mPreferences_SettingsActivity.getSortChoice().equals("nbParticipants")){
             // Sort arrayRestaurant By participants
-            Collections.sort(arrayRestaurant, Restaurant.RestaurantNbrParticipantsComparator);
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrParticipantsComparator);
         }
 
         // Update Map Restaurant
-        mapRestaurant.clear();
-        for (Restaurant restaurant : arrayRestaurant) {
-            mapRestaurant.put(restaurant.getIdentifier(), restaurant);
+        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurantChanged = getFilteredMapAdapterRestaurantOfTheModel();
+        mapAdapterRestaurantChanged.clear();
+        for (AdapterRestaurant adapterRestaurant : arrayAdapterRestaurant) {
+            mapAdapterRestaurantChanged.put(adapterRestaurant.getRestaurant().getIdentifier(), adapterRestaurant);
         }
     }
     // ---------------------------------------------------------------------------------------------
@@ -427,6 +406,7 @@ public class WelcomeActivity extends BaseActivity
 
     // Configure NavigationHeader
     private void configureNavigationHeader() {
+        Log.d(TAG, "configureNavigationHeader: ");
 
         View navigationHeader = mNavigationView.inflateHeaderView(R.layout.activity_welcome_nav_header);
         ImageView userPhoto = navigationHeader.findViewById(R.id.navigation_header_user_photo);
@@ -456,8 +436,7 @@ public class WelcomeActivity extends BaseActivity
     }
 
     // >> ACTIONS <-------
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+    @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Log.d(TAG, "onNavigationItemSelected: ");
 
         // Handle Navigation Item Click
@@ -526,13 +505,14 @@ public class WelcomeActivity extends BaseActivity
         startActivityForResult(intent,SettingsActivity.SETTINGS_ACTIVITY_RC);
     }
 
-    @Override
-    public void onBackPressed() {
+    @Override public void onBackPressed() {
         Log.d(TAG, "onBackPressed: ");
         // Close the menu so open and if the touch return is pushed
         if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             this.mDrawerLayout.closeDrawer(GravityCompat.START);
         }
+        // Close search AutoComplete
+        closeAutocompleteSearch();
     }
     // ---------------------------------------------------------------------------------------------
     //                                    PERMISSION METHODS
@@ -574,8 +554,7 @@ public class WelcomeActivity extends BaseActivity
      * Method that processes the response to a request for permission made
      * by the function "requestPermissions(..)"
      */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+    @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult: ");
         switch (requestCode) {
@@ -672,23 +651,21 @@ public class WelcomeActivity extends BaseActivity
                 .streamFetchListRestaurantDetails(this, mLastKnownLocation,
                                                     mPreferences_SettingsActivity.getSearchRadius())
                 .subscribeWith(new DisposableObserver<List<Restaurant>>() {
-                    @Override
-                    public void onNext(List<Restaurant> listRestaurant) {
+                    
+                    @Override public void onNext(List<Restaurant> listRestaurant) {
                         Log.d(TAG, "getListRestaurantsDetails : onNext: ");
 
                         // Manage restaurant List
                         startManageRestaurantList(listRestaurant);
                     }
 
-                    @Override
-                    public void onError(Throwable e) {
+                    @Override public void onError(Throwable e) {
                         // Display a toast message
                         updateUIWhenErrorHTTPRequest();
                         Log.d(TAG, "getListRestaurantsDetails : onError: " + e);
                     }
 
-                    @Override
-                    public void onComplete() {
+                    @Override public void onComplete() {
                         Log.d(TAG, "getListRestaurantsDetails : On Complete !!");
                     }
                 });
@@ -707,9 +684,14 @@ public class WelcomeActivity extends BaseActivity
         Log.d(TAG, "startManageRestaurantList: ");
 
         // Save Restaurant List in the Model
-        Map<String, Restaurant> mapRestaurant = getRestaurantMapOfTheModel();
+        LinkedHashMap<String, AdapterRestaurant> completeRestaurantList = getCompleteMapAdapterRestaurantOfTheModel();
+        LinkedHashMap<String, AdapterRestaurant> filteredRestaurantList = getFilteredMapAdapterRestaurantOfTheModel();
         for (Restaurant restaurant : listRestaurant) {
-            mapRestaurant.put(restaurant.getIdentifier(), restaurant);
+            AdapterRestaurant adapterRestaurant = new AdapterRestaurant(restaurant,null);
+            // Save Restaurant List in the AdapterRestaurant Map complete
+            completeRestaurantList.put(restaurant.getIdentifier(), adapterRestaurant);
+            // Save Restaurant List in the AdapterRestaurant Map Filtered
+            filteredRestaurantList.put(restaurant.getIdentifier(), adapterRestaurant);
         }
 
         // We do the following actions in an AsyncTask
@@ -720,24 +702,24 @@ public class WelcomeActivity extends BaseActivity
     }
 
     // Override methods of callback
-    @Override
-    public void onPreExecute() {
+    @Override public void onPreExecute() {
         Log.d(TAG, "onPreExecute: ");
     }
-    @Override
-    public void doInBackground() {
+    @Override public void doInBackground() {
         Log.d(TAG, "doInBackground: ");
 
-        Set<Map.Entry<String, Restaurant>> setMapRestaurant = getRestaurantMapOfTheModel().entrySet();
-        Iterator<Map.Entry<String, Restaurant>> it = setMapRestaurant.iterator();
+        Set<Map.Entry<String, AdapterRestaurant>> setMapAdapterRestaurant
+                = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
+        Iterator<Map.Entry<String, AdapterRestaurant>> it = setMapAdapterRestaurant.iterator();
 
         while (it.hasNext()) {
-            Map.Entry<String, Restaurant> restaurant = it.next();
+            Map.Entry<String, AdapterRestaurant> adapterRestaurant = it.next();
             Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
-                    + restaurant.getValue().getIdentifier());
+                    + adapterRestaurant.getValue().getRestaurant().getIdentifier());
 
             try {
-                Task<DocumentSnapshot> task = RestaurantHelper.getRestaurant(restaurant.getValue().getIdentifier());
+                Task<DocumentSnapshot> task = RestaurantHelper
+                        .getRestaurant(adapterRestaurant.getValue().getRestaurant().getIdentifier());
 
                 //DocumentSnapshot documentSnapshot = Tasks.await(task, 500, TimeUnit.MILLISECONDS);
                 DocumentSnapshot documentSnapshot = Tasks.await(task);
@@ -748,13 +730,10 @@ public class WelcomeActivity extends BaseActivity
                 if (fireBaseRestaurant == null) {
                     Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
 
-                    Task<Void> restaurantTask = RestaurantHelper.createRestaurant(restaurant.getValue());
+                    Task<Void> restaurantTask = RestaurantHelper
+                            .createRestaurant(adapterRestaurant.getValue().getRestaurant());
                     Tasks.await(restaurantTask);
                 }
-
-                // We listen to the restaurant
-                listenCurrentRestaurant(restaurant.getValue());
-
             } catch (ExecutionException e) {
                 Log.d(TAG, "putRestaurantInFireBase:ExecutionException = " + e);
             } catch (InterruptedException e) {
@@ -767,57 +746,22 @@ public class WelcomeActivity extends BaseActivity
         // Sort restaurant List
         manageSort();
     }
-    @Override
-    public void onPostExecute(Long taskEnd) {
+    @Override public void onPostExecute(Long taskEnd) {
         Log.d(TAG, "onPostExecute: ");
-        // stopping ProgressBar
-        this.stopProgressBar();
+
+        // NAVIGATION DRAWER
+        // Configure all views of the Navigation Drawer
+        this.configureToolBar();
+        this.configureDrawerLayout();
+        this.configureNavigationView();
+
         // We update our UI before task (stopping ProgressBar)
         // We have recovered all the data necessary for the display
         // We can display and make the interface available
         configureBottomView();
-    }
-    /**
-     * Enables listening of the current restaurant
-     */
-    private void listenCurrentRestaurant(Restaurant restaurant) {
-        Log.d(TAG, "listenCurrentListRestaurant: ");
 
-
-            Log.d(TAG, "listenCurrentListRestaurant: restaurant.getValue().getIdentifier() = "
-                    + restaurant.getIdentifier());
-            RestaurantHelper
-                    .getRestaurantsCollection()
-                    .document(restaurant.getIdentifier())
-                    .addSnapshotListener((document, e) -> {
-                        if (e != null) {
-                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                            return;
-                        }
-                        if (document != null) {
-                            Restaurant rest = document.toObject(Restaurant.class);
-                            Log.d(TAG, "listenCurrentListRestaurant.onEvent : rest.getIdentifier() = " + rest.getIdentifier());
-                            // Update restaurant in the restaurant List LinkedHashMap
-                            getRestaurantMapOfTheModel().put(rest.getIdentifier(), rest);
-                        }
-                    });
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                     UPDATE UI
-    // ---------------------------------------------------------------------------------------------
-
-    private void startingProgressBar(){
-        Log.d(TAG, "startingProgressBar: ");
-
-        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_progress,Snackbar.LENGTH_LONG).show();
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void stopProgressBar(){
-        Log.d(TAG, "stopProgressBar: ");
-
-        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_finish,Snackbar.LENGTH_LONG).show();
-        mProgressBar.setVisibility(View.GONE);
+        // stopping ProgressBar
+        this.stopProgressBar();
     }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
@@ -851,6 +795,8 @@ public class WelcomeActivity extends BaseActivity
                 // Hide the active fragment and activates the fragment mWorkmatesFragment
                 mFragmentManager.beginTransaction().hide(mActiveFragment).show(mListWorkmatesViewFragment).commit();
                 mActiveFragment = mListWorkmatesViewFragment;
+                // Hide Autocompletion area
+                mAutocompleteLayout.setVisibility(View.GONE);
                 break;
         }
         return true;
@@ -881,5 +827,26 @@ public class WelcomeActivity extends BaseActivity
         mFragmentManager.beginTransaction()
                 .add(R.id.activity_welcome_frame_layout_bottom_navigation, mMapViewFragment, "MapViewFragment")
                 .commit();
+    }
+
+    // Return the List restaurants View  Fragment
+    public ListRestaurantsViewFragment getListRestaurantsViewFragment() {
+        return (ListRestaurantsViewFragment) mListRestaurantsViewFragment;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    //                                     UPDATE UI
+    // ---------------------------------------------------------------------------------------------
+    private void startingProgressBar(){
+        Log.d(TAG, "startingProgressBar: ");
+
+        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_progress,Snackbar.LENGTH_LONG).show();
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+    private void stopProgressBar(){
+        Log.d(TAG, "stopProgressBar: ");
+
+        Snackbar.make(mCoordinatorLayout,R.string.welcome_activity_download_finish,Snackbar.LENGTH_LONG).show();
+        mProgressBar.setVisibility(View.GONE);
     }
 }

@@ -23,7 +23,7 @@ public class Restaurant {
     // Blank constructor necessary for use with FireBase
     public Restaurant() { }
 
-    //
+    // Full constructor
     public Restaurant(String identifier, String name, @Nullable String address, @Nullable String openingTime,
                       @Nullable int distance, @Nullable int nbrParticipants, @Nullable int nbrLikes,
                       @Nullable String photoUrl, @Nullable String webSiteUrl, @Nullable String type,

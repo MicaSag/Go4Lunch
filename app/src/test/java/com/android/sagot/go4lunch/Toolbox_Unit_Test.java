@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 public class Toolbox_Unit_Test {
 
     @Test
-    public void formatTime_Unit_Test() {
+    public void formatPlacePhotoUrl_Unit_Test() {
 
         assertEquals("https://maps.googleapis.com/maps/api" +
                         "/place/photo?maxwidth=800&" +

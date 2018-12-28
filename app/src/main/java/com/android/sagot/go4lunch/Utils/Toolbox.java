@@ -1,5 +1,6 @@
 package com.android.sagot.go4lunch.Utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -8,6 +9,7 @@ import android.net.NetworkInfo;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 
 import com.android.sagot.go4lunch.R;
 
@@ -197,5 +199,15 @@ public class Toolbox {
         String JJ = date.substring(8,10);            // Day
 
         return SSAA+MM+JJ;
+    }
+
+
+    /**
+     * This method is used to hide keyboard
+     * @param activity
+     */
+    public static void hideKeyboardFrom(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
     }
 }

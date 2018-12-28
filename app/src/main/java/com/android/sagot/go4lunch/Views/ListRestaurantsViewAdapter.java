@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.R;
 import com.bumptech.glide.RequestManager;
 
@@ -23,22 +23,24 @@ public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaur
     private RequestManager mGlide;
 
     // Declare Options<User>
-    Map<String,Restaurant> mListRestaurant;
+    Map<String,AdapterRestaurant> mListAdapterRestaurant;
 
     // Current Location
     Location mLocation;
 
     // CONSTRUCTOR
-    public ListRestaurantsViewAdapter(Location location, Map<String,Restaurant> listRestaurant
+    public ListRestaurantsViewAdapter(Location location, Map<String,AdapterRestaurant> listAdapterRestaurant
                                             , RequestManager glide) {
         Log.d(TAG, "ListRestaurantsViewAdapter: ");
         mLocation = location;
-        mListRestaurant = listRestaurant;
+        mListAdapterRestaurant = listAdapterRestaurant;
         mGlide = glide;
     }
 
     @Override
     public ListRestaurantsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder: ");
+
         // CREATE VIEW HOLDER AND INFLATING ITS XML LAYOUT
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -52,25 +54,31 @@ public class ListRestaurantsViewAdapter extends RecyclerView.Adapter<ListRestaur
     public void onBindViewHolder(ListRestaurantsViewHolder viewHolder, int position) {
         Log.d(TAG, "onBindViewHolder: ");
 
-        viewHolder.updateWithRestaurantDetails(mLocation, mListRestaurant.
-                get(getRestaurantIdentifier(position)), mGlide);
+            viewHolder.updateWithRestaurantDetails(mLocation, mListAdapterRestaurant.
+                    get(getRestaurantIdentifier(position)), mGlide);
     }
 
     @Override
     public int getItemCount() {
         Log.d(TAG, "getItemCount: ");
-        Log.d(TAG, "getItemCount: mListRestauant size() = "+mListRestaurant.size());
-        return mListRestaurant.size();
+        Log.d(TAG, "getItemCount: mListRestaurant size() = "+mListAdapterRestaurant.size());
+        return mListAdapterRestaurant.size();
     }
 
     // Returns the Restaurant Identifier of the current position
     public String getRestaurantIdentifier(int position){
+        Log.d(TAG, "getRestaurantIdentifier: ");
+
         int positionInMap = 0;
         String key = "not value";
-        for (String keyValue : mListRestaurant.keySet()){
+        for (String keyValue : mListAdapterRestaurant.keySet()){
             if (position == positionInMap) {key = keyValue;break;}
             positionInMap++;
         }
         return key;
     }
+
+
+
+
 }
