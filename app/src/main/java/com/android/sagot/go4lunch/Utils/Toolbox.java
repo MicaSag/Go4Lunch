@@ -11,10 +11,14 @@ import android.text.Spanned;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 
+import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 
 /**
  * Toolbox containing various functions used in the application
@@ -201,7 +205,6 @@ public class Toolbox {
         return SSAA+MM+JJ;
     }
 
-
     /**
      * This method is used to hide keyboard
      * @param activity
@@ -209,5 +212,45 @@ public class Toolbox {
     public static void hideKeyboardFrom(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+    }
+
+    /**
+     * This method is used to sort a LinkedHashMap object AdapterRestaurant by name/distance/nbLikes/nbParticipants
+     * @param mapAdapterRestaurant  : List of restaurants a sort
+     * @param columnToSort          : Column to sort
+     */
+    public static void manageSort(LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant, String columnToSort){
+        Log.d(TAG, "manageSort: ");
+
+        // Copy the list of restaurants recovered from the model in an ArrayList
+        // to facilitate the sorting of it
+        ArrayList<AdapterRestaurant> arrayAdapterRestaurant = new ArrayList<>(mapAdapterRestaurant.values());
+
+        // if sort Choice = name
+        if (columnToSort.equals("name")){
+            // Sort arrayRestaurant By name
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNameComparator);
+        }
+        // if sort Choice = distance
+        if (columnToSort.equals("distance")){
+            // Sort arrayRestaurant By distance
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantDistanceComparator);
+        }
+        // if sort Choice = nbLiked
+        if (columnToSort.equals("nbLikes")){
+            // Sort arrayRestaurant By likes
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrLikesComparator);
+        }
+        // if sort Choice = distance
+        if (columnToSort.equals("nbParticipants")){
+            // Sort arrayRestaurant By participants
+            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrParticipantsComparator);
+        }
+
+        // Update the Filtered Map Restaurant List
+        mapAdapterRestaurant.clear();
+        for (AdapterRestaurant adapterRestaurant : arrayAdapterRestaurant) {
+            mapAdapterRestaurant.put(adapterRestaurant.getRestaurant().getIdentifier(), adapterRestaurant);
+        }
     }
 }

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.GravityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -29,6 +30,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +89,10 @@ public class RestaurantCardActivity extends BaseActivity {
 
     // Declaring a Glide object
     private RequestManager mGlide;
+
+    // For Detach listener from FireBase
+    ListenerRegistration mRegistrationUser;
+    ListenerRegistration mRegistrationResaurant;
 
     // ---------------------------------------------------------------------------------------------
     //                                DECLARATION BASE METHODS
@@ -175,7 +181,7 @@ public class RestaurantCardActivity extends BaseActivity {
      */
     public void listenRestaurantContainedInFireBase() {
         Log.d(TAG, "listenRestaurantContainedInFireBase: mRestaurantIdentifier = "+mRestaurantIdentifier);
-        RestaurantHelper
+        mRegistrationResaurant = RestaurantHelper
                 .getRestaurantsCollection()
                 .document(mRestaurantIdentifier)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -200,28 +206,31 @@ public class RestaurantCardActivity extends BaseActivity {
 
         // Action only possible if an internet connection is available
         if (Toolbox.isNetworkAvailable(this)) {
-            UserHelper
+            mRegistrationUser = UserHelper
                 .getUsersCollection()
                 .document(getCurrentUser().getUid())
-                .addSnapshotListener((user, e) -> {
-                    if (e != null) {
-                        Log.d(TAG, "listenUserContainedInFireBase.onEvent: Listen failed: " + e);
-                        return;
-                    }
-                    Log.d(TAG, "listenUserContainedInFireBase: IN");
-                    mLikeButton.setColorFilter(getResources().getColor(R.color.colorPrimary));
-                    User currentUser = user.toObject(User.class);
-                    Map<String, String> restaurantLiked = currentUser.getListRestaurantLiked();
-                    if (restaurantLiked != null) {
-                        if (restaurantLiked.containsKey(mRestaurant.getIdentifier())) {
-                            // Remove the like from the restaurant on the user
-                            restaurantLiked.remove(mRestaurant.getIdentifier());
-                            mLikeButton.setImageResource(R.drawable.baseline_star_black_24);
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot user, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.d(TAG, "listenUserContainedInFireBase.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        Log.d(TAG, "listenUserContainedInFireBase: IN");
+                        mLikeButton.setColorFilter(RestaurantCardActivity.this.getResources().getColor(R.color.colorPrimary));
+                        User currentUser = user.toObject(User.class);
+                        Map<String, String> restaurantLiked = currentUser.getListRestaurantLiked();
+                        if (restaurantLiked != null) {
+                            if (restaurantLiked.containsKey(mRestaurant.getIdentifier())) {
+                                // Remove the like from the restaurant on the user
+                                restaurantLiked.remove(mRestaurant.getIdentifier());
+                                mLikeButton.setImageResource(R.drawable.baseline_star_black_24);
+                            } else {
+                                mLikeButton.setImageResource(R.drawable.baseline_star_border_black_24);
+                            }
                         } else {
                             mLikeButton.setImageResource(R.drawable.baseline_star_border_black_24);
                         }
-                    }else{
-                        mLikeButton.setImageResource(R.drawable.baseline_star_border_black_24);
                     }
                 });
         } else{showSnackBar(getString(R.string.common_not_network));}
@@ -466,6 +475,15 @@ public class RestaurantCardActivity extends BaseActivity {
             myIntent.putExtra(WebViewActivity.KEY_RESTAURANT_WEB_SITE_URL, mRestaurant.getWebSiteUrl());
             this.startActivity(myIntent);
         }else{showSnackBar(getString(R.string.common_not_network));}
+    }
+    //************************
+    // ON BACK Button Pressed
+    //************************
+    @Override public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: ");
+        mRegistrationResaurant.remove();
+        mRegistrationUser.remove();
+        finish();
     }
     // ---------------------------------------------------------------------------------------------
     //                                   REQUEST PERMISSION

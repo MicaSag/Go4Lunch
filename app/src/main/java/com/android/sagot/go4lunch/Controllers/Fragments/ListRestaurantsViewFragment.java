@@ -13,6 +13,7 @@ import com.android.sagot.go4lunch.Controllers.Activities.WelcomeActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.AdapterRestaurant;
 import com.android.sagot.go4lunch.Models.firestore.Restaurant;
+import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Utils.Toolbox;
@@ -20,6 +21,8 @@ import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
 import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -75,9 +78,6 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         // Telling ButterKnife to bind all views in layout
         ButterKnife.bind(this, mListView);
 
-        // Enables listening of restaurants in FireBase
-        listenCurrentListRestaurant();
-
         // Configure RecyclerView
         this.configureRecyclerView(getFilteredMapAdapterRestaurantOfTheModel());
 
@@ -85,52 +85,6 @@ public class ListRestaurantsViewFragment extends BaseFragment {
         this.configureOnClickRecyclerView();
 
         return mListView;
-    }
-    /**
-     * Enables listening of restaurants in FireBase
-     */
-    public void listenCurrentListRestaurant() {
-        Log.d(TAG, "listenCurrentListRestaurant: ");
-
-        Set<Map.Entry<String, AdapterRestaurant>> setListAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
-        Iterator<Map.Entry<String, AdapterRestaurant>> it = setListAdapterRestaurant.iterator();
-        while(it.hasNext()){
-            Map.Entry<String, AdapterRestaurant> adapterRestaurant = it.next();
-            RestaurantHelper
-                    .getRestaurantsCollection()
-                    .document(adapterRestaurant.getValue().getRestaurant().getIdentifier())
-                    .addSnapshotListener((document, e) -> {
-                        if (e != null) {
-                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
-                            return;
-                        }
-                        if (document != null) {
-                            Restaurant restaurant = document.toObject(Restaurant.class);
-
-                            AdapterRestaurant adRestaurant
-                                    = new AdapterRestaurant(restaurant,
-                                                            getCompleteMapAdapterRestaurantOfTheModel()
-                                            .get(restaurant.getIdentifier()).getMarker());
-                            Log.d(TAG, "onEvent: Id restaurant = "
-                                    + adRestaurant.getRestaurant().getIdentifier());
-                            Log.d(TAG, "onEvent: Name restaurant = "
-                                    + adRestaurant.getRestaurant().getName());
-
-                            // Update CompleteMapAdapterRestaurantOfTheModel
-                            getCompleteMapAdapterRestaurantOfTheModel()
-                                    .put(adRestaurant.getRestaurant().getIdentifier(),
-                                            adRestaurant);
-
-                            // FOR ListRestaurants Recycler View
-                            getFilteredMapAdapterRestaurantOfTheModel()
-                                    .put(adRestaurant.getRestaurant().getIdentifier(),
-                                            adRestaurant);
-                            // Update ListRestaurantsViewAdapter
-                            if (mAdapter != null)
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    });
-        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                    CONFIGURATION
@@ -165,6 +119,13 @@ public class ListRestaurantsViewFragment extends BaseFragment {
                     });
 
     }
+    // ---------------------------------------------------------------------------------------------
+    //                                       METHODS
+    // ---------------------------------------------------------------------------------------------
+    public ListRestaurantsViewAdapter getAdapter() {
+        return mAdapter;
+    }
+
     // ---------------------------------------------------------------------------------------------
     //                                       UPDATE UI
     // ---------------------------------------------------------------------------------------------

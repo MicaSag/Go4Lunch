@@ -64,7 +64,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -229,6 +228,11 @@ public class WelcomeActivity extends BaseActivity
         if (mPreferences_SettingsActivity.getSortChoice() == null)
             mPreferences_SettingsActivity.setSortChoice("name");
 
+        Log.d(TAG, "getPreferencesSettingsActivity: mPreferences_SettingsActivity.getSortChoice() = "
+                +mPreferences_SettingsActivity.getSortChoice());
+        Log.d(TAG, "getPreferencesSettingsActivity: mPreferences_SettingsActivity.getSearchRadius() = "
+                +mPreferences_SettingsActivity.getSearchRadius());
+
         gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
         mPreferences_SettingsActivity_String = gson.toJson(mPreferences_SettingsActivity);
     }
@@ -278,105 +282,6 @@ public class WelcomeActivity extends BaseActivity
                 }
         }
         return super.onOptionsItemSelected(item);
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                              PLACE AUTOCOMPLETE CONFIGURATION
-    // ---------------------------------------------------------------------------------------------
-    private void configureAutoCompleteArea() {
-        Log.d(TAG, "configureAutoCompleteArea: ");
-
-        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel();
-        // Copy the list of restaurants recovered from the model in an ArrayList
-        // to facilitate the sorting of it
-        mAutoCompleteRestaurantList = new ArrayList<>(mapAdapterRestaurant.values());
-
-        mRestaurantAdapter = new AutoCompleteSearchAdapter(this,
-                                                            mAutoCompleteRestaurantList);
-        mAutocompleteSearch.setThreshold(1);//will start working from first character
-        mAutocompleteSearch.setAdapter(mRestaurantAdapter);//setting the adapter data into the AutoCompleteTextView
-        mAutocompleteSearch.setTextColor(Color.BLUE);
-    }
-
-    private void closeAutocompleteSearch() {
-        // Close search AutoComplete
-        if (this.mAutocompleteLayout.getVisibility() == View.VISIBLE) {
-            mAutocompleteSearch.setText("");                // Reset the autocompletion zone
-            Toolbox.hideKeyboardFrom(this);         // Hide Keyboard
-            mAutocompleteLayout.setVisibility(View.GONE);   // Hide AutoCompletion Layout
-        }
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                    ON ACTIVITY RESULT
-    // ---------------------------------------------------------------------------------------------
-    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode
-                + "], resultCode = [" + resultCode + "], data = [" + data + "]");
-
-        // Result Returned by Settings Activity
-        if (requestCode == SettingsActivity.SETTINGS_ACTIVITY_RC) {
-            Log.d(TAG, "onActivityResult: Settings Activity RETURN");
-            if (resultCode == RESULT_OK) {
-                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result OK");
-
-                // retrieve the parameters back
-                mPreferences_SettingsActivity_String
-                        = data.getStringExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY);
-                // Restoring the preferences with a Gson Object
-                Gson gson = new Gson();
-                mPreferences_SettingsActivity = gson.fromJson( mPreferences_SettingsActivity_String,
-                        Preferences_SettingsActivity.class);
-
-                // If the current user is not logged in then we close the Welcome activity
-                if (!isCurrentUserLogged()) finish();
-
-                // Manage sort parameters
-                manageSort();
-
-                // Refresh List restaurant Fragment
-                ((ListRestaurantsViewFragment)mListRestaurantsViewFragment).updateUI();
-
-            } else {
-                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result KO");
-            }
-        }
-    }
-    private void manageSort(){
-        Log.d(TAG, "manageSort: ");
-
-        // Retrieves the list of restaurants in the model
-        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel();
-
-        // Copy the list of restaurants recovered from the model in an ArrayList
-        // to facilitate the sorting of it
-        ArrayList<AdapterRestaurant> arrayAdapterRestaurant = new ArrayList<>(mapAdapterRestaurant.values());
-
-        // if sort Choice = name
-        if (mPreferences_SettingsActivity.getSortChoice().equals("name")){
-            // Sort arrayRestaurant By name
-            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNameComparator);
-        }
-        // if sort Choice = distance
-        if (mPreferences_SettingsActivity.getSortChoice().equals("distance")){
-            // Sort arrayRestaurant By distance
-            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantDistanceComparator);
-        }
-        // if sort Choice = nbLiked
-        if (mPreferences_SettingsActivity.getSortChoice().equals("nbLikes")){
-            // Sort arrayRestaurant By likes
-            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrLikesComparator);
-        }
-        // if sort Choice = distance
-        if (mPreferences_SettingsActivity.getSortChoice().equals("nbParticipants")){
-            // Sort arrayRestaurant By participants
-            Collections.sort(arrayAdapterRestaurant, AdapterRestaurant.RestaurantNbrParticipantsComparator);
-        }
-
-        // Update Map Restaurant
-        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurantChanged = getFilteredMapAdapterRestaurantOfTheModel();
-        mapAdapterRestaurantChanged.clear();
-        for (AdapterRestaurant adapterRestaurant : arrayAdapterRestaurant) {
-            mapAdapterRestaurantChanged.put(adapterRestaurant.getRestaurant().getIdentifier(), adapterRestaurant);
-        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                     NAVIGATION DRAWER
@@ -696,8 +601,10 @@ public class WelcomeActivity extends BaseActivity
 
         // We do the following actions in an AsyncTask
         // a _ Insert restaurant in FireBase if it does not exist yet
-        // b _ Listen to each restaurant in the list thanks to an Async Task
+        // b _ Enables listening of restaurants in FireBase
         // c _ Sort Restaurant List by Name
+        // d _ Configure UI
+        // e _ Stop progress Bar
         new Go4LunchAsyncTask(this).execute();
     }
 
@@ -709,7 +616,7 @@ public class WelcomeActivity extends BaseActivity
         Log.d(TAG, "doInBackground: ");
 
         Set<Map.Entry<String, AdapterRestaurant>> setMapAdapterRestaurant
-                = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
+                                        = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
         Iterator<Map.Entry<String, AdapterRestaurant>> it = setMapAdapterRestaurant.iterator();
 
         while (it.hasNext()) {
@@ -721,12 +628,11 @@ public class WelcomeActivity extends BaseActivity
                 Task<DocumentSnapshot> task = RestaurantHelper
                         .getRestaurant(adapterRestaurant.getValue().getRestaurant().getIdentifier());
 
-                //DocumentSnapshot documentSnapshot = Tasks.await(task, 500, TimeUnit.MILLISECONDS);
                 DocumentSnapshot documentSnapshot = Tasks.await(task);
 
                 Restaurant fireBaseRestaurant = documentSnapshot.toObject(Restaurant.class);
 
-                // If the restaurant is not yet in FireBase then we add it
+                // a _ Insert restaurant in FireBase if it does not exist yetd it
                 if (fireBaseRestaurant == null) {
                     Log.d(TAG, "setListRestaurantsInFireBase: currentRestaurant not exist in FireBase Database");
 
@@ -738,30 +644,80 @@ public class WelcomeActivity extends BaseActivity
                 Log.d(TAG, "putRestaurantInFireBase:ExecutionException = " + e);
             } catch (InterruptedException e) {
                 Log.d(TAG, "putRestaurantInFireBase:InterruptedException = " + e);
-                //} catch (TimeoutException e) {
-                //    Log.d(TAG, "putRestaurantInFireBase:TimeoutException = " + e);
             }
+            // b _ Enables listening of restaurants in FireBase
+            listenCurrentListRestaurant();
         }
-
-        // Sort restaurant List
-        manageSort();
     }
     @Override public void onPostExecute(Long taskEnd) {
         Log.d(TAG, "onPostExecute: ");
 
-        // NAVIGATION DRAWER
-        // Configure all views of the Navigation Drawer
+        // c _ Sort Restaurant List by Name
+        Toolbox.manageSort(getCompleteMapAdapterRestaurantOfTheModel(),
+                mPreferences_SettingsActivity.getSortChoice());
+        Toolbox.manageSort(getFilteredMapAdapterRestaurantOfTheModel(),
+                mPreferences_SettingsActivity.getSortChoice());
+
+        // d _ Configure UI
         this.configureToolBar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+        this.configureBottomView();
 
-        // We update our UI before task (stopping ProgressBar)
-        // We have recovered all the data necessary for the display
-        // We can display and make the interface available
-        configureBottomView();
-
-        // stopping ProgressBar
+        // e _ Stop progress Bar
         this.stopProgressBar();
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                 FIRE BASE LISTENER
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Enables listening of restaurants in FireBase
+     */
+    public void listenCurrentListRestaurant() {
+        Log.d(TAG, "listenCurrentListRestaurant: ");
+
+        Set<Map.Entry<String, AdapterRestaurant>> setListAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel().entrySet();
+        Iterator<Map.Entry<String, AdapterRestaurant>> it = setListAdapterRestaurant.iterator();
+        while(it.hasNext()){
+            Map.Entry<String, AdapterRestaurant> adapterRestaurant = it.next();
+            RestaurantHelper
+                    .getRestaurantsCollection()
+                    .document(adapterRestaurant.getValue().getRestaurant().getIdentifier())
+                    .addSnapshotListener((document, e) -> {
+                        if (e != null) {
+                            Log.d(TAG, "fireStoreListener.onEvent: Listen failed: " + e);
+                            return;
+                        }
+                        if (document != null) {
+                            Restaurant restaurant = document.toObject(Restaurant.class);
+
+                            AdapterRestaurant adRestaurant
+                                    = new AdapterRestaurant(restaurant,
+                                    getCompleteMapAdapterRestaurantOfTheModel()
+                                            .get(restaurant.getIdentifier()).getMarker());
+                            Log.d(TAG, "onEvent: Id restaurant = "
+                                    + adRestaurant.getRestaurant().getIdentifier());
+                            Log.d(TAG, "onEvent: Name restaurant = "
+                                    + adRestaurant.getRestaurant().getName());
+
+                            // Update CompleteMapAdapterRestaurantOfTheModel
+                            getCompleteMapAdapterRestaurantOfTheModel()
+                                    .put(adRestaurant.getRestaurant().getIdentifier(),
+                                            adRestaurant);
+
+                            // FOR ListRestaurants Recycler View
+                            getFilteredMapAdapterRestaurantOfTheModel()
+                                    .put(adRestaurant.getRestaurant().getIdentifier(),
+                                            adRestaurant);
+                            // Update ListRestaurantsViewAdapter
+                            ListRestaurantsViewFragment listRestaurantsViewFragment
+                                    = (ListRestaurantsViewFragment) mListRestaurantsViewFragment;
+                            if (listRestaurantsViewFragment != null)
+                                if (listRestaurantsViewFragment.getAdapter() != null)
+                                listRestaurantsViewFragment.getAdapter().notifyDataSetChanged();
+                        }
+                    });
+        }
     }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW
@@ -833,7 +789,73 @@ public class WelcomeActivity extends BaseActivity
     public ListRestaurantsViewFragment getListRestaurantsViewFragment() {
         return (ListRestaurantsViewFragment) mListRestaurantsViewFragment;
     }
+    // ---------------------------------------------------------------------------------------------
+    //                              PLACE AUTOCOMPLETE CONFIGURATION
+    // ---------------------------------------------------------------------------------------------
+    private void configureAutoCompleteArea() {
+        Log.d(TAG, "configureAutoCompleteArea: ");
 
+        LinkedHashMap<String, AdapterRestaurant> mapAdapterRestaurant = getCompleteMapAdapterRestaurantOfTheModel();
+        // Copy the list of restaurants recovered from the model in an ArrayList
+        // to facilitate the sorting of it
+        mAutoCompleteRestaurantList = new ArrayList<>(mapAdapterRestaurant.values());
+
+        mRestaurantAdapter = new AutoCompleteSearchAdapter(this,
+                mAutoCompleteRestaurantList);
+        mAutocompleteSearch.setThreshold(1);//will start working from first character
+        mAutocompleteSearch.setAdapter(mRestaurantAdapter);//setting the adapter data into the AutoCompleteTextView
+        mAutocompleteSearch.setTextColor(Color.BLUE);
+    }
+
+    private void closeAutocompleteSearch() {
+        // Close search AutoComplete
+        if (this.mAutocompleteLayout.getVisibility() == View.VISIBLE) {
+            mAutocompleteSearch.setText("");                // Reset the autocompletion zone
+            Toolbox.hideKeyboardFrom(this);         // Hide Keyboard
+            mAutocompleteLayout.setVisibility(View.GONE);   // Hide AutoCompletion Layout
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                    ON ACTIVITY RESULT
+    // ---------------------------------------------------------------------------------------------
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode
+                + "], resultCode = [" + resultCode + "], data = [" + data + "]");
+
+        // Result Returned by Settings Activity
+        if (requestCode == SettingsActivity.SETTINGS_ACTIVITY_RC) {
+            Log.d(TAG, "onActivityResult: Settings Activity RETURN");
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result OK");
+
+                // retrieve the parameters back
+                mPreferences_SettingsActivity_String
+                        = data.getStringExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY);
+                // Restoring the preferences with a Gson Object
+                Gson gson = new Gson();
+                mPreferences_SettingsActivity = gson.fromJson( mPreferences_SettingsActivity_String,
+                        Preferences_SettingsActivity.class);
+
+                // If the current user is not logged in then we close the Welcome activity
+                if (!isCurrentUserLogged()) {
+                    Log.d(TAG, "onActivityResult: FINISH");
+                    finish();
+                }
+
+                // Manage sort parameters
+                Toolbox.manageSort(getCompleteMapAdapterRestaurantOfTheModel(),
+                        mPreferences_SettingsActivity.getSortChoice());
+                Toolbox.manageSort(getFilteredMapAdapterRestaurantOfTheModel(),
+                        mPreferences_SettingsActivity.getSortChoice());
+
+                // Refresh List restaurant Fragment
+                ((ListRestaurantsViewFragment)mListRestaurantsViewFragment).updateUI();
+
+            } else {
+                Log.d(TAG, "onActivityResult: Settings Activity RETURN : Result KO");
+            }
+        }
+    }
     // ---------------------------------------------------------------------------------------------
     //                                     UPDATE UI
     // ---------------------------------------------------------------------------------------------

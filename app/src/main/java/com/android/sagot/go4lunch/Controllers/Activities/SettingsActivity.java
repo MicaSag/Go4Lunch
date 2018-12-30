@@ -4,14 +4,11 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +16,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Switch;
 
 import com.android.sagot.go4lunch.Controllers.Base.BaseActivity;
@@ -221,28 +217,6 @@ public class SettingsActivity extends BaseActivity {
         //The distance entered must be between 1 and 1500 meters
         mRadiusSearchEditText.setFilters(new InputFilter[]{new Toolbox.MinMaxFilter("1", "1500")});
     }
-    // -------------------------
-    // ACTION Validation Button
-    // -------------------------
-    @OnTouch(R.id.activity_settings_button)
-    public boolean onTouchValidateButton(View v, MotionEvent event) {
-
-        // If check or not checked Switch Notification
-        if (mPreferences_SettingsActivity.isNotificationStatus()) this.startAlarm();
-        if (!mPreferences_SettingsActivity.isNotificationStatus()) this.stopAlarm();
-
-        // Return to the Welcome Activity
-        Gson gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
-        Intent intent = new Intent();
-        mPreferences_SettingsActivity.setNotificationStatus(mNotificationStatus);
-        mPreferences_SettingsActivity.setSearchRadius(mRadiusSearchEditText.getText().toString());
-        Log.d(TAG, "onTouchValidateButton: notification = "+mPreferences_SettingsActivity.isNotificationStatus());
-        Log.d(TAG, "onTouchValidateButton: searchRadius = "+mPreferences_SettingsActivity.getSearchRadius());
-        intent.putExtra(SHARED_PREF_SETTINGS_ACTIVITY, gson.toJson(mPreferences_SettingsActivity));
-        setResult(RESULT_OK, intent);
-        finish();
-        return false;
-    }
     // --------------------------
     // ACTION Sort Radio Buttons
     // --------------------------
@@ -274,19 +248,55 @@ public class SettingsActivity extends BaseActivity {
                     break;
         }
     }
+    // -------------------------
+    // ACTION Validation Button
+    // -------------------------
+    @OnTouch(R.id.activity_settings_button)
+    public boolean onTouchValidateButton(View v, MotionEvent event) {
+
+        // If check or not checked Switch Notification
+        if (mPreferences_SettingsActivity.isNotificationStatus()) this.startAlarm();
+        if (!mPreferences_SettingsActivity.isNotificationStatus()) this.stopAlarm();
+
+        // Manages the result back to the caller
+        builtReturnResult();
+
+        // Finish the Activity
+        finish();
+        return false;
+    }
     // -----------------------------
     // ACTION Delete Account Button
     // -----------------------------
     @OnTouch(R.id.activity_settings_delete_account_button)
     public boolean onTouchDeleteAccountButton(View v, MotionEvent event) {
-        deleteUserFromFirebase();
+        // Manages the result back to the caller
+        builtReturnResult();
+
+        // Delete User in FireBase
+        deleteUserFromFireBase();
         return false;
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                   RETURN RESULTS
+    // ---------------------------------------------------------------------------------------------
+    // Manages the result back to the caller
+    private void builtReturnResult(){
+        // Return to the Welcome Activity
+        Gson gson = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
+        Intent intent = new Intent();
+        mPreferences_SettingsActivity.setNotificationStatus(mNotificationStatus);
+        mPreferences_SettingsActivity.setSearchRadius(mRadiusSearchEditText.getText().toString());
+        Log.d(TAG, "onTouchValidateButton: notification = "+mPreferences_SettingsActivity.isNotificationStatus());
+        Log.d(TAG, "onTouchValidateButton: searchRadius = "+mPreferences_SettingsActivity.getSearchRadius());
+        intent.putExtra(SHARED_PREF_SETTINGS_ACTIVITY, gson.toJson(mPreferences_SettingsActivity));
+        setResult(RESULT_OK, intent);
     }
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
     // Create http requests (SignOut & Delete)
-    private void deleteUserFromFirebase(){
+    private void deleteUserFromFireBase(){
         if (this.getCurrentUser() != null) {
 
             // Delete User in FireBase Database
@@ -356,8 +366,4 @@ public class SettingsActivity extends BaseActivity {
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         manager.cancel(mPendingIntent);
     }
-    // ---------------------------------------------------------------------------------------------
-    //                                        ( OUT )
-    // ---------------------------------------------------------------------------------------------
-
 }
