@@ -430,22 +430,25 @@ public class WelcomeActivity extends BaseActivity
      */
     private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: ");
-        // Request for unnecessary permission before version Android 6.0 (API level 23)
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            // Check if permissions are already authorized
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                // Permissions Granted
-                // Get the last know location of the phone
-                Log.d(TAG, "getLocationPermission: Permission already granted by User");
-                mLocationPermissionGranted = true;
-                // Save Location Permission Granted
-                Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
-                model.setLocationPermissionGranted(mLocationPermissionGranted);
-                getLastKnownCurrentLocationDevice();
-            } else {
+
+        // Check if permissions are already authorized
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Permissions Granted
+            // Get the last know location of the phone
+            Log.d(TAG, "getLocationPermission: Permission already granted by User");
+            mLocationPermissionGranted = true;
+            // Save Location Permission Granted
+            Go4LunchViewModel model = ViewModelProviders.of(this).get(Go4LunchViewModel.class);
+            model.setLocationPermissionGranted(mLocationPermissionGranted);
+            getLastKnownCurrentLocationDevice();
+        } else {
+            Log.d(TAG, "getLocationPermission: Build.VERSION.SDK_INT = "+Build.VERSION.SDK_INT);
+            Log.d(TAG, "getLocationPermission: Build.VERSION_CODES.M = "+Build.VERSION_CODES.M);
+            // Request for unnecessary permission before version Android 6.0 (API level 23)
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
                 // Permissions not Granted
                 Log.d(TAG, ">>-- Ask the user for Location Permission --<<");
                 requestPermissions(
@@ -645,9 +648,9 @@ public class WelcomeActivity extends BaseActivity
             } catch (InterruptedException e) {
                 Log.d(TAG, "putRestaurantInFireBase:InterruptedException = " + e);
             }
-            // b _ Enables listening of restaurants in FireBase
-            listenCurrentListRestaurant();
         }
+        // b _ Enables listening of restaurants in FireBase
+        listenCurrentListRestaurant();
     }
     @Override public void onPostExecute(Long taskEnd) {
         Log.d(TAG, "onPostExecute: ");

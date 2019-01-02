@@ -28,7 +28,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/bottom_margin"
-                android:textSize="12sp"
                 android:layout_marginEnd="@dimen/bottom_margin"
                 android:layout_marginTop="@dimen/bottom_margin"
                 android:text="@string/activity_settings_notification_label" />
@@ -41,21 +40,18 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="@dimen/bottom_margin"
-                    android:textSize="12sp"
                     android:text="@string/settings_activity_search_radius_text_1"/>
                 <EditText
                     android:id="@+id/activity_settings_radius_search"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:textSize="12sp"
                     android:inputType="numberDecimal"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
                     android:layout_marginStart="@dimen/bottom_margin"
-                    android:textSize="12sp"
                     android:text="@string/settings_activity_search_radius_text_2"/>
 
             </LinearLayout>
@@ -65,8 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/bottom_margin"
-                android:textSize="12sp"
-                android:text="Sort the list of restaurants by :"/>
+                android:text="@string/settings_activity_sort_by"/>
 
             <RadioGroup
                 android:layout_width="match_parent"
@@ -78,25 +73,25 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/activity_settings_radio_button_sort_by_name"
-                        android:text="Name"/>
+                        android:text="@string/settings_activity_sort_by_name"/>
 
                     <RadioButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/activity_settings_radio_button_sort_by_distance"
-                        android:text="Distance"/>
+                        android:text="@string/settings_activity_sort_by_distance"/>
 
                     <RadioButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/activity_settings_radio_button_sort_by_nbr_likes"
-                        android:text="Nbr Likes"/>
+                        android:text="@string/settings_activity_sort_by_nbr_likes"/>
 
                     <RadioButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/activity_settings_radio_button_sort_by_nbr_participants"
-                        android:text="Nbr Participants"/>
+                        android:text="@string/settings_activity_sort_by_nbr_participants"/>
 
             </RadioGroup>
 

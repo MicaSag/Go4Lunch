@@ -62,4 +62,9 @@
     <string name="settings_activity_validation_text_button">Validation</string>
     <string name="settings_activity_delete_account">SUPPRIMER VOTRE COMPTE</string>
     <string name="autocomplete_hint_search_a_restaurant">Rechercher un Restaurant</string>
+    <string name="settings_activity_sort_by">Trier la liste des restaurants par :</string>
+    <string name="settings_activity_sort_by_name">Nom</string>
+    <string name="settings_activity_sort_by_distance">Proximité</string>
+    <string name="settings_activity_sort_by_nbr_likes">Nombre de likes</string>
+    <string name="settings_activity_sort_by_nbr_participants">Nombre de participants</string>
 </resources>

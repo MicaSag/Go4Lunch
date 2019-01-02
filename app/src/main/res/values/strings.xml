@@ -27,6 +27,11 @@
     <string name="settings_activity_search_radius_text_2">meters</string>
     <string name="settings_activity_search_radius_text_1">"Search Radius ( 1 at 1500 ) : "</string>
     <string name="settings_activity_delete_account">DELETE ACCOUNT</string>
+    <string name="settings_activity_sort_by">Sort the list of restaurants by :</string>
+    <string name="settings_activity_sort_by_name">Name</string>
+    <string name="settings_activity_sort_by_distance">Distance</string>
+    <string name="settings_activity_sort_by_nbr_likes">Nbr Likes</string>
+    <string name="settings_activity_sort_by_nbr_participants">Nbr Participants</string>
 
     <!-- Welcome ACTIVITY -->
     <string name="welcome_activity_download_progress">Searching Restaurants...</string>
@@ -87,5 +92,6 @@
 
     <!-- AutoComplete Search a Restaurant -->
     <string name="autocomplete_hint_search_a_restaurant">Search a Restaurant</string>
+
 
 </resources>

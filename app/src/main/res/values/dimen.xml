@@ -18,6 +18,7 @@
 
     <dimen name="title_size">63sp</dimen>
     <dimen name="text_size_description">11sp</dimen>
+    <dimen name="text_size">12sp</dimen>
     <dimen name="text_size_button">13sp</dimen>
     <dimen name="text_size_mini">8sp</dimen>
 

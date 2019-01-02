@@ -14,6 +14,16 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
+    <!-- WELCOME STYLE -->
+    <style name="AppTheme.Welcome" parent="AppTheme">
+        <item name="android:textSize">@dimen/text_size</item>
+    </style>
+
+    <!-- SETTINGS STYLE -->
+    <style name="AppTheme.Settings" parent="AppTheme">
+        <item name="android:textSize">@dimen/text_size</item>
+    </style>
+
     <!-- RESTAURANT CARD STYLE -->
     <style name="AppTheme.RestaurantCard" parent="AppTheme">
         <item name="colorPrimaryDark">@color/restaurant_card_status_bar</item>
