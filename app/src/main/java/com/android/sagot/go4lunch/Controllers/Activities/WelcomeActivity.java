@@ -184,8 +184,8 @@ public class WelcomeActivity extends BaseActivity
         // Retrieve SharedPreferences
         retrieveSharedPreferences();
 
-        // Get Location permission
-        getLocationPermission();
+        // Get Location permission and initialize the application
+        getLocationAndInitializeApi();
     }
     // ---------------------------------------------------------------------------------------------
     //                                   SHARED PREFERENCES
@@ -246,181 +246,7 @@ public class WelcomeActivity extends BaseActivity
                 .SHARED_PREF_SETTINGS_ACTIVITY, mPreferences_SettingsActivity_String).apply();
     }
     // ---------------------------------------------------------------------------------------------
-    //                                     TOOLBAR
-    // ---------------------------------------------------------------------------------------------
-    protected void configureToolBar() {
-        Log.d(TAG, "configureToolBar: ");
-
-        // Change the toolbar Title
-        setTitle(R.string.activity_welcome_title);
-        // Sets the Toolbar
-        setSupportActionBar(mToolbar);
-    }
-
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
-        Log.d(TAG, "onCreateOptionsMenu: ");
-        //Inflate the toolbar  and add it to the Toolbar
-        // With one search button
-        getMenuInflater().inflate(R.menu.activity_welcome_menu_toolbar, menu);
-        return true;
-    }
-
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.toolbar_menu_search:
-
-                Log.d(TAG, "onOptionsItemSelected: = "+mActiveFragment.getTag());
-                // Autocompletion is only available for Map and ListRestaurant fragments
-                if (    mActiveFragment.getTag().equals("ListViewFragment") ||
-                        mActiveFragment.getTag().equals("MapViewFragment")) {
-
-                    // Configure AutoComplete Area
-                    configureAutoCompleteArea();
-                    // Displays the autocompletion area
-                    mAutocompleteLayout.setVisibility(View.VISIBLE);
-                }
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                     NAVIGATION DRAWER
-    // ---------------------------------------------------------------------------------------------
-    // >> CONFIGURATION <-------
-    // Configure Drawer Layout and connects him the ToolBar and the NavigationView
-    private void configureDrawerLayout() {
-        Log.d(TAG, "configureDrawerLayout: ");
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-    }
-
-    // Configure NavigationView
-    private void configureNavigationView() {
-        Log.d(TAG, "configureNavigationView: ");
-
-        // Configure NavigationHeader
-        configureNavigationHeader();
-
-        // Subscribes to listen the navigationView
-        mNavigationView.setNavigationItemSelectedListener(this);
-        // Mark as selected the first menu item
-        this.mNavigationView.getMenu().getItem(0).setChecked(true);
-    }
-
-    // Configure NavigationHeader
-    private void configureNavigationHeader() {
-        Log.d(TAG, "configureNavigationHeader: ");
-
-        View navigationHeader = mNavigationView.inflateHeaderView(R.layout.activity_welcome_nav_header);
-        ImageView userPhoto = navigationHeader.findViewById(R.id.navigation_header_user_photo);
-        TextView userName = navigationHeader.findViewById(R.id.navigation_header_user_name);
-        TextView userEmail = navigationHeader.findViewById(R.id.navigation_header_user_email);
-
-        if (this.getCurrentUser() != null) {
-
-            //Get picture URL from FireBase
-            if (this.getCurrentUser().getPhotoUrl() != null) {
-                Glide.with(this)
-                        .load(this.getCurrentUser().getPhotoUrl())
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(userPhoto);
-            }
-
-            //Get email & username from FireBase
-            String email = TextUtils.isEmpty(this.getCurrentUser().getEmail())
-                    ? getString(R.string.navigation_header_user_email) : this.getCurrentUser().getEmail();
-            String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName())
-                    ? getString(R.string.navigation_header_user_name) : this.getCurrentUser().getDisplayName();
-
-            //Update views with data
-            userName.setText(username);
-            userEmail.setText(email);
-        }
-    }
-
-    // >> ACTIONS <-------
-    @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Log.d(TAG, "onNavigationItemSelected: ");
-
-        // Handle Navigation Item Click
-        int id = item.getItemId();
-
-        switch (id) {
-            //==> Click on YOUR LUNCH
-            case R.id.activity_welcome_drawer_your_lunch:
-                goToRestaurantActivity();
-                break;
-            //==> Click on SETTINGS
-            case R.id.activity_welcome_drawer_settings:
-                goToSettingsActivity();
-                break;
-            //==> Click on LOGOUT
-            case R.id.activity_welcome_drawer_logout:
-                this.signOutUserFromFireBase();
-                break;
-            default:
-                break;
-        }
-        // Close menu drawer
-        this.mDrawerLayout.closeDrawer(GravityCompat.START);
-
-        return true;
-    }
-
-    // GO TO Restaurant Card Activity
-    public void goToRestaurantActivity() {
-        Log.d(TAG, "goToRestaurantActivity: ");
-
-        // Get additional data from FireStore : restaurantIdentifier of the User choice
-        UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
-            User currentUser = documentSnapshot.toObject(User.class);
-            if (currentUser.getRestaurantIdentifier() != null) {
-                callRestaurantCardActivity(currentUser);
-            } else showSnackBar(getString(R.string.restaurant_not_chosen));
-        });
-    }
-
-    // CALL Restaurant Card activity
-    public void callRestaurantCardActivity(User currentUser){
-        Log.d(TAG, "callRestaurantCardActivity: ");
-
-        // Go to restaurant card
-        Toolbox.startActivity(this, RestaurantCardActivity.class,
-                RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
-                currentUser.getRestaurantIdentifier());
-    }
-
-    // GO TO Settings Activity
-    public void goToSettingsActivity() {
-        Log.d(TAG, "goToSettingsActivity: ");
-
-        callSettingsActivity();
-    }
-
-    // CALL Settings activity
-    public void callSettingsActivity(){
-        Log.d(TAG, "callSettingsActivity: ");
-
-        // GO TO Settings Activity
-        Intent intent = new Intent(WelcomeActivity.this,SettingsActivity.class);
-        intent.putExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY,
-                                            mPreferences_SettingsActivity_String);
-        startActivityForResult(intent,SettingsActivity.SETTINGS_ACTIVITY_RC);
-    }
-
-    @Override public void onBackPressed() {
-        Log.d(TAG, "onBackPressed: ");
-        // Close the menu so open and if the touch return is pushed
-        if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            this.mDrawerLayout.closeDrawer(GravityCompat.START);
-        }
-        // Close search AutoComplete
-        closeAutocompleteSearch();
-    }
-    // ---------------------------------------------------------------------------------------------
-    //                                    PERMISSION METHODS
+    //                                      LOCATION
     // ---------------------------------------------------------------------------------------------
     /**
      * Controls location permission.
@@ -428,7 +254,7 @@ public class WelcomeActivity extends BaseActivity
      * The result of the permission request is handled by a callback,
      * onRequestPermissionsResult.
      */
-    private void getLocationPermission() {
+    private void getLocationAndInitializeApi() {
         Log.d(TAG, "getLocationPermission: ");
 
         // Check if permissions are already authorized
@@ -533,22 +359,7 @@ public class WelcomeActivity extends BaseActivity
     // ---------------------------------------------------------------------------------------------
     //                                    REST REQUESTS
     // ---------------------------------------------------------------------------------------------
-    //      FOR SIGN OUT REQUEST
-    // -------------------------------
-    // Create http requests (SignOut)
-    private void signOutUserFromFireBase() {
-        AuthUI.getInstance()
-                .signOut(this)
-                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
-    }
-
-    // Create OnCompleteListener called after tasks ended
-    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted() {
-        return aVoid -> finish();
-    }
-    // ------------------------------
-    //   FOR GOOGLE PLACES REQUEST
-    // ------------------------------
+    // Retrieve the list of restaurants according to the position found previously
     public void getListRestaurantsDetails() {
         Log.d(TAG, "getListRestaurantsDetails: ");
 
@@ -721,6 +532,192 @@ public class WelcomeActivity extends BaseActivity
                         }
                     });
         }
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                     TOOLBAR
+    // ---------------------------------------------------------------------------------------------
+    protected void configureToolBar() {
+        Log.d(TAG, "configureToolBar: ");
+
+        // Change the toolbar Title
+        setTitle(R.string.activity_welcome_title);
+        // Sets the Toolbar
+        setSupportActionBar(mToolbar);
+    }
+
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu: ");
+        //Inflate the toolbar  and add it to the Toolbar
+        // With one search button
+        getMenuInflater().inflate(R.menu.activity_welcome_menu_toolbar, menu);
+        return true;
+    }
+
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.toolbar_menu_search:
+
+                Log.d(TAG, "onOptionsItemSelected: = "+mActiveFragment.getTag());
+                // Autocompletion is only available for Map and ListRestaurant fragments
+                if (    mActiveFragment.getTag().equals("ListViewFragment") ||
+                        mActiveFragment.getTag().equals("MapViewFragment")) {
+
+                    // Configure AutoComplete Area
+                    configureAutoCompleteArea();
+                    // Displays the autocompletion area
+                    mAutocompleteLayout.setVisibility(View.VISIBLE);
+                }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    // ---------------------------------------------------------------------------------------------
+    //                                     NAVIGATION DRAWER
+    // ---------------------------------------------------------------------------------------------
+    // >> CONFIGURATION <-------
+    // Configure Drawer Layout and connects him the ToolBar and the NavigationView
+    private void configureDrawerLayout() {
+        Log.d(TAG, "configureDrawerLayout: ");
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    // Configure NavigationView
+    private void configureNavigationView() {
+        Log.d(TAG, "configureNavigationView: ");
+
+        // Configure NavigationHeader
+        configureNavigationHeader();
+
+        // Subscribes to listen the navigationView
+        mNavigationView.setNavigationItemSelectedListener(this);
+        // Mark as selected the first menu item
+        this.mNavigationView.getMenu().getItem(0).setChecked(true);
+    }
+
+    // Configure NavigationHeader
+    private void configureNavigationHeader() {
+        Log.d(TAG, "configureNavigationHeader: ");
+
+        View navigationHeader = mNavigationView.inflateHeaderView(R.layout.activity_welcome_nav_header);
+        ImageView userPhoto = navigationHeader.findViewById(R.id.navigation_header_user_photo);
+        TextView userName = navigationHeader.findViewById(R.id.navigation_header_user_name);
+        TextView userEmail = navigationHeader.findViewById(R.id.navigation_header_user_email);
+
+        if (this.getCurrentUser() != null) {
+
+            //Get picture URL from FireBase
+            if (this.getCurrentUser().getPhotoUrl() != null) {
+                Glide.with(this)
+                        .load(this.getCurrentUser().getPhotoUrl())
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(userPhoto);
+            }
+
+            //Get email & username from FireBase
+            String email = TextUtils.isEmpty(this.getCurrentUser().getEmail())
+                    ? getString(R.string.navigation_header_user_email) : this.getCurrentUser().getEmail();
+            String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName())
+                    ? getString(R.string.navigation_header_user_name) : this.getCurrentUser().getDisplayName();
+
+            //Update views with data
+            userName.setText(username);
+            userEmail.setText(email);
+        }
+    }
+
+    // >> ACTIONS <-------
+    @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Log.d(TAG, "onNavigationItemSelected: ");
+
+        // Handle Navigation Item Click
+        int id = item.getItemId();
+
+        switch (id) {
+            //==> Click on YOUR LUNCH
+            case R.id.activity_welcome_drawer_your_lunch:
+                goToRestaurantActivity();
+                break;
+            //==> Click on SETTINGS
+            case R.id.activity_welcome_drawer_settings:
+                goToSettingsActivity();
+                break;
+            //==> Click on LOGOUT
+            case R.id.activity_welcome_drawer_logout:
+                this.signOutUserFromFireBase();
+                break;
+            default:
+                break;
+        }
+        // Close menu drawer
+        this.mDrawerLayout.closeDrawer(GravityCompat.START);
+
+        return true;
+    }
+
+    // GO TO Restaurant Card Activity
+    public void goToRestaurantActivity() {
+        Log.d(TAG, "goToRestaurantActivity: ");
+
+        // Get additional data from FireStore : restaurantIdentifier of the User choice
+        UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
+            User currentUser = documentSnapshot.toObject(User.class);
+            if (currentUser.getRestaurantIdentifier() != null) {
+                callRestaurantCardActivity(currentUser);
+            } else showSnackBar(getString(R.string.restaurant_not_chosen));
+        });
+    }
+
+    // CALL Restaurant Card activity
+    public void callRestaurantCardActivity(User currentUser){
+        Log.d(TAG, "callRestaurantCardActivity: ");
+
+        // Go to restaurant card
+        Toolbox.startActivity(this, RestaurantCardActivity.class,
+                RestaurantCardActivity.KEY_DETAILS_RESTAURANT_CARD,
+                currentUser.getRestaurantIdentifier());
+    }
+
+    // GO TO Settings Activity
+    public void goToSettingsActivity() {
+        Log.d(TAG, "goToSettingsActivity: ");
+
+        callSettingsActivity();
+    }
+
+    // CALL Settings activity
+    public void callSettingsActivity(){
+        Log.d(TAG, "callSettingsActivity: ");
+
+        // GO TO Settings Activity
+        Intent intent = new Intent(WelcomeActivity.this,SettingsActivity.class);
+        intent.putExtra(SettingsActivity.SHARED_PREF_SETTINGS_ACTIVITY,
+                mPreferences_SettingsActivity_String);
+        startActivityForResult(intent,SettingsActivity.SETTINGS_ACTIVITY_RC);
+    }
+
+    // Create http requests (SignOut)
+    private void signOutUserFromFireBase() {
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted());
+    }
+
+    // Create OnCompleteListener called after tasks ended
+    private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted() {
+        return aVoid -> finish();
+    }
+
+    @Override public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: ");
+        // Close the menu so open and if the touch return is pushed
+        if (this.mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.mDrawerLayout.closeDrawer(GravityCompat.START);
+        }
+        // Close search AutoComplete
+        closeAutocompleteSearch();
     }
     // ---------------------------------------------------------------------------------------------
     //                                 BOTTOM NAVIGATION VIEW

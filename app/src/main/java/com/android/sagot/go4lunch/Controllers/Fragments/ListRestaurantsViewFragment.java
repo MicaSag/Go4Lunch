@@ -9,24 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.sagot.go4lunch.Controllers.Activities.RestaurantCardActivity;
-import com.android.sagot.go4lunch.Controllers.Activities.WelcomeActivity;
 import com.android.sagot.go4lunch.Controllers.Base.BaseFragment;
 import com.android.sagot.go4lunch.Models.AdapterRestaurant;
-import com.android.sagot.go4lunch.Models.firestore.Restaurant;
-import com.android.sagot.go4lunch.Models.sharedPreferences.Preferences_SettingsActivity;
 import com.android.sagot.go4lunch.R;
 import com.android.sagot.go4lunch.Utils.ItemClickSupport;
 import com.android.sagot.go4lunch.Utils.Toolbox;
 import com.android.sagot.go4lunch.Views.ListRestaurantsViewAdapter;
-import com.android.sagot.go4lunch.api.RestaurantHelper;
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
