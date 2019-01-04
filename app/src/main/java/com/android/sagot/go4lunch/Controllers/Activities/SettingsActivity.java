@@ -310,12 +310,7 @@ public class SettingsActivity extends BaseActivity {
     }
     // Create OnCompleteListener called after tasks ended
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin){
-        return new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                        finish();
-            }
-        };
+        return aVoid -> finish();
     }
     // ---------------------------------------------------------------------------------------------
     //                                     NOTIFICATION
