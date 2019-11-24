@@ -44,9 +44,8 @@ You can contact me for any questions : contact_go4lunch@sfr.fr
 <img src="/app/src/main/res/drawable/app_screenshots/autorisation.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/search.png" width="425">
 <img src="/app/src/main/res/drawable/app_screenshots/map_01.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/map_02.png" width="425">
 <img src="/app/src/main/res/drawable/app_screenshots/map_03.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/restaurant_card_01.png" width="425">
-<img src="/app/src/main/res/drawable/app_screenshots/restaurant_card_02.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/restaurant_card_03.png" width="425">
 <img src="/app/src/main/res/drawable/app_screenshots/restaurant_card_02.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/restaurant_list_01.png" width="425">
-<img src="/app/src/main/res/drawable/app_screenshots/restaurant_list_02.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/colleague_list.png" width="425">
-<img src="/app/src/main/res/drawable/app_screenshots/navigation_drawer.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/options.png" width="425">
-<img src="/app/src/main/res/drawable/app_screenshots/options_01.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/notification.png" width="425">
+<img src="/app/src/main/res/drawable/app_screenshots/restaurant_list_02.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/colleague_list.png" width="425"> 
+<img src="/app/src/main/res/drawable/app_screenshots/navigation_drawer.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/options.png" width="425"> 
+<img src="/app/src/main/res/drawable/app_screenshots/options_01.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/notification.png" width="425"> 
 <img src="/app/src/main/res/drawable/app_screenshots/navigation_drawer_english.png" width="425"> <img src="/app/src/main/res/drawable/app_screenshots/filter.png" width="425">
